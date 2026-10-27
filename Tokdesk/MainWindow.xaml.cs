@@ -286,6 +286,7 @@ public partial class MainWindow : Window
             src.CopyTo(dst);
         }
         catch (Exception ex) { Log.Write("Ícono para el mezclador: " + ex.Message); }
+        Task.Run(() => AudioSessions.Watch("Tokdesk", ico));
         mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", ico));
         mixer.Start();
 
@@ -351,7 +352,7 @@ public partial class MainWindow : Window
                 case "open": Process.Start(new ProcessStartInfo(S("url")) { UseShellExecute = true }); break;
                 case "report":
                     ShowPanel(_side);
-                    await _side.Show(S("url"), SidePage.ReportJs);
+                    await _side.Show(S("url"));
                     break;
                 case "web":
                     ShowPanel(_side);

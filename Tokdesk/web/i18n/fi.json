@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "Lataa vanhempia viestejä",
   "Este usuario no tiene colecciones públicas.": "Tällä käyttäjällä ei ole julkisia kokoelmia.",
   "Ir al mensaje": "Siirry viestiin",
-  "No se encontró el mensaje original": "Alkuperäistä viestiä ei löytynyt"
+  "No se encontró el mensaje original": "Alkuperäistä viestiä ei löytynyt",
+  "Comentario ocultado": "Kommentti piilotettu",
+  "Descargar imagen": "Lataa kuva",
+  "EN VIVO": "LIVE",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "Käytä virallisella sivulla ⋯ › Ilmianna ja sitten «Takaisin»",
+  "Ocultar comentarios al marcar «no me gusta»": "Piilota kommentit, kun merkitset «En pidä»",
+  "Ocultar directos (LIVE)": "Piilota suorat lähetykset (LIVE)",
+  "Ocultar publicidad": "Piilota mainokset",
+  "Ocultar respuestas": "Piilota vastaukset",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "Näytä selaimessa",
+  "Ver foto": "Näytä kuva"
 }

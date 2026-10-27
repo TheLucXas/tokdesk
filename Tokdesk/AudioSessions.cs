@@ -7,7 +7,7 @@ namespace Tokdesk;
 /// como "Microsoft Edge WebView2". Esto busca esas sesiones de audio (las de procesos hijos de esta app)
 /// y les pone el nombre y el ícono de Tokdesk.
 /// </summary>
-static class AudioSessions
+public static class AudioSessions
 {
     [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
     class MMDeviceEnumerator { }
@@ -37,6 +37,63 @@ static class AudioSessions
         int GetAudioSessionControl(IntPtr sessionGuid, int flags, out IntPtr control);
         int GetSimpleAudioVolume(IntPtr sessionGuid, int flags, out IntPtr volume);
         int GetSessionEnumerator(out IAudioSessionEnumerator sessions);
+        int RegisterSessionNotification(IAudioSessionNotification notification);
+    }
+
+    [ComImport, Guid("641DD20B-4D41-49CC-ABA3-174B9477BB08"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IAudioSessionNotification
+    {
+        [PreserveSig] int OnSessionCreated(IAudioSessionControl2 session);
+    }
+
+    // Recibe el aviso de Windows apenas se crea una sesión de audio, para marcarla antes que los mezcladores la lean
+    [ComVisible(true)]
+    public sealed class Watcher : IAudioSessionNotification
+    {
+        public int OnSessionCreated(IAudioSessionControl2 session)
+        {
+            try { Apply(session, Descendants(), _name, _icon); } catch { }
+            return 0;
+        }
+    }
+
+    static string _name, _icon;
+    static readonly List<object> Keep = new();
+
+    /// <summary>Se suscribe a la creación de sesiones de audio en todos los dispositivos de salida.</summary>
+    public static void Watch(string name, string iconPath)
+    {
+        _name = name; _icon = iconPath;
+        try
+        {
+            var devices = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+            devices.EnumAudioEndpoints(0, 1, out var list);
+            list.GetCount(out var n);
+            var iid = typeof(IAudioSessionManager2).GUID;
+            for (var d = 0; d < n; d++)
+            {
+                list.Item(d, out var dev);
+                dev.Activate(ref iid, 0x17, IntPtr.Zero, out var o);
+                var mgr = (IAudioSessionManager2)o;
+                var w = new Watcher();
+                mgr.RegisterSessionNotification(w);
+                mgr.GetSessionEnumerator(out _); // necesario para empezar a recibir avisos
+                Keep.Add(mgr); Keep.Add(w);
+            }
+        }
+        catch (Exception ex) { Log.Write("Mezclador (avisos): " + ex.Message); }
+    }
+
+    static void Apply(IAudioSessionControl2 s, HashSet<uint> mine, string name, string iconPath)
+    {
+        if (s.GetProcessId(out var pid) != 0 || !mine.Contains(pid)) return;
+        s.GetDisplayName(out var current);
+        s.GetIconPath(out var icon);
+        if (current == name && icon == iconPath) return;
+        var ctx = Guid.Empty;
+        s.SetDisplayName(name, ref ctx);
+        s.SetIconPath(iconPath, ref ctx);
+        Log.Write($"Mezclador: sesión de audio {pid} renombrada");
     }
 
     [ComImport, Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -48,7 +105,7 @@ static class AudioSessions
 
     // IAudioSessionControl2 hereda de IAudioSessionControl: los métodos van en el orden de la vtable
     [ComImport, Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    interface IAudioSessionControl2
+    public interface IAudioSessionControl2
     {
         int GetState(out int state);
         int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string name);

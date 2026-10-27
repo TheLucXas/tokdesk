@@ -34,6 +34,7 @@ const opt = Object.assign({
   theme: 'dark', accent: '#fe2c55', fit: 'contain', dataSaver: false, preload: 2, dblLike: true,
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
+  hideAds: true, hideLives: true, hideDisliked: true,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -220,7 +221,10 @@ function pickSource(v) {
   return v.playAddr || v.downloadAddr || null;
 }
 function normalize(it) {
-  if (!it || it.liveRoomInfo) return null;
+  if (!it) return null;
+  if (it.liveRoomInfo && opt.hideLives) return null;
+  if (it.isAd && opt.hideAds) return null;
+  if (it.liveRoomInfo) return normalizeLive(it);
   const v = it.video || {};
   const photos = ((it.imagePost && it.imagePost.images) || [])
     .map((im) => im.imageURL && im.imageURL.urlList && im.imageURL.urlList[0]).filter(Boolean);
@@ -344,7 +348,7 @@ function buildSlide(it) {
   el.innerHTML = `
     <img class="poster" alt="" src="${esc(it.cover)}">
     ${photoHtml}
-    <div class="playicon">${ICON.play}</div>
+    ${it.live ? `<button class="livebtn">${esc(t('EN VIVO'))} · ${esc(t('Ver en el navegador'))}</button>` : ''}
     <div class="loading spinner"></div>
     <div class="shade"></div>
     <div class="rail">
@@ -587,7 +591,11 @@ function copyLink(it) {
   navigator.clipboard.writeText(linkOf(it)).then(() => toast(t('Enlace copiado')), () => toast(t('No se pudo copiar')));
 }
 
-function report(it) { closePanels(); send({ t: 'report', url: linkOf(it) }); }
+function report(it) {
+  closePanels();
+  send({ t: 'report', url: linkOf(it) });
+  notice(t('En la página oficial usa ⋯ › Denunciar y luego «Volver»'));
+}
 
 function setSpeed(s) {
   state.speed = s; pref.set('speed', s);
@@ -632,6 +640,19 @@ function openViewer(src) {
   v.classList.add('show');
 }
 function closeViewer() { $('#viewer').classList.remove('show'); }
+$('#viewer .vdl').innerHTML = ICON.download;
+$('#viewer .vdl').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const src = $('#viewer img').src;
+  if (src) startDownload(src, 'tokdesk_' + Date.now(), 'jpg');
+});
+$('#pager').addEventListener('click', (e) => {
+  const lb = e.target.closest('.livebtn');
+  if (!lb) return;
+  e.stopPropagation();
+  const it = currentItem();
+  if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author + '/live' });
+}, true);
 $('#viewer').addEventListener('click', closeViewer);
 $('#chatList').addEventListener('click', (e) => { const p = e.target.closest('img.pic'); if (p) openViewer(p.src); });
 
@@ -723,9 +744,15 @@ function openHelp() {
 }
 
 // ---------- Paneles ----------
+// Paneles que se apilan encima de lo que esté abierto (como en la app: perfil desde comentarios, etc.)
+const STACKED = ['profile', 'page', 'opts', 'activity'];
+let panelZ = 60;
 function openPanel(id, keep) {
-  if (!keep) $$('.panel.open').forEach((p) => { if (p.id !== id) p.classList.remove('open'); });
-  $('#' + id).classList.add('open');
+  keep = keep || STACKED.includes(id);
+  if (!keep) $$('.panel.open').forEach((p) => { if (p.id !== id) { p.classList.remove('open'); p.style.zIndex = ''; } });
+  const el = $('#' + id);
+  el.classList.add('open');
+  el.style.zIndex = keep && anyOtherOpen(id) ? ++panelZ : '';
   $('#scrim').classList.toggle('show', id !== 'search');
   hideCtx();
 }
@@ -744,7 +771,27 @@ function closePanels() {
   else if (wasInbox) send({ t: 'chatvis', on: false });
 }
 function anyPanelOpen() { return !!$('.panel.open'); }
-$$('[data-close]').forEach((b) => b.addEventListener('click', closePanels));
+function anyOtherOpen(id) { return $$('.panel.open').some((p) => p.id !== id); }
+
+// Cierra solo un panel; si no queda ninguno abierto, hace la limpieza completa
+function closePanel(id) {
+  const el = $('#' + id);
+  if (!el) return;
+  if (!$$('.panel.open').some((p) => p !== el)) { closePanels(); return; }
+  el.classList.remove('open');
+  el.style.zIndex = '';
+  if (id === 'sheet') { state.sheetFor = null; document.body.classList.remove('cmt-open'); setReply(null); }
+  if (id === 'profile') state.profileKey = null;
+  if (id === 'page') state.pageKey = null;
+  if (id === 'search') state.searchKey = null;
+  if (id === 'chat' && chatConv) closeChat();
+}
+
+// El panel de más arriba (el que tapa a los demás)
+function topPanel() {
+  return $$('.panel.open').sort((a, b) => (+b.style.zIndex || 0) - (+a.style.zIndex || 0))[0] || null;
+}
+$$('[data-close]').forEach((b) => b.addEventListener('click', () => closePanel(b.dataset.close)));
 // En las filas horizontales de compartir, la rueda desplaza hacia los lados
 $$('.row.scroll').forEach((r) => r.addEventListener('wheel', (e) => {
   if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { r.scrollLeft += e.deltaY; e.preventDefault(); }
@@ -776,7 +823,8 @@ window.addEventListener('keydown', (e) => {
   }
   if (e.key === 'Escape' && $('#viewer').classList.contains('show')) { closeViewer(); e.preventDefault(); return; }
   if (e.key === 'Escape') {
-    if (anyPanelOpen() || $('#ctx').classList.contains('show')) closePanels();
+    if ($('#ctx').classList.contains('show')) hideCtx();
+    else if (anyPanelOpen()) closePanel(topPanel().id);
     else if (document.body.classList.contains('clean')) toggleClean();
     else back();
     e.preventDefault();
@@ -1227,10 +1275,14 @@ function onConv(m) {
     });
   });
   $$('.vthumb', list).forEach((v) => v.onclick = () => {
+    if (v._t) { clearTimeout(v._t); v._t = null; return; }
+    v._t = setTimeout(() => { v._t = null; openCard(v); }, 280);
+  });
+  function openCard(v) {
     if (v.dataset.id) openChatVideos(v.dataset.id);
     else if (v.dataset.url) openVideoLink(v.dataset.url);
     else if (!state.openingShared) { state.openingShared = true; toast(t('Abriendo video…')); send({ t: 'openshared', id: chatConv.id, n: +v.dataset.n }); }
-  });
+  }
   list.insertAdjacentHTML('afterbegin', `<div class="sheet-msg" id="chatOlder">${noOlder ? `<button class="pill" id="olderBtn">${esc(t('Cargar mensajes anteriores'))}</button>` : esc(t('Sube para ver mensajes anteriores'))}</div>`);
   if (noOlder) $('#olderBtn').onclick = () => { noOlder = false; olderMisses = 0; requestOlder(); };
   if (state.chatRestoreScroll != null) { list.scrollTop = state.chatRestoreScroll; state.chatRestoreScroll = null; }
@@ -1370,7 +1422,14 @@ async function openProfile(it) {
   $('#pfFollowing').textContent = fmt(st.followingCount);
   $('#pfFollowers').textContent = fmt(st.followerCount);
   $('#pfLikes').textContent = fmt(st.heartCount ?? st.heart);
-  setProfileTabs(isMine(it), !!u.openFavorite);
+  // Favoritos ajenos: solo si tiene colecciones públicas (es lo único que la web muestra de otros)
+  setProfileTabs(isMine(it), false);
+  if (!isMine(it) && u.openFavorite) {
+    api('GET', '/api/user/collection_list/', { secUid: it.secUid, count: 1, cursor: 0 }).then((cr) => {
+      const has = !!(cr.data && (cr.data.collectionList || []).length);
+      if (state.profileFor === it) setProfileTabs(false, has);
+    });
+  }
   if (u.relation != null) { setFollowed(it.authorId, u.relation === 1 || u.relation === 2); updateProfileFollow(it); }
 }
 
@@ -1598,9 +1657,9 @@ function cmtHtml(cm, reply, parentCid) {
   const it = currentItem();
   const authorAv = it && it.avatar;
   return `<div class="cmt ${reply ? 'reply' : ''}" data-cid="${esc(cm.cid)}" data-parent="${esc(parentCid || '')}">
-    <img alt="" src="${esc(av)}">
+    <img class="cav" alt="" src="${esc(av)}" data-full="${esc((u.avatar_medium && u.avatar_medium.url_list && u.avatar_medium.url_list[0]) || av)}" title="${esc(t('Ver foto'))}">
     <div class="body">
-      <div class="name">${esc(u.nickname || u.unique_id)}</div>
+      <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span></div>
       <div class="text">${richText(cm.text)}</div>
       ${img ? `<img class="cimg" alt="" src="${esc(img)}">` : ''}
       <div class="sub"><span>${ago(cm.create_time)}</span>
@@ -1631,6 +1690,7 @@ function cmtDislike(id, cm) {
   else state.cmtDislikes.delete(cm.cid);
   pref.set('cmtDislikes', [...state.cmtDislikes].slice(-500));
   renderComments();
+  if (on && opt.hideDisliked) notice(t('Comentario ocultado'), t('Deshacer'), () => cmtDislike(id, cm));
 }
 
 function openCommentOptions(id, cm, parentCid) {
@@ -1694,11 +1754,16 @@ function renderComments() {
     return;
   }
   const keepScroll = list.scrollTop;
-  list.innerHTML = c.list.map((cm) => {
+  list.innerHTML = c.list.filter((cm) => !(opt.hideDisliked && state.cmtDislikes.has(cm.cid))).map((cm) => {
     const r = c.replies.get(cm.cid);
     let html = cmtHtml(cm, false);
-    if (r && r.list.length) html += `<div class="replies">${r.list.map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
+    if (r && r.list.length && !r.collapsed) html += `<div class="replies">${r.list.filter((x) => !(opt.hideDisliked && state.cmtDislikes.has(x.cid))).map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
     const left = (cm.reply_comment_total || 0) - (r ? r.list.length : 0);
+    if (r && r.collapsed) {
+      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${(cm.reply_comment_total > 1 ? t('Ver {0} respuestas', cm.reply_comment_total) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
+      return html;
+    }
+    if (r && r.list.length) html += `<button class="lessreplies" data-cid="${esc(cm.cid)}">${esc(t('Ocultar respuestas'))} ▴</button>`;
     if (left > 0 && (!r || r.hasMore)) {
       html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${r && r.loading ? t('Cargando…') : (left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
     }
@@ -1725,8 +1790,16 @@ $('#sheetList').addEventListener('click', async (e) => {
   const rb = e.target.closest('.reply-btn');
   if (rb) { setReply({ cid: rb.dataset.cid, name: rb.dataset.name }); $('#cmtInput').focus(); return; }
 
+  const ln = e.target.closest('.uname[data-u]');
+  if (ln) { openUserByName(ln.dataset.u); return; }
+  const av = e.target.closest('img.cav');
+  if (av) { openViewer(av.dataset.full || av.src); return; }
+  const less = e.target.closest('.lessreplies');
+  if (less) { const rr = c.replies.get(less.dataset.cid); if (rr) { rr.collapsed = true; renderComments(); } return; }
   const b = e.target.closest('.morereplies');
   if (!b) return;
+  const rc = c.replies.get(b.dataset.cid);
+  if (rc && rc.collapsed) { rc.collapsed = false; if (rc.list.length) { renderComments(); return; } }
   const cid = b.dataset.cid;
   let r = c.replies.get(cid);
   if (!r) { r = { list: [], cursor: 0, hasMore: true, loading: false }; c.replies.set(cid, r); }
@@ -1815,7 +1888,7 @@ $$('.nav').forEach((n) => n.addEventListener('click', () => {
   switch (n.dataset.nav) {
     case 'home': switchTab('foryou'); break;
     case 'friends': switchTab('friends'); break;
-    case 'upload': send({ t: 'web', url: 'https://www.tiktok.com/tiktokstudio/upload' }); break;
+    case 'logo': break;
     case 'inbox': openInbox(); break;
     case 'me':
       if (!state.me) { send({ t: 'login' }); break; }
@@ -2091,3 +2164,38 @@ function busy(delta) {
   if (busyCount > 0) busyTimer = setTimeout(() => $('#busy').classList.add('show'), 250);
   else $('#busy').classList.remove('show');
 }
+// ---------- Directos (si no están ocultos): portada con botón para verlos en el navegador ----------
+function normalizeLive(it) {
+  const a = it.author || {};
+  const room = it.liveRoomInfo || {};
+  return {
+    id: it.id || ('live' + a.id), src: null, photos: [], live: true,
+    cover: room.coverUrl || (it.video && it.video.cover) || a.avatarLarger || a.avatarThumb,
+    author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb, authorId: a.id, secUid: a.secUid,
+    desc: room.title || it.desc || '', music: '', likes: 0, comments: 0, saves: 0, shares: 0, plays: 0,
+    subtitles: [], liked: false, saved: false, followed: false,
+  };
+}
+
+// ---------- Botón del centro: el logo gira y Ctrl/Shift+clic abre el proyecto en GitHub ----------
+(() => {
+  const b = $('.nav[data-nav="logo"]');
+  if (!b) return;
+  b.addEventListener('click', (e) => {
+    if (e.ctrlKey || e.shiftKey) { send({ t: 'open', url: 'https://github.com/TheLucXas/tokdesk' }); return; }
+    const img = $('img', b);
+    img.classList.remove('spin'); void img.offsetWidth; img.classList.add('spin');
+  });
+})();
+
+// ---------- Clic afuera de un menú lo cierra (regla común a todos los menús) ----------
+document.addEventListener('pointerdown', (e) => {
+  const opts = $('#opts');
+  if (opts.classList.contains('open') && !opts.contains(e.target)) {
+    e.preventDefault(); e.stopPropagation();
+    closePanel('opts');
+  }
+}, true);
+
+// Foto del perfil ampliable
+$('#pfAvatar').addEventListener('click', () => { const s = $('#pfAvatar').src; if (s) openViewer(s); });

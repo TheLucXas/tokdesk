@@ -88,6 +88,8 @@ sealed class SidePage
     async Task Go(string url)
     {
         await Ensure();
+        // Mientras el usuario ve una página oficial (denunciar, subir, etc.) no se la cambia por detrás
+        if (_visible) throw new InvalidOperationException("página oficial en uso");
         if (_wv.Source != null && _wv.Source.StartsWith(url)) return;
         _nav = new TaskCompletionSource<bool>();
         _wv.Navigate(url);
@@ -264,6 +266,7 @@ sealed class SidePage
     /// <summary>Chats recientes y notificaciones de actividad.</summary>
     public async Task<string> LoadInbox()
     {
+        if (_visible) return null;
         await Go(Messages);
         if (await Poll(InboxJs, 30000) == null) return null;
         // La actividad (me gusta, comentarios, seguidores) se carga al abrir el panel de notificaciones
@@ -293,6 +296,7 @@ sealed class SidePage
     /// <summary>Abre (si hace falta) la conversación y devuelve sus mensajes.</summary>
     public async Task<string> ReadConv(string convId)
     {
+        if (_visible) return null;
         if (!await SelectConv(convId)) return null;
         await Task.Delay(300);
         return await Poll(ConvJs, 6000);
@@ -301,6 +305,7 @@ sealed class SidePage
     /// <summary>Abre el video compartido número <paramref name="n"/> del chat y devuelve su enlace.</summary>
     public async Task<string> OpenShared(string convId, int n)
     {
+        if (_visible) return null;
         if (!await SelectConv(convId)) return null;
         var start = _wv.Source;
         await Eval($"(() => {{ const v = document.querySelectorAll('[data-e2e=\"dm-new-shared-video\"]')[{n}]; if (v) v.click(); return null; }})()");
@@ -317,6 +322,7 @@ sealed class SidePage
     /// <summary>Baja la lista de conversaciones para que la página cargue las más antiguas.</summary>
     public async Task<string> LoadMoreConvs()
     {
+        if (_visible) return null;
         await Go(Messages);
         if (await Poll(InboxJs, 30000) == null) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-conversation-item\"]').length)";
@@ -341,6 +347,7 @@ sealed class SidePage
     /// <summary>Sube hasta el principio de la conversación para que la página cargue mensajes anteriores.</summary>
     public async Task<string> LoadOlder(string convId)
     {
+        if (_visible) return null;
         if (!await SelectConv(convId)) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-chat-item\"]').length)";
         var before = await Eval(countJs);
@@ -387,6 +394,7 @@ sealed class SidePage
     /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
     public async Task<bool> React(string convId, int index, string emoji)
     {
+        if (_visible) return false;
         if (!await MessageButton(convId, index, "dm-new-reaction-btn")) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
@@ -406,6 +414,7 @@ sealed class SidePage
     /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
     public async Task<bool> Reply(string convId, int index, string text)
     {
+        if (_visible) return false;
         if (!await MessageButton(convId, index, "dm-new-reply-btn")) return false;
         await Task.Delay(300);
         return await SendText(convId, text);
@@ -413,6 +422,7 @@ sealed class SidePage
     /// <summary>Escribe y envía un mensaje de texto en la conversación indicada.</summary>
     public async Task<bool> SendText(string convId, string text)
     {
+        if (_visible) return false;
         if (!await SelectConv(convId)) return false;
         var found = await Poll("""
             (() => {
@@ -437,16 +447,5 @@ sealed class SidePage
         return true;
     }
 
-    // Abre el menú "más" del video y luego la opción de reportar, si las encuentra
-    public const string ReportJs = """
-        (() => {
-          const txt = /^(Report|Reportar|Denunciar)$/i;
-          const opt = [...document.querySelectorAll('li, button, [role="menuitem"], div[tabindex]')]
-            .find(e => txt.test((e.innerText || '').trim()));
-          if (opt) { opt.click(); return 'ok'; }
-          const more = document.querySelector('[data-e2e="more-action-icon"], [data-e2e="video-more-action"], [aria-label="More"], [aria-label="Más"]');
-          if (more) { more.click(); more.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true })); }
-          return null;
-        })()
-        """;
+
 }

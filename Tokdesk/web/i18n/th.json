@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "โหลดข้อความเก่า",
   "Este usuario no tiene colecciones públicas.": "ผู้ใช้นี้ไม่มีคอลเลกชันสาธารณะ",
   "Ir al mensaje": "ไปที่ข้อความ",
-  "No se encontró el mensaje original": "ไม่พบข้อความต้นฉบับ"
+  "No se encontró el mensaje original": "ไม่พบข้อความต้นฉบับ",
+  "Comentario ocultado": "ซ่อนความคิดเห็นแล้ว",
+  "Descargar imagen": "ดาวน์โหลดรูปภาพ",
+  "EN VIVO": "LIVE",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "ในหน้าทางการ ใช้ ⋯ › รายงาน แล้วกด «ย้อนกลับ»",
+  "Ocultar comentarios al marcar «no me gusta»": "ซ่อนความคิดเห็นเมื่อทำเครื่องหมาย «ไม่ชอบ»",
+  "Ocultar directos (LIVE)": "ซ่อนไลฟ์สด (LIVE)",
+  "Ocultar publicidad": "ซ่อนโฆษณา",
+  "Ocultar respuestas": "ซ่อนการตอบกลับ",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "ดูในเบราว์เซอร์",
+  "Ver foto": "ดูรูปภาพ"
 }

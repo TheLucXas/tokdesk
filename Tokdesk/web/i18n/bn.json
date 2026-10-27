@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "পুরনো বার্তা লোড করুন",
   "Este usuario no tiene colecciones públicas.": "এই ব্যবহারকারীর কোনো পাবলিক সংগ্রহ নেই।",
   "Ir al mensaje": "বার্তায় যান",
-  "No se encontró el mensaje original": "মূল বার্তাটি পাওয়া যায়নি"
+  "No se encontró el mensaje original": "মূল বার্তাটি পাওয়া যায়নি",
+  "Comentario ocultado": "মন্তব্য লুকানো হয়েছে",
+  "Descargar imagen": "ছবি ডাউনলোড করুন",
+  "EN VIVO": "লাইভ",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "অফিসিয়াল পেজে ⋯ › রিপোর্ট করুন, তারপর «ফিরে যান» ব্যবহার করুন",
+  "Ocultar comentarios al marcar «no me gusta»": "«পছন্দ হয়নি» চিহ্নিত করলে মন্তব্য লুকান",
+  "Ocultar directos (LIVE)": "লাইভ স্ট্রিম লুকান (LIVE)",
+  "Ocultar publicidad": "বিজ্ঞাপন লুকান",
+  "Ocultar respuestas": "উত্তর লুকান",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "ব্রাউজারে দেখুন",
+  "Ver foto": "ছবি দেখুন"
 }

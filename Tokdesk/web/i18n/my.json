@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "အဟောင်းမက်ဆေ့ချ်များ ဖွင့်ရန်",
   "Este usuario no tiene colecciones públicas.": "ဤအသုံးပြုသူတွင် အများပိုင်စုဆောင်းမှုများ မရှိပါ။",
   "Ir al mensaje": "မက်ဆေ့ချ်သို့ သွားရန်",
-  "No se encontró el mensaje original": "မူရင်းမက်ဆေ့ချ်ကို မတွေ့ပါ"
+  "No se encontró el mensaje original": "မူရင်းမက်ဆေ့ချ်ကို မတွေ့ပါ",
+  "Comentario ocultado": "မှတ်ချက် ဖျောက်ထားသည်",
+  "Descargar imagen": "ပုံကို ဒေါင်းလုဒ်လုပ်ရန်",
+  "EN VIVO": "တိုက်ရိုက်",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "တရားဝင်စာမျက်နှာတွင် ⋯ › တိုင်ကြားရန် ထို့နောက် «နောက်သို့» ကိုသုံးပါ",
+  "Ocultar comentarios al marcar «no me gusta»": "«မကြိုက်ပါ» ကို အမှတ်အသားပြုသည့်အခါ မှတ်ချက်များ ဖျောက်ရန်",
+  "Ocultar directos (LIVE)": "တိုက်ရိုက်အစီအစဉ်များ ဖျောက်ရန် (LIVE)",
+  "Ocultar publicidad": "ကြော်ငြာများ ဖျောက်ရန်",
+  "Ocultar respuestas": "ပြန်ကြားချက်များ ဖျောက်ရန်",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "ဘရောက်ဆာတွင် ကြည့်ရန်",
+  "Ver foto": "ဓာတ်ပုံ ကြည့်ရန်"
 }

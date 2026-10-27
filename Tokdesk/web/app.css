@@ -625,3 +625,22 @@ body.light #chatReplyBar { background: #f1f1f2; color: rgba(22,24,35,.7); }
 .msg .ref[data-ref]:hover { color: #fff; }
 .msg.flash .bub, .msg.flash .vthumb { animation: flash 1.6s ease; }
 @keyframes flash { 0%, 60% { box-shadow: 0 0 0 3px var(--red); } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* Botón del centro: logo de Tokdesk con giro y rebote */
+.nav.logo-btn { width: 56px; }
+.nav.logo-btn img { width: 34px; height: 34px; border-radius: 9px; }
+.nav.logo-btn img.spin { animation: logospin .9s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes logospin { 0% { transform: rotate(0) scale(1); } 45% { transform: rotate(380deg) scale(1.15); } 70% { transform: rotate(350deg) scale(.95); } 100% { transform: rotate(360deg) scale(1); } }
+
+/* Comentarios: nombre y foto tocables, ocultar respuestas */
+.cmt .uname { cursor: pointer; }
+.cmt .uname:hover { text-decoration: underline; }
+.cmt img.cav { cursor: zoom-in; }
+.lessreplies { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); padding: 0 0 8px 44px; display: block; }
+body.light .lessreplies { color: rgba(22,24,35,.55); }
+
+/* Vista previa: botón de descarga */
+#viewer .vdl { position: absolute; top: 12px; right: 58px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; padding: 8px; }
+
+/* Directos */
+.livebtn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; background: var(--red); color: #fff; font-weight: 700; padding: 10px 18px; border-radius: 22px; }

@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "加载更早的消息",
   "Este usuario no tiene colecciones públicas.": "该用户没有公开合集。",
   "Ir al mensaje": "前往消息",
-  "No se encontró el mensaje original": "未找到原始消息"
+  "No se encontró el mensaje original": "未找到原始消息",
+  "Comentario ocultado": "评论已隐藏",
+  "Descargar imagen": "下载图片",
+  "EN VIVO": "直播",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "在官方页面中使用 ⋯ › 举报，然后点击«返回»",
+  "Ocultar comentarios al marcar «no me gusta»": "标记«不喜欢»后隐藏评论",
+  "Ocultar directos (LIVE)": "隐藏直播 (LIVE)",
+  "Ocultar publicidad": "隐藏广告",
+  "Ocultar respuestas": "隐藏回复",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "在浏览器中查看",
+  "Ver foto": "查看照片"
 }

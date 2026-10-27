@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "Load older messages",
   "Este usuario no tiene colecciones públicas.": "This user has no public collections.",
   "Ir al mensaje": "Go to message",
-  "No se encontró el mensaje original": "Original message not found"
+  "No se encontró el mensaje original": "Original message not found",
+  "Comentario ocultado": "Comment hidden",
+  "Descargar imagen": "Download image",
+  "EN VIVO": "LIVE",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "On the official page, use ⋯ › Report and then «Back»",
+  "Ocultar comentarios al marcar «no me gusta»": "Hide comments when marking «dislike»",
+  "Ocultar directos (LIVE)": "Hide live streams (LIVE)",
+  "Ocultar publicidad": "Hide ads",
+  "Ocultar respuestas": "Hide replies",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "Show in browser",
+  "Ver foto": "View photo"
 }

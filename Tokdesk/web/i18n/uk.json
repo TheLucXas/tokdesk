@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "Завантажити попередні повідомлення",
   "Este usuario no tiene colecciones públicas.": "Цей користувач не має публічних колекцій.",
   "Ir al mensaje": "Перейти до повідомлення",
-  "No se encontró el mensaje original": "Початкове повідомлення не знайдено"
+  "No se encontró el mensaje original": "Початкове повідомлення не знайдено",
+  "Comentario ocultado": "Коментар приховано",
+  "Descargar imagen": "Завантажити зображення",
+  "EN VIVO": "НАЖИВО",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "На офіційній сторінці натисніть ⋯ › Поскаржитися, а потім «Назад»",
+  "Ocultar comentarios al marcar «no me gusta»": "Приховувати коментарі після позначки «Не подобається»",
+  "Ocultar directos (LIVE)": "Приховати прямі трансляції (LIVE)",
+  "Ocultar publicidad": "Приховати рекламу",
+  "Ocultar respuestas": "Приховати відповіді",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "Відкрити у браузері",
+  "Ver foto": "Переглянути фото"
 }

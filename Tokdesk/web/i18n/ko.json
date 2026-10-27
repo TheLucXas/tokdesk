@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "이전 메시지 불러오기",
   "Este usuario no tiene colecciones públicas.": "이 사용자는 공개 컬렉션이 없습니다.",
   "Ir al mensaje": "메시지로 이동",
-  "No se encontró el mensaje original": "원본 메시지를 찾을 수 없습니다"
+  "No se encontró el mensaje original": "원본 메시지를 찾을 수 없습니다",
+  "Comentario ocultado": "댓글이 숨겨짐",
+  "Descargar imagen": "이미지 다운로드",
+  "EN VIVO": "라이브",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "공식 페이지에서 ⋯ › 신고를 누른 다음 «뒤로»를 사용",
+  "Ocultar comentarios al marcar «no me gusta»": "«싫어요»를 표시하면 댓글 숨기기",
+  "Ocultar directos (LIVE)": "라이브 방송 숨기기 (LIVE)",
+  "Ocultar publicidad": "광고 숨기기",
+  "Ocultar respuestas": "답글 숨기기",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "브라우저에서 보기",
+  "Ver foto": "사진 보기"
 }

@@ -312,5 +312,16 @@
   "Cargar mensajes anteriores": "過去のメッセージを読み込む",
   "Este usuario no tiene colecciones públicas.": "このユーザーには公開コレクションがありません。",
   "Ir al mensaje": "メッセージに移動",
-  "No se encontró el mensaje original": "元のメッセージが見つかりません"
+  "No se encontró el mensaje original": "元のメッセージが見つかりません",
+  "Comentario ocultado": "コメントを非表示にしました",
+  "Descargar imagen": "画像をダウンロード",
+  "EN VIVO": "LIVE",
+  "En la página oficial usa ⋯ › Denunciar y luego «Volver»": "公式ページで ⋯ › 報告 を選び、次に «戻る» を使用",
+  "Ocultar comentarios al marcar «no me gusta»": "「好きじゃない」をマークするとコメントを非表示",
+  "Ocultar directos (LIVE)": "ライブ配信を非表示 (LIVE)",
+  "Ocultar publicidad": "広告を非表示",
+  "Ocultar respuestas": "返信を非表示",
+  "Tokdesk": "Tokdesk",
+  "Ver en el navegador": "ブラウザで表示",
+  "Ver foto": "写真を表示"
 }
