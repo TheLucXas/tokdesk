@@ -55,7 +55,7 @@ sealed class Engine
         _wv.WebResourceRequested += (_, e) =>
         {
             if (!_visible)
-                e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "");
+                e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
         };
 
         _wv.WebResourceResponseReceived += OnResponse;
@@ -251,6 +251,20 @@ sealed class Engine
         return string.Join("; ", cookies.Select(c => c.Name + "=" + c.Value));
     }
 
+    /// <summary>Cambia el idioma de la web de TikTok (las mismas cookies que usa su selector de idioma) y recarga.</summary>
+    public async Task SetLanguage(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return;
+        foreach (var name in new[] { "tiktok_webapp_lang", "tiktok_pc_web_lang" })
+        {
+            var c = _wv.CookieManager.CreateCookie(name, code, ".tiktok.com", "/");
+            c.Expires = DateTime.Now.AddDays(300);
+            c.IsSecure = true;
+            _wv.CookieManager.AddOrUpdateCookie(c);
+        }
+        await Task.Yield();
+        Restart();
+    }
     public string UserAgent => _wv.Settings.UserAgent;
 
     public static string Short(string uri)

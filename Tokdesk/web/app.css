@@ -11,7 +11,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: #fff; overflow: hidden; user-select: none;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, "Segoe UI Emoji", "Segoe UI Symbol", "Segoe UI Historic", "Microsoft YaHei UI", "Microsoft JhengHei UI", "Yu Gothic UI", "Malgun Gothic", "Nirmala UI", "Leelawadee UI", "Khmer UI", "Myanmar Text", "Javanese Text", "Ebrima", "Gadugi", "Cambria Math", sans-serif; -webkit-font-smoothing: antialiased; }
 button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
 svg { display: block; width: 100%; height: 100%; }
 
@@ -570,3 +570,45 @@ body.light #sheetList::-webkit-scrollbar-thumb { background: #ccc; }
 .set-row .sel { margin-left: auto; max-width: 55%; background: #3a3a3a; color: inherit; border: 0; border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 13px; }
 body.light .set-row .sel { background: #e3e3e4; }
 .chip .circle .ini { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+
+/* Imágenes de comentarios más grandes y vista previa a pantalla completa */
+.cmt img.cimg { max-width: 220px; max-height: 280px; width: auto; height: auto; cursor: zoom-in; border-radius: 8px; }
+.msg img.pic { cursor: zoom-in; }
+#viewer { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.92); display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+#viewer.show { display: flex; }
+#viewer img { max-width: 94vw; max-height: 92vh; object-fit: contain; border-radius: 6px; }
+#viewer .vclose { position: absolute; top: 12px; right: 14px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; font-size: 16px; }
+
+/* Página de sonido / hashtag */
+#page { top: 0; height: auto; border-radius: 0; z-index: 44; }
+#pgBody { flex: 1; overflow-y: auto; }
+.pg-head { display: flex; gap: 14px; padding: 8px 16px 16px; align-items: center; }
+#pgCover { width: 96px; height: 96px; border-radius: 8px; background: #2a2a2a center / cover no-repeat; flex: none; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 800; }
+.pg-info { min-width: 0; }
+#pgName { font-size: 18px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+#pgSub, #pgCount { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 4px; }
+#pgGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
+body.light .pg-head #pgSub, body.light .pg-head #pgCount { color: rgba(22,24,35,.55); }
+body.light #pgCover { background-color: #e3e3e4; }
+
+/* Las opciones se abren encima de los comentarios sin cerrarlos */
+#opts { z-index: 52; }
+
+/* Buscador de Configuración */
+#setSearch { margin: 4px 12px 2px; background: #2c2c2c; color: #fff; border: 0; border-radius: 8px; padding: 9px 12px; font: inherit; outline: none; }
+body.light #setSearch { background: #f1f1f2; color: #161823; }
+
+/* Los paneles de pantalla completa empiezan debajo de la franja de botones de ventana */
+#top .winbtns { position: fixed; z-index: 100; }
+#inbox, #chat, #activity, #settings, #profile, #page, #search { top: 30px !important; }
+
+/* Chat: reacciones, respuesta y nombre del creador */
+.msg { position: relative; }
+.msg .react { position: absolute; bottom: -8px; right: 6px; font-size: 13px; background: #2a2a2a; border-radius: 10px; padding: 0 5px; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.msg.mine .react { right: auto; left: 6px; }
+.msg .vthumb .ft { cursor: pointer; }
+.msg .vthumb .ft:hover { text-decoration: underline; }
+#chatReplyBar { display: none; align-items: center; gap: 8px; margin: 6px 12px 0; padding: 7px 10px; border-left: 3px solid var(--red); background: #222; border-radius: 6px; font-size: 12px; color: rgba(255,255,255,.75); }
+#chatReplyBar.show { display: flex; }
+#chatReplyBar span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.light #chatReplyBar { background: #f1f1f2; color: rgba(22,24,35,.7); }

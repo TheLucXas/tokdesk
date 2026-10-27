@@ -4,6 +4,18 @@ const host = window.chrome && window.chrome.webview;
 const send = (m) => host && host.postMessage(m);
 const log = (m) => send({ t: 'log', m: String(m) });
 window.addEventListener('error', (e) => log('JS: ' + e.message + ' @' + e.lineno));
+// Imágenes del CDN que fallan la primera vez (descargas simultáneas con la página oculta): se reintenta
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  const orig = img.dataset.orig || img.getAttribute('src') || '';
+  if (!/^https?:/.test(orig) || orig.includes('app.tokdesk')) return;
+  img.dataset.orig = orig;
+  const n = +(img.dataset.retry || 0);
+  if (n >= 2) return;
+  img.dataset.retry = n + 1;
+  setTimeout(() => { img.removeAttribute('src'); img.src = orig; }, 700 * (n + 1));
+}, true);
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -194,17 +206,18 @@ function bestSource(v) {
   return list.length ? list[0].PlayAddr.UrlList[list[0].PlayAddr.UrlList.length - 1] : null;
 }
 
-function pickSource(v) {
-  const list = (v.bitrateInfo || []).filter((b) => b.PlayAddr && b.PlayAddr.UrlList && b.PlayAddr.UrlList.length);
-  // Preferimos H.264 hasta 1080p: decodificación por GPU garantizada en Chromium
-  const h264 = list.filter((b) => !/265|bytevc1/i.test(b.CodecType || '') && (b.PlayAddr.Height || 0) <= 1920);
-  h264.sort((a, b) => (b.Bitrate || 0) - (a.Bitrate || 0));
-  // Ahorro de datos: la versión H.264 más liviana
-  if (opt.dataSaver) h264.reverse();
-  if (h264.length) return h264[0].PlayAddr.UrlList[h264[0].PlayAddr.UrlList.length - 1];
-  return v.playAddr || v.downloadAddr || (list[0] && list[0].PlayAddr.UrlList[0]) || null;
-}
+// H.265 solo se reproduce si Windows tiene la extensión HEVC; TikTok suele dar el 1080p solo en ese formato
+const HEVC_OK = !!document.createElement('video').canPlayType('video/mp4; codecs="hvc1.1.6.L120.90"');
 
+function pickSource(v) {
+  const list = (v.bitrateInfo || []).filter((b) => b.PlayAddr && b.PlayAddr.UrlList && b.PlayAddr.UrlList.length)
+    .filter((b) => HEVC_OK || !/265|bytevc1|hvc/i.test(b.CodecType || ''));
+  // Mayor resolución primero y, a igual resolución, mayor bitrate; con ahorro de datos, al revés
+  list.sort((a, b) => ((b.PlayAddr.Height || 0) - (a.PlayAddr.Height || 0)) || ((b.Bitrate || 0) - (a.Bitrate || 0)));
+  if (opt.dataSaver) list.reverse();
+  if (list.length) return list[0].PlayAddr.UrlList[list[0].PlayAddr.UrlList.length - 1];
+  return v.playAddr || v.downloadAddr || null;
+}
 function normalize(it) {
   if (!it || it.liveRoomInfo) return null;
   const v = it.video || {};
@@ -249,6 +262,7 @@ function addItems(f, list) {
 function feedChanged(f) {
   if (f === state.feed) { updateEmpty(); render(); }
   if (state.profileKey === f.key) renderGrid($('#pfGrid'), $('#pfMore'), f);
+  if (state.pageKey === f.key) renderGrid($('#pgGrid'), $('#pgMore'), f);
   if (state.searchKey === f.key) renderGrid($('#searchGrid'), $('#searchMore'), f);
 }
 
@@ -261,7 +275,8 @@ function updateEmpty() {
     $('#emptyText').innerHTML = `${t('Inicia sesión para ver {0}.', esc(f.title))}<br><br><button id="emptyLogin">${t('Iniciar sesión')}</button>`;
     $('#emptyLogin').onclick = () => send({ t: 'login' });
   } else if (!f.hasMore || f.error) {
-    $('#emptyText').textContent = f.error ? t('No se pudieron cargar los videos.') : t('No hay videos para mostrar.');
+    $('#emptyText').innerHTML = f.error ? esc(t('No se pudieron cargar los videos.')) + `<br><br><button id="feedRetry">${esc(t('Reintentar'))}</button>` : esc(t('No hay videos para mostrar.'));
+    if (f.error) $('#feedRetry').onclick = () => { f.error = false; f.hasMore = true; f.cursor = 0; updateEmpty(); f.load(f); };
   } else {
     $('#emptyText').textContent = t('Cargando videos…');
   }
@@ -309,7 +324,10 @@ function openSubFeed(f, idx) {
 
 function back() {
   if (!state.stack.length) return;
+  // Si el feed se abrió desde un chat, un perfil o una página, se vuelve ahí (como en la app)
+  const ret = state.returnTo && state.feed && state.returnTo.key === state.feed.key ? state.returnTo : null;
   setFeed(state.stack.pop());
+  if (ret) { state.returnTo = null; ret.fn(); }
 }
 
 // ---------- Slides ----------
@@ -606,6 +624,16 @@ function setVolume(v) {
   if (v > 0 && state.muted) setMuted(false); else setMuted(state.muted);
 }
 
+// ---------- Vista previa de imágenes (comentarios, chats) ----------
+function openViewer(src) {
+  const v = $('#viewer');
+  $('img', v).src = src;
+  v.classList.add('show');
+}
+function closeViewer() { $('#viewer').classList.remove('show'); }
+$('#viewer').addEventListener('click', closeViewer);
+$('#chatList').addEventListener('click', (e) => { const p = e.target.closest('img.pic'); if (p) openViewer(p.src); });
+
 // ---------- Subtítulos ----------
 let textRid = 0;
 const textWaiting = new Map();
@@ -651,9 +679,10 @@ function setCaptions(on) {
 }
 
 // ---------- Hashtags, sonidos y perfiles por nombre ----------
-function openTag(name) { closePanels(); openSubFeed(feedFor('tag:' + name), 0); }
+function openTag(name) { openTagPage(name); }
 
 function openMusic(it) {
+  if (it.musicId) return openSoundPage(it);
   if (!it.musicId) return;
   closePanels();
   const f = feedFor('music:' + it.musicId);
@@ -693,8 +722,8 @@ function openHelp() {
 }
 
 // ---------- Paneles ----------
-function openPanel(id) {
-  $$('.panel.open').forEach((p) => { if (p.id !== id) p.classList.remove('open'); });
+function openPanel(id, keep) {
+  if (!keep) $$('.panel.open').forEach((p) => { if (p.id !== id) p.classList.remove('open'); });
   $('#' + id).classList.add('open');
   $('#scrim').classList.toggle('show', id !== 'search');
   hideCtx();
@@ -706,6 +735,7 @@ function closePanels() {
   state.sheetFor = null;
   state.profileKey = null;
   state.searchKey = null;
+  state.pageKey = null;
   document.body.classList.remove('cmt-open');
   setReply(null);
   hideCtx();
@@ -743,6 +773,7 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { e.target.blur(); closePanels(); }
     return;
   }
+  if (e.key === 'Escape' && $('#viewer').classList.contains('show')) { closeViewer(); e.preventDefault(); return; }
   if (e.key === 'Escape') {
     if (anyPanelOpen() || $('#ctx').classList.contains('show')) closePanels();
     else if (document.body.classList.contains('clean')) toggleClean();
@@ -810,7 +841,7 @@ window.addEventListener('pointerup', (e) => {
 function hideCtx() { $('#ctx').classList.remove('show'); }
 
 // groups: [[{ ic, label, fn, toggle?, on?, danger?, seg? }]]
-function openOptions(groups) {
+function openOptions(groups, keep) {
   const body = $('#optsBody');
   body.innerHTML = '';
   for (const g of groups) {
@@ -841,13 +872,13 @@ function openOptions(groups) {
         }
         b.appendChild(seg);
       } else {
-        b.onclick = () => { closePanels(); x.fn(); };
+        b.onclick = () => { if (keep) $('#opts').classList.remove('open'); else closePanels(); x.fn(); };
       }
       box.appendChild(b);
     }
     body.appendChild(box);
   }
-  openPanel('opts');
+  openPanel('opts', keep);
 }
 
 function openVideoOptions(it) {
@@ -987,14 +1018,19 @@ function renderFriends() {
 
 // Envío de mensajes: uno a la vez, porque los hace la misma página oficial oculta
 const dmQueue = [];
-function sendDm(id, text, cb) {
-  dmQueue.push({ id, text, cb });
-  if (dmQueue.length === 1) send({ t: 'dm', id, text });
+function sendDm(id, text, cb, replyTo) {
+  dmQueue.push({ id, text, cb, replyTo });
+  if (dmQueue.length === 1) sendNextDm();
+}
+function sendNextDm() {
+  const j = dmQueue[0];
+  if (j.replyTo != null) send({ t: 'dmreply', id: j.id, i: j.replyTo, text: j.text });
+  else send({ t: 'dm', id: j.id, text: j.text });
 }
 function onDm(m) {
   const job = dmQueue.shift();
   if (job) job.cb(m.ok);
-  if (dmQueue.length) send({ t: 'dm', id: dmQueue[0].id, text: dmQueue[0].text });
+  if (dmQueue.length) sendNextDm();
 }
 
 // ---------- Bandeja y chats ----------
@@ -1011,6 +1047,16 @@ function onInbox(m) {
     inboxMoreBusy = false;
     const sp = $('#ibMore'); if (sp) sp.remove();
     if (!m.data) { inboxNoMore = true; return; }
+  }
+  if (!m.data && !m.more) {
+    // La página oficial no respondió: se ofrece reintentar en vez de mostrar una bandeja vacía
+    state.chats = [];
+    renderFriends();
+    if ($('#inbox').classList.contains('open')) {
+      $('#ibBody').innerHTML = `<div class="sheet-msg">${esc(t('No se pudieron cargar los mensajes.'))}<br><br><button class="pill" id="ibRetry">${esc(t('Reintentar'))}</button></div>`;
+      $('#ibRetry').onclick = () => { inboxData = null; renderInbox(); loadInbox(); };
+    }
+    return;
   }
   try { inboxData = m.data ? JSON.parse(m.data) : { convs: [], activity: [] }; } catch { inboxData = { convs: [], activity: [] }; }
   state.chats = inboxData.convs || [];
@@ -1147,20 +1193,31 @@ function onConv(m) {
     if (x.ref) inner += `<div class="ref">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
-    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
+    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
     else if (x.video) inner += `<div class="vthumb" data-url="${esc(x.video)}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">Video</div></div>`;
     else if (x.image) inner += `<img class="pic" alt="" src="${esc(x.image)}">`;
     if (!inner && x.other) inner = esc(x.other);
     if (!inner) inner = `<i>${t('Mensaje no compatible')}</i>`;
     const bubble = (x.video || x.shared >= 0 || x.image) && !x.text ? inner : `<div class="bub">${inner}</div>`;
-    return `<div class="msg ${x.mine ? 'mine' : ''}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar)}">`}${bubble}</div>`;
+    return `<div class="msg ${x.mine ? 'mine' : ''}" data-idx="${x.idx}" data-text="${esc((x.text || x.ref || x.sharedBy || '').slice(0, 120))}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar || d.avatar || chatConv.avatar || '')}">`}${bubble}</div>`;
   }).join('');
+  // Portadas de videos compartidos: se piden por id (la página oficial no las trae en el mensaje)
+  $$('.vthumb[data-id]', list).forEach((v) => {
+    if ($('img', v)) return;
+    fetchItem(v.dataset.id).then((it) => {
+      const c = it && it.video && (it.video.cover || it.video.originCover);
+      const ph = v.firstElementChild;
+      if (c && ph && ph.tagName !== 'IMG') ph.outerHTML = '<img alt="" src="' + esc(c) + '">';
+    });
+  });
   $$('.vthumb', list).forEach((v) => v.onclick = () => {
-    if (v.dataset.url) openVideoLink(v.dataset.url);
+    if (v.dataset.id) openChatVideos(v.dataset.id);
+    else if (v.dataset.url) openVideoLink(v.dataset.url);
     else if (!state.openingShared) { state.openingShared = true; toast(t('Abriendo video…')); send({ t: 'openshared', id: chatConv.id, n: +v.dataset.n }); }
   });
   if (!noOlder) list.insertAdjacentHTML('afterbegin', `<div class="sheet-msg" id="chatOlder">${t('Sube para ver mensajes anteriores')}</div>`);
-  if (atBottom) list.scrollTop = list.scrollHeight;
+  if (state.chatRestoreScroll != null) { list.scrollTop = state.chatRestoreScroll; state.chatRestoreScroll = null; }
+  else if (atBottom) list.scrollTop = list.scrollHeight;
   else if (m.older) list.scrollTop = list.scrollHeight - prevHeight;
 }
 
@@ -1183,13 +1240,52 @@ $('#chatForm').addEventListener('submit', (e) => {
   list.insertAdjacentHTML('beforeend', `<div class="msg mine" style="opacity:.6"><div class="bub">${esc(text)}</div></div>`);
   list.scrollTop = list.scrollHeight;
   const conv = chatConv;
+  const replyTo = state.chatReply ? state.chatReply.idx : null;
+  setChatReply(null);
   sendDm(conv.id, text, (ok) => {
     if (!ok) toast(t('No se pudo enviar el mensaje'));
     chatCount = -2;
     if (chatConv === conv) send({ t: 'conv', id: conv.id });
-  });
+  }, replyTo);
 });
 
+// Datos completos de un video por id (con caché; los usan los chats)
+const itemCache = new Map();
+function fetchItem(id) {
+  if (!itemCache.has(id)) {
+    itemCache.set(id, api('GET', '/api/item/detail/', { itemId: id })
+      .then((r) => (r.data && r.data.itemInfo && r.data.itemInfo.itemStruct) || null));
+  }
+  return itemCache.get(id);
+}
+
+// Videos compartidos en un chat: se abren todos como feed deslizable y al volver se regresa al chat
+async function openChatVideos(startId) {
+  const conv = chatConv; if (!conv) return;
+  const ids = $$('#chatList .vthumb[data-id]').map((v) => v.dataset.id).filter(Boolean);
+  if (!ids.length) return;
+  toast(t('Abriendo video…'));
+  const details = new Map();
+  const queue = [startId, ...ids.filter((x) => x !== startId)];
+  const worker = async () => {
+    while (queue.length) {
+      const id = queue.shift();
+      if (details.has(id)) continue;
+      details.set(id, null);
+      details.set(id, await fetchItem(id));
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  const key = 'chat:' + conv.id;
+  feeds.delete(key);
+  const f = makeFeed(key, { title: conv.name, hasMore: false, load() { } });
+  addItems(f, ids.map((id) => details.get(id)).filter(Boolean));
+  const idx = Math.max(0, f.items.findIndex((x) => x.id === startId));
+  if (!f.items.length) { toast(t('No se pudo abrir el video')); return; }
+  const scroll = $('#chatList').scrollTop;
+  state.returnTo = { key, fn: () => { state.chatRestoreScroll = scroll; openInbox(); openChat(conv); } };
+  openSubFeed(f, idx);
+}
 // Abre en la app un video a partir de su enlace (p. ej. compartido en un chat)
 async function openVideoLink(url) {
   const m = /\/video\/(\d+)/.exec(url || '');
@@ -1227,6 +1323,7 @@ async function openProfile(it) {
   $$('#pfTabs button').forEach((b) => b.classList.toggle('on', b.dataset.list === 'user'));
   $('#pfSub').classList.remove('show');
   showCollections(false);
+  setProfileTabs(isMine(it), false);
   $('#pfTitle').textContent = it.nick || it.author;
   $('#pfName').textContent = it.nick || it.author;
   $('#pfAvatar').src = it.avatar || '';
@@ -1252,6 +1349,7 @@ async function openProfile(it) {
   $('#pfFollowing').textContent = fmt(st.followingCount);
   $('#pfFollowers').textContent = fmt(st.followerCount);
   $('#pfLikes').textContent = fmt(st.heartCount ?? st.heart);
+  setProfileTabs(isMine(it), !!u.openFavorite);
   if (u.relation != null) { setFollowed(it.authorId, u.relation === 1 || u.relation === 2); updateProfileFollow(it); }
 }
 
@@ -1358,11 +1456,17 @@ function renderGrid(grid, more, f) {
     t.className = 'tile';
     t.innerHTML = `<img alt="" loading="lazy" src="${esc(it.cover)}">${it.pinned ? '<span class="pin">Fijado</span>' : ''}
       <span class="views">${ICON.views}${fmt(it.plays)}</span>`;
-    t.onclick = () => openSubFeed(f, i);
+    t.onclick = () => {
+      if (grid.id === 'pgGrid') { const info = state.pageInfo; state.returnTo = { key: f.key, fn: () => showPage(f, info) }; }
+      else if (grid.id === 'pfGrid') { const p = state.profileFor, k = state.profileKey; state.returnTo = { key: f.key, fn: () => reopenProfile(p, k) }; }
+      openSubFeed(f, i);
+    };
     grid.appendChild(t);
   }
   more.innerHTML = f.loading || (f.hasMore && !f.items.length) ? '<div class="spinner"></div>'
-    : f.error ? t('No se pudieron cargar los videos (puede ser una lista privada).') : !f.items.length ? t('Sin videos.') : '';
+    : f.error ? t('No se pudieron cargar los videos (puede ser una lista privada).') + `<br><br><button class="pill" data-retry>${esc(t('Reintentar'))}</button>` : !f.items.length ? t('Sin videos.') : '';
+  const rb = more.querySelector('[data-retry]');
+  if (rb) rb.onclick = () => { f.error = false; f.hasMore = true; f.cursor = 0; renderGrid(grid, more, f); f.load(f); };
 }
 
 // ---------- Búsqueda ----------
@@ -1443,6 +1547,8 @@ async function fetchComments(id, more = false) {
   c.loading = false;
   const d = r.data;
   if (!d || !Array.isArray(d.comments)) {
+    // Un fallo pasajero es común: se reintenta una vez antes de mostrar el error
+    if (!c.retried && (!d || d.status_code !== 0)) { c.retried = true; setTimeout(() => fetchComments(id, more), 1200); return; }
     c.hasMore = false; c.error = !d || d.status_code !== 0;
   } else {
     c.error = false;
@@ -1513,8 +1619,7 @@ function openCommentOptions(id, cm, parentCid) {
   ], [
     mine ? { ic: 'broken', label: t('Eliminar'), danger: true, fn: () => { back(); deleteComment(id, cm, parentCid); } }
       : { ic: 'flag', label: t('Denunciar'), danger: true, fn: () => { const it = currentItem(); if (it) report(it); } },
-  ]]);
-  $('#scrim').classList.add('show');
+  ]], true);
 }
 
 async function deleteComment(id, cm, parentCid) {
@@ -1556,7 +1661,8 @@ function renderComments() {
     return;
   }
   if (!c.list.length) {
-    list.innerHTML = `<div class="sheet-msg">${c.error ? t('No se pudieron cargar los comentarios.') : t('Todavía no hay comentarios.')}</div>`;
+    list.innerHTML = `<div class="sheet-msg">${c.error ? t('No se pudieron cargar los comentarios.') + `<br><br><button class="pill" id="cmtRetry">${esc(t('Reintentar'))}</button>` : t('Todavía no hay comentarios.')}</div>`;
+    if (c.error) $('#cmtRetry').onclick = () => { state.comments.delete(state.sheetFor); fetchComments(state.sheetFor); renderComments(); };
     return;
   }
   const keepScroll = list.scrollTop;
@@ -1587,7 +1693,7 @@ $('#sheetList').addEventListener('click', async (e) => {
   const dl = e.target.closest('.dislike');
   if (dl) { const cm = findComment(c, dl.dataset.cid); if (cm) cmtDislike(id, cm); return; }
   const im = e.target.closest('.cimg');
-  if (im) { send({ t: 'open', url: im.src }); return; }
+  if (im) { openViewer(im.src); return; }
   const rb = e.target.closest('.reply-btn');
   if (rb) { setReply({ cid: rb.dataset.cid, name: rb.dataset.name }); $('#cmtInput').focus(); return; }
 
@@ -1772,6 +1878,7 @@ host && host.addEventListener('message', (e) => {
     case 'text': { const r = textWaiting.get(m.rid); if (r) { textWaiting.delete(m.rid); r(m.body); } break; }
     case 'conv': onConv(m); break;
     case 'dm': onDm(m); break;
+    case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
     case 'winstate': $('#btnMax').innerHTML = m.max ? ICON.restore : ICON.max; $('#btnMax').title = m.max ? 'Restaurar (F)' : 'Maximizar (F)'; break;
@@ -1798,3 +1905,121 @@ setMuted(state.muted);
 if (state.speed !== 1) { $('#speedBadge').textContent = state.speed + 'x'; $('#speedBadge').classList.add('show'); }
 setFeed(feedFor('foryou'));
 send({ t: 'ready' });
+
+// ---------- Páginas de sonido y hashtag (como en la app) ----------
+async function openSoundPage(it) {
+  const f = feedFor('music:' + it.musicId);
+  f.title = '♫ ' + (it.musicTitle || t('Sonido'));
+  showPage(f, { title: t('Sonido'), name: it.musicTitle || t('Sonido'), sub: it.music, cover: it.musicCover });
+  const r = await api('GET', '/api/music/detail/', { musicId: it.musicId });
+  const mi = r.data && r.data.musicInfo;
+  if (!mi || state.pageKey !== f.key) return;
+  const m = mi.music || {}, st = mi.stats || {};
+  fillPage({ name: m.title, sub: m.authorName, cover: m.coverLarge || m.coverMedium || m.coverThumb, count: st.videoCount });
+}
+
+async function openTagPage(name) {
+  const f = feedFor('tag:' + name);
+  showPage(f, { title: t('Hashtag'), name: '#' + name, letter: '#' });
+  const r = await api('GET', '/api/challenge/detail/', { challengeName: name });
+  const ci = r.data && r.data.challengeInfo;
+  if (!ci || state.pageKey !== f.key) return;
+  const st = ci.statsV2 || ci.stats || {};
+  fillPage({ sub: (ci.challenge && ci.challenge.desc) || '', count: st.videoCount, views: st.viewCount });
+}
+
+function showPage(f, info) {
+  state.pageKey = f.key;
+  state.pageInfo = info;
+  $('#pgTitle').textContent = info.title;
+  $('#pgName').textContent = ''; $('#pgSub').textContent = ''; $('#pgCount').textContent = '';
+  fillPage(info);
+  renderGrid($('#pgGrid'), $('#pgMore'), f);
+  openPanel('page');
+  $('#pgBody').scrollTop = 0;
+  if (!f.items.length) f.load(f);
+}
+
+function fillPage(i) {
+  if (i.name != null) $('#pgName').textContent = i.name;
+  if (i.sub != null) $('#pgSub').textContent = i.sub;
+  const c = $('#pgCover');
+  if (i.cover) { c.style.backgroundImage = 'url("' + i.cover + '")'; c.textContent = ''; }
+  else if (i.letter) { c.style.backgroundImage = ''; c.textContent = i.letter; }
+  if (i.count != null) $('#pgCount').textContent = t('{0} videos', fmt(i.count)) + (i.views ? ' · ' + t('{0} visualizaciones', fmt(i.views)) : '');
+  Object.assign(state.pageInfo || {}, i);
+}
+
+$('#pgBack').innerHTML = ICON.back;
+$('#pgBody').addEventListener('scroll', (e) => {
+  const l = e.currentTarget;
+  const f = state.pageKey && feeds.get(state.pageKey);
+  if (f && l.scrollTop + l.clientHeight > l.scrollHeight - 400) f.load(f);
+});
+
+// ---------- Privacidad de las pestañas del perfil ----------
+const isMine = (it) => !!(state.me && it && (state.me.secUid === it.secUid || state.me.uniqueId === it.author));
+function setProfileTabs(mine, openFavorite) {
+  $('#pfTabs [data-list="favorites"]').style.display = mine || openFavorite ? '' : 'none';
+  $('#pfTabs [data-list="liked"]').style.display = mine ? '' : 'none';
+}
+function reopenProfile(p, key) {
+  if (!p) return;
+  openProfile(p);
+  const list = key && key.split(':')[0];
+  if (list && list !== 'user' && list !== 'coll') showProfileList(list);
+}
+// ---------- Interacciones con mensajes del chat (como en la app) ----------
+function setChatReply(r) {
+  state.chatReply = r;
+  const bar = $('#chatReplyBar');
+  bar.classList.toggle('show', !!r);
+  $('span', bar).textContent = r ? t('Respondiendo a: {0}', r.text || t('Mensaje')) : '';
+  if (r) $('#chatInput').focus();
+}
+$('#chatReplyX').addEventListener('click', () => setChatReply(null));
+
+function reactToMessage(row) {
+  if (!chatConv || !row) return;
+  const idx = +row.dataset.idx;
+  if (!row.querySelector('.react')) row.insertAdjacentHTML('beforeend', '<span class="react">❤️</span>');
+  send({ t: 'dmreact', id: chatConv.id, i: idx, emoji: '❤️' });
+}
+
+$('#chatList').addEventListener('dblclick', (e) => {
+  const row = e.target.closest('.msg');
+  if (!row || e.target.closest('.ft')) return;
+  e.preventDefault();
+  reactToMessage(row);
+});
+
+$('#chatList').addEventListener('contextmenu', (e) => {
+  const row = e.target.closest('.msg');
+  if (!row) return;
+  e.preventDefault();
+  const card = row.querySelector('.vthumb');
+  const text = row.dataset.text || '';
+  openOptions([[
+    { ic: 'heartline', label: t('Reaccionar con ❤️'), fn: () => reactToMessage(row) },
+    { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text }) },
+    text && { ic: 'link', label: t('Copiar'), fn: () => navigator.clipboard.writeText(text).then(() => toast(t('Copiado'))) },
+    card && card.dataset.id && { ic: 'play', label: t('Abrir video'), fn: () => openChatVideos(card.dataset.id) },
+    card && card.dataset.id && { ic: 'user', label: t('Ver perfil del creador'), fn: () => openCreatorOf(card.dataset.id) },
+  ].filter(Boolean)], true);
+});
+
+// Nombre del creador debajo de un video compartido: abre su perfil
+$('#chatList').addEventListener('click', (e) => {
+  const ft = e.target.closest('.vthumb .ft');
+  if (!ft) return;
+  e.stopPropagation();
+  const card = ft.closest('.vthumb');
+  if (card && card.dataset.id) openCreatorOf(card.dataset.id);
+}, true);
+
+async function openCreatorOf(itemId) {
+  const it = await fetchItem(itemId);
+  const a = it && it.author;
+  if (!a) { toast(t('No se pudo abrir el perfil')); return; }
+  openProfile({ secUid: a.secUid, author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb, authorId: a.id, signature: a.signature });
+}

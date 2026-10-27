@@ -115,7 +115,7 @@ function renderSettings() {
         state.me && row({ type: 'link', ic: 'broken', label: t('Cerrar sesión'), danger: true, fn: () => { if (confirm(t('¿Cerrar sesión de TikTok en esta app?'))) send({ t: 'logout' }); } }),
       ]],
       [t('Apariencia'), [
-        row({ type: 'select', label: t('Idioma'), value: opt.lang, options: [['auto', t('Automático (idioma de TikTok)')], ...LANGS], fn: (v) => { opt.lang = v; saveOpt(); applyLang(); } }),
+        row({ type: 'select', label: t('Idioma'), value: opt.lang, options: [['auto', t('Automático (idioma de TikTok)')], ...LANGS], fn: (v) => { opt.lang = v; saveOpt(); applyLang(); if (v !== 'auto') send({ t: 'tiktoklang', code: TIKTOK_LANG[v] || v }); } }),
         row({ type: 'seg', label: t('Tema'), value: opt.theme, options: [['dark', t('Oscuro')], ['light', t('Claro')], ['system', t('Sistema')]], fn: (v) => { opt.theme = v; } }),
         row({ type: 'colors', label: t('Color de acento') }),
         row({ type: 'link', ic: 'pencil', label: t('Temas personalizados (CSS)'), fn: () => { settingsTab = 'themes'; renderSettings(); } }),
@@ -134,6 +134,8 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Subtítulos'), value: state.cc, fn: (v) => setCaptions(v) }),
         row({ type: 'toggle', label: t('Reproducción en segundo plano'), hint: t('Sigue reproduciendo cuando usas otra ventana'), value: opt.bgPlay, fn: (v) => { opt.bgPlay = v; applyWinState(); } }),
         row({ type: 'toggle', label: t('Audio de fondo'), hint: t('Sigue sonando con la ventana minimizada o en la bandeja'), value: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } }),
+        row({ type: 'link', ic: 'speed', label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar la extensión HEVC'),
+          sub: HEVC_OK ? '' : t('Gratis en Microsoft Store. Reinicia la app después.'), fn: () => send({ t: 'open', url: 'ms-windows-store://pdp/?ProductId=9N4WGH0Z6VHQ' }) }),
         row({ type: 'toggle', label: t('Ahorro de datos'), hint: t('Usa la versión más liviana de cada video'), value: opt.dataSaver, fn: (v) => { opt.dataSaver = v; } }),
         row({ type: 'seg', label: t('Videos precargados'), value: opt.preload, options: [[0, '0'], [1, '1'], [2, '2'], [3, '3']], fn: (v) => { opt.preload = v; } }),
         row({ type: 'toggle', label: t('Doble clic para dar me gusta'), value: opt.dblLike, fn: (v) => { opt.dblLike = v; } }),
@@ -145,6 +147,8 @@ function renderSettings() {
         row({ type: 'link', ic: 'globe', label: t('Abrir carpeta de descargas'), fn: () => send({ t: 'showfile', file: '' }) }),
       ]],
       [t('Ventana'), [
+        row({ type: 'toggle', label: t('Acceso directo en el menú Inicio'), value: !!N.StartMenuShortcut, fn: (v) => send({ t: 'setsetting', k: 'StartMenuShortcut', v }) }),
+        row({ type: 'toggle', label: t('Acceso directo en el escritorio'), value: !!N.DesktopShortcut, fn: (v) => send({ t: 'setsetting', k: 'DesktopShortcut', v }) }),
         row({ type: 'toggle', label: t('Iniciar con Windows'), value: !!N.StartWithWindows, fn: (v) => send({ t: 'setsetting', k: 'StartWithWindows', v }) }),
         row({ type: 'toggle', label: t('Iniciar minimizado'), value: !!N.StartMinimized, fn: (v) => send({ t: 'setsetting', k: 'StartMinimized', v }) }),
         row({ type: 'toggle', label: t('Minimizar a la bandeja del sistema'), value: !!N.MinimizeToTray, fn: (v) => send({ t: 'setsetting', k: 'MinimizeToTray', v }) }),
@@ -183,13 +187,23 @@ function renderSettings() {
   body.innerHTML = '';
   if (settingsTab === 'keys') renderKeys(body);
   else if (settingsTab === 'themes') renderThemes(body);
-  else for (const [title, rows] of sections.main) {
-    if (title) body.insertAdjacentHTML('beforeend', `<div class="set-sec">${esc(title)}</div>`);
-    const g = document.createElement('div');
-    g.className = 'og';
-    for (const r of rows.filter(Boolean)) g.appendChild(buildRow(r));
-    body.appendChild(g);
+  else {
+    const q = ($('#setSearch').value || '').trim().toLowerCase();
+    const match = (r) => [r.label, r.hint, r.sub].some((s) => s && String(s).toLowerCase().includes(q));
+    let shown = 0;
+    for (const [title, rows] of sections.main) {
+      const list = rows.filter(Boolean).filter((r) => !q || (title && title.toLowerCase().includes(q)) || match(r));
+      if (!list.length) continue;
+      shown += list.length;
+      if (title) body.insertAdjacentHTML('beforeend', `<div class="set-sec">${esc(title)}</div>`);
+      const g = document.createElement('div');
+      g.className = 'og';
+      for (const r of list) g.appendChild(buildRow(r));
+      body.appendChild(g);
+    }
+    if (!shown) body.insertAdjacentHTML('beforeend', `<div class="sheet-msg">${esc(t('Sin resultados.'))}</div>`);
   }
+  $('#setSearch').style.display = settingsTab === 'main' ? '' : 'none';
   body.scrollTop = settingsTab === 'main' ? keep : 0;
 }
 
@@ -433,3 +447,13 @@ $('#btnSettings').addEventListener('click', () => openSettings());
 $('#setBack').innerHTML = ICON.back;
 applyLook();
 applyLang();
+
+// Códigos de idioma que usa la web de TikTok para cada idioma de la app
+const TIKTOK_LANG = {
+  en: 'en', es: 'es', pt: 'pt-BR', fr: 'fr', de: 'de-DE', it: 'it-IT', nl: 'nl-NL', pl: 'pl-PL', ro: 'ro-RO', cs: 'cs-CZ',
+  hu: 'hu-HU', el: 'el-GR', sv: 'sv-SE', da: 'da', nb: 'nb-NO', fi: 'fi-FI', ru: 'ru-RU', uk: 'uk-UA', tr: 'tr-TR', ar: 'ar',
+  he: 'he-IL', ur: 'ur', hi: 'hi-IN', bn: 'bn-IN', id: 'id-ID', ms: 'ms-MY', jv: 'jv-ID', ceb: 'ceb-PH', fil: 'fil-PH',
+  vi: 'vi-VN', th: 'th-TH', km: 'km-KH', my: 'my-MM', ja: 'ja-JP', ko: 'ko-KR', 'zh-Hans': 'zh-Hans', 'zh-Hant': 'zh-Hant-TW',
+};
+
+$('#setSearch').addEventListener('input', () => renderSettings());

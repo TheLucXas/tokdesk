@@ -146,6 +146,7 @@
       <img id="chatAvatar" alt=""><div class="who"><span id="chatName"></span><small id="chatUid"></small></div></div>
     <div id="chatList"></div>
     <div id="chatQuick"></div>
+    <div id="chatReplyBar"><span></span><button id="chatReplyX" title="Cancelar">✕</button></div>
     <form id="chatForm">
       <input id="chatInput" maxlength="1000" placeholder="Enviar un mensaje…" data-i18n-ph autocomplete="off">
       <button id="chatSend" type="submit" title="Enviar">↑</button>
@@ -158,6 +159,7 @@
   <!-- Configuración -->
   <section id="settings" class="panel dark" aria-hidden="true">
     <div class="ib-head"><button class="backbtn" id="setBack"></button><span id="setTitle" data-i18n>Configuración</span></div>
+    <input id="setSearch" placeholder="Buscar en Configuración" data-i18n-ph autocomplete="off">
     <div id="setBody"></div>
   </section>
 
@@ -166,6 +168,18 @@
     <div class="sheet-head"><span data-i18n>Atajos de teclado</span><button class="xbtn" data-close="help">✕</button></div>
     <div id="helpList"></div>
   </section>
+
+  <!-- Página de sonido o hashtag -->
+  <section id="page" class="panel dark" aria-hidden="true">
+    <div class="ib-head"><button class="backbtn" data-close="page" id="pgBack"></button><span id="pgTitle"></span></div>
+    <div id="pgBody">
+      <div class="pg-head"><div id="pgCover"></div><div class="pg-info"><div id="pgName"></div><div id="pgSub"></div><div id="pgCount"></div></div></div>
+      <div id="pgGrid"></div><div id="pgMore" class="sheet-msg"></div>
+    </div>
+  </section>
+
+  <!-- Vista previa de imágenes -->
+  <div id="viewer"><img alt=""><button class="vclose" title="Cerrar (Esc)">✕</button></div>
 
   <!-- Menú de clic derecho -->
   <div id="ctx" role="menu"></div>

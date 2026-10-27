@@ -20,6 +20,10 @@ sealed class AppSettings
     public bool GlobalMediaKeys { get; set; }
     public bool AskDownloadFolder { get; set; }
     public string DownloadFolder { get; set; }
+    // Versión 1.0.1: la caché vieja tenía imágenes vacías guardadas por error; se borra una sola vez
+    public bool ImageCacheFixed { get; set; }
+    public bool StartMenuShortcut { get; set; }
+    public bool DesktopShortcut { get; set; }
 
     public double? Left { get; set; }
     public double? Top { get; set; }
@@ -47,6 +51,29 @@ sealed class AppSettings
         catch (Exception ex) { Log.Write("No se pudieron guardar los ajustes: " + ex.Message); }
     }
 
+    /// <summary>Crea o borra los accesos directos del menú Inicio y del escritorio.</summary>
+    public void ApplyShortcuts()
+    {
+        Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Tokdesk.lnk"), StartMenuShortcut);
+        Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Tokdesk.lnk"), DesktopShortcut);
+    }
+
+    static void Shortcut(string lnk, bool create)
+    {
+        try
+        {
+            if (!create) { if (System.IO.File.Exists(lnk)) System.IO.File.Delete(lnk); return; }
+            // WScript.Shell viene con Windows y es la forma más simple de crear un .lnk
+            var shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!);
+            dynamic sc = ((dynamic)shell).CreateShortcut(lnk);
+            sc.TargetPath = AppInfo.StartPath;
+            sc.WorkingDirectory = Path.GetDirectoryName(AppInfo.StartPath);
+            sc.IconLocation = AppInfo.StartPath + ",0";
+            sc.Description = "Tokdesk";
+            sc.Save();
+        }
+        catch (Exception ex) { Log.Write("Acceso directo falló: " + ex.Message); }
+    }
     const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
     /// <summary>Registra (o quita) la app del inicio de Windows del usuario actual.</summary>

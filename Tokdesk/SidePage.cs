@@ -80,7 +80,7 @@ sealed class SidePage
             _wv.AddWebResourceRequestedFilter("*", ctx);
         _wv.WebResourceRequested += (_, e) =>
         {
-            if (!_visible) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "");
+            if (!_visible) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
         };
         _wv.NavigationCompleted += (_, e) => _nav?.TrySetResult(e.IsSuccess);
     }
@@ -149,6 +149,20 @@ sealed class SidePage
     // Chats y actividad tal como los muestra la página oficial de mensajes
     const string InboxJs = """
         (() => {
+          // Busca en las props internas de React (la página carga las fotos solo cuando se ven)
+          const reactUrl = (el, re) => {
+            const k = el && Object.keys(el).find(k => k.startsWith('__reactFiber'));
+            for (let f = k && el[k], i = 0; f && i < 14; f = f.return, i++) {
+              const p = f.memoizedProps;
+              if (!p || typeof p !== 'object') continue;
+              for (const key of Object.keys(p)) {
+                const v = p[key];
+                if (re.test(key) && typeof v === 'string' && /^https?:/.test(v)) return v;
+                if (re.test(key) && v && typeof v === 'object' && Array.isArray(v.url_list || v.urlList)) return (v.url_list || v.urlList)[0];
+              }
+            }
+            return '';
+          };
           const convEls = [...document.querySelectorAll('[data-e2e="dm-new-conversation-item"]')];
           if (!convEls.length) return null;
           const convs = convEls.slice(0, 400).map(el => {
@@ -163,7 +177,8 @@ sealed class SidePage
             const time = timeEl ? timeEl.textContent.trim() : '';
             const last = lastEl ? lastEl.textContent.trim() : '';
             const unread = badge ? parseInt(badge.textContent, 10) : 0;
-            return { id: el.dataset.convId, name, avatar: img ? img.src : '', last, time,
+            const avatar = (img && img.getAttribute('src')) || reactUrl(img || el, /avatar/i);
+            return { id: el.dataset.convId, name, avatar, last, time,
               unread, active: el.getAttribute('aria-selected') === 'true' };
           });
           const activity = [...document.querySelectorAll('[data-e2e="inbox-list-item"]')].slice(0, 40).map(el => {
@@ -180,6 +195,20 @@ sealed class SidePage
     // Mensajes de la conversación abierta; los propios se reconocen porque su avatar no es el del otro
     const string ConvJs = """
         (() => {
+          // Busca en las props internas de React (la página carga las fotos solo cuando se ven)
+          const reactUrl = (el, re) => {
+            const k = el && Object.keys(el).find(k => k.startsWith('__reactFiber'));
+            for (let f = k && el[k], i = 0; f && i < 14; f = f.return, i++) {
+              const p = f.memoizedProps;
+              if (!p || typeof p !== 'object') continue;
+              for (const key of Object.keys(p)) {
+                const v = p[key];
+                if (re.test(key) && typeof v === 'string' && /^https?:/.test(v)) return v;
+                if (re.test(key) && v && typeof v === 'object' && Array.isArray(v.url_list || v.urlList)) return (v.url_list || v.urlList)[0];
+              }
+            }
+            return '';
+          };
           const box = document.querySelector('[data-e2e="dm-new-chatbox"]');
           const list = box && box.querySelector('[data-e2e="dm-new-message-list"]');
           if (!list) return null;
@@ -188,6 +217,7 @@ sealed class SidePage
           const nick = (box.querySelector('[data-e2e="dm-new-chat-nickname"]') || {}).textContent || '';
           const top = box.querySelector('[data-e2e="top-chat-avatar"] img');
           const out = [];
+          let idx = -1;
           list.querySelectorAll('[data-e2e="dm-new-time-separator"], [data-e2e="dm-new-chat-item"]').forEach(el => {
             if (el.dataset.e2e === 'dm-new-time-separator') { out.push({ sep: el.textContent.trim() }); return; }
             const a = el.querySelector('[data-e2e="chat-avatar"]');
@@ -199,25 +229,35 @@ sealed class SidePage
             const imgs = [...el.querySelectorAll('img')].filter(i => !a || !a.contains(i)).map(i => i.src);
             // Video compartido: la portada es un fondo CSS y no hay enlace; se guarda su número de orden
             const shared = el.querySelector('[data-e2e="dm-new-shared-video"]');
-            let cover = '', sharedBy = '';
+            let cover = '', sharedBy = '', itemId = '';
             if (shared) {
               const bg = [shared, ...shared.querySelectorAll('*')].map(e => getComputedStyle(e).backgroundImage).find(b => b && b.startsWith('url('));
               cover = bg ? bg.slice(5, -2) : '';
               sharedBy = (shared.querySelector('p') || {}).textContent || '';
+              // El id del video está en las props internas de React del mensaje
+              const fk = Object.keys(shared).find(k => k.startsWith('__reactFiber'));
+              for (let f = fk && shared[fk], i = 0; f && i < 12; f = f.return, i++) {
+                const p = f.memoizedProps;
+                if (p && /^\d{15,20}$/.test(String(p.itemId || ''))) { itemId = String(p.itemId); break; }
+              }
             }
+            idx++;
             out.push({
+              idx,
               mine: !!href && href !== other,
-              avatar: a && a.querySelector('img') ? a.querySelector('img').src : '',
+              avatar: (a && a.querySelector('img') && a.querySelector('img').getAttribute('src')) || reactUrl(a, /avatar/i),
               text: txt ? txt.textContent : '',
               video: vid ? vid.href : '',
               image: shared ? cover : (!txt && imgs.length ? imgs[0] : ''),
               shared: shared ? [...list.querySelectorAll('[data-e2e="dm-new-shared-video"]')].indexOf(shared) : -1,
               sharedBy,
+              itemId,
               ref: ref ? ref.textContent.trim() : '',
               other: !txt && !vid && !shared && !imgs.length ? (el.textContent || '').trim().slice(0, 200) : ''
             });
           });
-          return JSON.stringify({ nick: nick.trim(), uid: uid.trim(), avatar: top ? top.src : '', messages: out });
+          const topEl = box.querySelector('[data-e2e="top-chat-avatar"]');
+          return JSON.stringify({ nick: nick.trim(), uid: uid.trim(), avatar: (top && top.getAttribute('src')) || reactUrl(topEl, /avatar/i), messages: out });
         })()
         """;
 
@@ -225,7 +265,7 @@ sealed class SidePage
     public async Task<string> LoadInbox()
     {
         await Go(Messages);
-        if (await Poll(InboxJs, 15000) == null) return null;
+        if (await Poll(InboxJs, 30000) == null) return null;
         // La actividad (me gusta, comentarios, seguidores) se carga al abrir el panel de notificaciones
         await Eval("""
             (() => {
@@ -243,7 +283,7 @@ sealed class SidePage
     async Task<bool> SelectConv(string convId)
     {
         await Go(Messages);
-        if (await Poll(InboxJs, 15000) == null) return false;
+        if (await Poll(InboxJs, 30000) == null) return false;
         var sel = JsonSerializer.Serialize($"[data-conv-id=\"{convId}\"]");
         var ok = await Eval($"(() => {{ const el = document.querySelector({sel}); if (!el) return null; if (el.getAttribute('aria-selected') !== 'true') el.click(); return 'ok'; }})()");
         if (ok == null) return false;
@@ -278,7 +318,7 @@ sealed class SidePage
     public async Task<string> LoadMoreConvs()
     {
         await Go(Messages);
-        if (await Poll(InboxJs, 15000) == null) return null;
+        if (await Poll(InboxJs, 30000) == null) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-conversation-item\"]').length)";
         var before = await Eval(countJs);
         await Eval("""
@@ -326,6 +366,50 @@ sealed class SidePage
         return await Eval(ConvJs);
     }
 
+    // Pasa el mouse por el mensaje número index (así la web muestra sus botones) y hace clic en uno de ellos
+    async Task<bool> MessageButton(string convId, int index, string e2e)
+    {
+        if (!await SelectConv(convId)) return false;
+        var js = $$"""
+            (() => {
+              const el = document.querySelectorAll('[data-e2e="dm-new-chat-item"]')[{{index}}];
+              if (!el) return null;
+              ['mouseover', 'mouseenter', 'mousemove'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true })));
+              const b = el.querySelector('[data-e2e="{{e2e}}"]');
+              if (!b) return null;
+              b.click();
+              return 'ok';
+            })()
+            """;
+        return await Eval(js) != null;
+    }
+
+    /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
+    public async Task<bool> React(string convId, int index, string emoji)
+    {
+        if (!await MessageButton(convId, index, "dm-new-reaction-btn")) return false;
+        var e = JsonSerializer.Serialize(emoji);
+        var picked = await Poll($$"""
+            (() => {
+              const e = {{e}};
+              const opt = [...document.querySelectorAll('img, span, div, button')].find(x =>
+                (x.alt === e || (!x.children.length && x.textContent.trim() === e)) &&
+                !x.closest('[data-e2e="dm-new-message-text"]') && !x.closest('[data-e2e="dm-new-reaction-display"]'));
+              if (!opt) return null;
+              opt.click();
+              return 'ok';
+            })()
+            """, 3000);
+        return picked != null;
+    }
+
+    /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
+    public async Task<bool> Reply(string convId, int index, string text)
+    {
+        if (!await MessageButton(convId, index, "dm-new-reply-btn")) return false;
+        await Task.Delay(300);
+        return await SendText(convId, text);
+    }
     /// <summary>Escribe y envía un mensaje de texto en la conversación indicada.</summary>
     public async Task<bool> SendText(string convId, string text)
     {

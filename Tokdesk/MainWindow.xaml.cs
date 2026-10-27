@@ -148,6 +148,8 @@ public partial class MainWindow : Window
             case "AutoCheckUpdates": _settings.AutoCheckUpdates = v.GetBoolean(); break;
             case "AutoInstallUpdates": _settings.AutoInstallUpdates = v.GetBoolean(); break;
             case "GlobalMediaKeys": _settings.GlobalMediaKeys = v.GetBoolean(); ApplyMediaKeys(); break;
+            case "StartMenuShortcut": _settings.StartMenuShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
+            case "DesktopShortcut": _settings.DesktopShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
             case "AskDownloadFolder": _settings.AskDownloadFolder = v.GetBoolean(); break;
             case "Zoom":
                 _settings.Zoom = Math.Clamp(v.GetDouble(), 0.5, 2.0);
@@ -239,11 +241,19 @@ public partial class MainWindow : Window
             "--autoplay-policy=no-user-gesture-required " +
             "--disable-background-timer-throttling --disable-renderer-backgrounding " +
             "--disable-backgrounding-occluded-windows" +
+            // H.265 por hardware: TikTok suele dar el 1080p solo en H.265
+            " --enable-features=PlatformHEVCDecoderSupport,PlatformHEVCEncoderSupport" +
             (_settings.HardwareAcceleration ? "" : " --disable-gpu"));
         _env = await CoreWebView2Environment.CreateAsync(null, profile, options);
 
         await Ui.EnsureCoreWebView2Async(_env);
         var ui = Ui.CoreWebView2;
+        if (!_settings.ImageCacheFixed)
+        {
+            await ui.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.DiskCache);
+            _settings.ImageCacheFixed = true;
+            _settings.Save();
+        }
         ui.Settings.AreDefaultContextMenusEnabled = false;
         ui.Settings.IsStatusBarEnabled = false;
         ui.Settings.IsZoomControlEnabled = false;
@@ -264,6 +274,11 @@ public partial class MainWindow : Window
         ui.Navigate($"https://{UiHost}/index.html");
 
         if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") StartTestHook();
+
+        // Nombre e ícono propios en el mezclador de volumen (las sesiones aparecen al empezar a sonar)
+        var mixer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", AppInfo.ExePath + ",0"));
+        mixer.Start();
 
         var hwnd = new WindowInteropHelper(this).Handle;
         _side = new SidePage(_env, hwnd, this);
@@ -352,6 +367,12 @@ public partial class MainWindow : Window
                 case "text":
                     PostToUi(new { t = "text", rid = m.GetProperty("rid").GetInt32(), body = await FetchText(S("url")) });
                     break;
+                case "dmreact":
+                    PostToUi(new { t = "dmreact", ok = await _side.React(S("id"), m.GetProperty("i").GetInt32(), S("emoji")) });
+                    break;
+                case "dmreply":
+                    PostToUi(new { t = "dm", id = S("id"), ok = await _side.Reply(S("id"), m.GetProperty("i").GetInt32(), S("text")) });
+                    break;
                 case "dm":
                 {
                     var ok = await _side.SendText(S("id"), S("text"));
@@ -370,6 +391,7 @@ public partial class MainWindow : Window
                     break;
                 case "close": Close(); break;
                 case "exit": ExitApp(); break;
+                case "tiktoklang": await _engine.SetLanguage(S("code")); break;
             }
         }
         catch (Exception ex) { Log.Write("Mensaje UI falló: " + ex); }
