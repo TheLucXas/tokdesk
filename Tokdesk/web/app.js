@@ -31,7 +31,7 @@ const pref = {
 
 // Preferencias de la interfaz (se editan desde Configuración, en settings.js)
 const opt = Object.assign({
-  theme: 'dark', accent: '#fe2c55', fit: 'contain', dataSaver: false, preload: 2, dblLike: true,
+  theme: 'dark', accent: '#fe2c55', fit: 'contain', dataSaver: false, preload: 2, buffer: 3, offlineSize: 0, dblLike: true,
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
@@ -175,7 +175,7 @@ function feedFor(key) {
       f.hasMore = !!d.hasMore && d.itemList.length > 0;
       feedChanged(f);
     } });
-    case 'user': return makeFeed(key, { title: '', load: (f) => loadPaged(f, '/api/post/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
+    case 'user': { const [sec, sort] = arg.split('|'); return makeFeed(key, { title: '', load: (f) => loadPaged(f, '/api/post/item_list/', { secUid: sec, count: 16, coverFormat: 2, post_item_list_request_type: +sort || 0 }) }); }
     case 'reposts': return makeFeed(key, { title: t('Republicados'), load: (f) => loadPaged(f, '/api/repost/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
     case 'favorites': return makeFeed(key, { title: t('Favoritos'), load: (f) => loadPaged(f, '/api/user/collect/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
     case 'liked': return makeFeed(key, { title: t('Me gusta'), load: (f) => loadPaged(f, '/api/favorite/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
@@ -250,7 +250,7 @@ function normalize(it) {
     likes: +st.diggCount || 0, comments: +st.commentCount || 0, saves: +st.collectCount || 0, shares: +st.shareCount || 0,
     plays: +st.playCount || 0, pinned: !!it.isPinnedItem, created: +it.createTime || 0,
     ad: !!it.isAd, liked: !!it.digged, saved: !!it.collected,
-    followed: a.relation === 1 || a.relation === 2 || !!it.authorFollowing,
+    followed: followedOf(a.id, a.relation === 1 || a.relation === 2 || !!it.authorFollowing),
   };
 }
 
@@ -262,6 +262,14 @@ function addItems(f, list) {
     f.ids.add(it.id); f.items.push(it); added++;
   }
   return added;
+}
+
+// Marca listas como viejas; la que está a la vista en el perfil se vuelve a pedir enseguida
+function markStale(prefix) {
+  for (const f of feeds.values()) if (f.key.startsWith(prefix)) f.stale = true;
+  const open = state.profileKey && feeds.get(state.profileKey);
+  if (open && open.stale && open !== state.feed && $('#profile').classList.contains('open') && $('#pfGrid').style.display !== 'none')
+    showProfileList(open.key.split(':')[0]);
 }
 
 function feedChanged(f) {
@@ -365,7 +373,7 @@ function buildSlide(it) {
       ${it.music ? `<div class="musicline">${ICON.music}<span>${esc(it.music)}</span></div>` : ''}
     </div>
     <div class="cc"></div>
-    <div class="progress"><div class="track"><div class="fill"></div></div></div>`;
+    <div class="progress"><div class="track"><div class="fill"></div></div><div class="scrub"><canvas width="96" height="170"></canvas><div class="tm"></div></div></div>`;
 
   const media = $('video, audio', el);
   el.media = media;
@@ -388,7 +396,7 @@ function buildSlide(it) {
   const fill = $('.fill', el);
   const cc = $('.cc', el);
   media.addEventListener('timeupdate', () => {
-    if (media.duration) fill.style.width = (media.currentTime / media.duration * 100) + '%';
+    if (media.duration && !el.classList.contains('scrubbing')) fill.style.width = (media.currentTime / media.duration * 100) + '%';
     if (el.cues && state.cc) {
       const t = media.currentTime;
       const cue = el.cues.find((c) => t >= c.a && t <= c.b);
@@ -435,15 +443,50 @@ function buildSlide(it) {
   if (ml) ml.addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
   $('.disc', el).addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
 
+  // Barra de progreso como en la app: al arrastrar se ve el tiempo y el cuadro de destino, y se salta al soltar
   const prog = $('.progress', el);
-  const seek = (e) => {
+  const scrub = $('.scrub', prog), cv = $('canvas', scrub), tm = $('.tm', scrub);
+  const clock = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  let drag = null;
+  const move = (e) => {
     const r = prog.getBoundingClientRect();
-    if (media.duration) media.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * media.duration;
+    const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const d = media.duration || 0;
+    drag.p = p;
+    fill.style.width = p * 100 + '%';
+    tm.innerHTML = `<b>${clock(p * d)}</b> / ${clock(d)}`;
+    scrub.style.left = Math.min(r.width - 56, Math.max(56, p * r.width)) + 'px';
+    if (drag.pv && d) { drag.want = p * d; if (!drag.seeking) { drag.seeking = true; drag.pv.currentTime = drag.want; } }
   };
   prog.addEventListener('pointerdown', (e) => {
-    e.stopPropagation(); prog.setPointerCapture(e.pointerId); seek(e);
-    prog.onpointermove = seek;
-    prog.onpointerup = () => { prog.onpointermove = null; };
+    if (e.button !== 0 || !media.duration) return;
+    e.stopPropagation(); prog.setPointerCapture(e.pointerId);
+    const dr = drag = { p: 0 };
+    el.classList.add('scrubbing');
+    // Vista previa: un segundo video oculto que busca el cuadro y se dibuja en el lienzo
+    if (media.tagName === 'VIDEO' && media.currentSrc) {
+      const pv = document.createElement('video');
+      pv.muted = true; pv.preload = 'auto'; pv.src = media.currentSrc;
+      if (media.videoWidth) cv.height = Math.round(cv.width * media.videoHeight / media.videoWidth);
+      pv.addEventListener('seeked', () => {
+        if (drag !== dr) return;
+        cv.getContext('2d').drawImage(pv, 0, 0, cv.width, cv.height);
+        cv.classList.add('ok');
+        dr.seeking = false;
+        if (Math.abs(pv.currentTime - dr.want) > 0.25) { dr.seeking = true; pv.currentTime = dr.want; }
+      });
+      dr.pv = pv;
+    }
+    move(e);
+    prog.onpointermove = move;
+    prog.onpointerup = prog.onpointercancel = () => {
+      prog.onpointermove = prog.onpointerup = prog.onpointercancel = null;
+      if (media.duration) media.currentTime = dr.p * media.duration;
+      if (dr.pv) { dr.pv.removeAttribute('src'); dr.pv.load(); }
+      drag = null;
+      el.classList.remove('scrubbing');
+      cv.classList.remove('ok');
+    };
   });
   return el;
 }
@@ -494,7 +537,7 @@ function render() {
     const m = el.media;
     // Precarga del actual y los siguientes; el resto queda sin fuente para no gastar decodificadores
     const src = it.photos.length ? it.musicUrl : it.src;
-    if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = src; }
+    if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
       if (state.cc) loadCaptions(el);
@@ -513,6 +556,7 @@ function render() {
 
   if (f.items.length - f.idx <= MORE_WHEN_LEFT) requestMore();
   schedulePrefetchComments();
+  bufferAhead();
 }
 
 function go(step) {
@@ -550,6 +594,7 @@ async function like(it, force) {
   it.liked = on; it.likes += on ? 1 : -1; refreshSlide(it);
   const ok = await act('/api/commit/item/digg/', { aweme_id: it.id, type: on ? 1 : 0 });
   if (!ok) { it.liked = !on; it.likes += on ? -1 : 1; refreshSlide(it); }
+  else markStale('liked:');
 }
 
 async function favorite(it) {
@@ -557,10 +602,14 @@ async function favorite(it) {
   const on = !it.saved;
   it.saved = on; it.saves += on ? 1 : -1; refreshSlide(it);
   const ok = await act('/api/item/collect/', { aid: 1988, itemId: it.id, action: on ? 1 : 2, secUid: it.secUid });
+  if (ok) markStale('favorites:');
   if (ok && on) notice('✓ ' + t('Guardado'), t('Colecciones') + ' ›', () => openCollectionPicker(it));
   else if (ok) toast(t('Quitado de Favoritos'));
   else { it.saved = !on; it.saves += on ? -1 : 1; refreshSlide(it); }
 }
+
+const followOverride = new Map();
+const followedOf = (id, v) => followOverride.has(id) ? followOverride.get(id) : v;
 
 function setFollowed(authorId, on) {
   for (const f of feeds.values()) for (const x of f.items) if (x.authorId === authorId) x.followed = on;
@@ -573,7 +622,7 @@ async function follow(it, on) {
     type: on ? 1 : 0, action_type: on ? 1 : 0, user_id: it.authorId, sec_user_id: it.secUid,
     from: 18, channel_id: 3, from_pre: 0, fromWeb: 1,
   });
-  if (ok) toast(on ? t('Siguiendo a {0}', it.nick || it.author) : t('Dejaste de seguir'));
+  if (ok) { followOverride.set(it.authorId, on); toast(on ? t('Siguiendo a {0}', it.nick || it.author) : t('Dejaste de seguir')); }
   else { setFollowed(it.authorId, !on); refreshSlide(it); updateProfileFollow(it); }
 }
 
@@ -772,7 +821,7 @@ async function openUserByName(name) {
   if (!u) { toast(t('No se encontró @{0}', name)); return; }
   const st = (r.data.userInfo.stats) || {};
   openProfile({ secUid: u.secUid, author: u.uniqueId, nick: u.nickname, avatar: u.avatarThumb, authorId: u.id,
-    signature: u.signature, authorStats: st, followed: u.relation === 1 || u.relation === 2 });
+    signature: u.signature, authorStats: st, followed: followedOf(u.id, u.relation === 1 || u.relation === 2) });
 }
 
 // ---------- Republicar ----------
@@ -784,6 +833,7 @@ async function repost(it) {
   notice(on ? t('Republicaste este video') : t('Se quitó la republicación'), on ? t('Deshacer') : null, on ? () => repost(it) : null);
   const ok = await act(on ? '/tiktok/v1/upvote/publish' : '/tiktok/v1/upvote/delete', { item_id: it.id });
   if (!ok) { it.reposted = !on; it.reposts += on ? -1 : 1; refreshSlide(it); }
+  else markStale('reposts:');
 }
 // ---------- Ayuda ----------
 function openHelp() {
@@ -1302,7 +1352,13 @@ function onConv(m) {
     olderMisses = 0;
   }
   if (d.messages.length === chatCount) return;
-  const prevHeight = list.scrollHeight;
+  // Ancla: el primer mensaje visible y su distancia al borde, para volver al mismo lugar tras redibujar
+  const old = $$('.msg', list);
+  const top0 = list.getBoundingClientRect().top;
+  const anchor = old.find((e) => e.getBoundingClientRect().bottom > top0);
+  const aFromEnd = anchor ? old.length - old.indexOf(anchor) : 0;
+  const aKey = anchor ? anchor.className + '|' + anchor.dataset.text : '';
+  const aOff = anchor ? anchor.getBoundingClientRect().top - top0 : 0;
   const atBottom = !m.older && (chatCount < 0 || list.scrollTop + list.clientHeight > list.scrollHeight - 60);
   chatCount = d.messages.length;
   list.innerHTML = d.messages.map((x) => {
@@ -1341,7 +1397,15 @@ function onConv(m) {
   if (noOlder) $('#olderBtn').onclick = () => { noOlder = false; olderMisses = 0; requestOlder(); };
   if (state.chatRestoreScroll != null) { list.scrollTop = state.chatRestoreScroll; state.chatRestoreScroll = null; }
   else if (atBottom) list.scrollTop = list.scrollHeight;
-  else if (m.older) list.scrollTop = list.scrollHeight - prevHeight;
+  else if (anchor) {
+    // Se busca el mismo mensaje (contando desde el final, porque los anteriores se agregan arriba)
+    const now = $$('.msg', list);
+    const guess = now.length - aFromEnd;
+    let best = -1;
+    now.forEach((e, i) => { if (e.className + '|' + e.dataset.text === aKey && (best < 0 || Math.abs(i - guess) < Math.abs(best - guess))) best = i; });
+    const el = now[best >= 0 ? best : guess];
+    if (el) list.scrollTop += el.getBoundingClientRect().top - list.getBoundingClientRect().top - aOff;
+  }
 }
 
 // Al llegar arriba del chat se piden los mensajes anteriores
@@ -1443,6 +1507,7 @@ function updateProfileFollow(it) {
 
 async function openProfile(it) {
   if (!it.secUid) return;
+  if (state.profileFor !== it) { state.pfSort = 0; updateSortMenu(); }
   state.profileFor = it;
   const f = feedFor('user:' + it.secUid);
   f.title = '@' + it.author;
@@ -1484,13 +1549,33 @@ async function openProfile(it) {
       if (state.profileFor === it) setProfileTabs(false, has);
     });
   }
-  if (u.relation != null) { setFollowed(it.authorId, u.relation === 1 || u.relation === 2); updateProfileFollow(it); }
+  if (u.relation != null) { setFollowed(it.authorId, followedOf(it.authorId, u.relation === 1 || u.relation === 2)); it.followed = followedOf(it.authorId, u.relation === 1 || u.relation === 2); updateProfileFollow(it); }
 }
 
 $$('#pfTabs button').forEach((b) => {
   b.innerHTML = ICON[b.dataset.ic];
-  b.addEventListener('click', () => showProfileList(b.dataset.list));
+  b.addEventListener('click', (e) => {
+    // Tocar Videos cuando ya está elegida abre el orden, como en la app
+    if (b.dataset.list === 'user' && b.classList.contains('on')) { e.stopPropagation(); toggleSortMenu(); return; }
+    showProfileList(b.dataset.list);
+  });
 });
+$('#pfTabs [data-list="user"]').insertAdjacentHTML('beforeend', '<span class="caret">▾</span>');
+
+function toggleSortMenu(force) {
+  const m = $('#pfSort');
+  const on = force ?? !m.classList.contains('show');
+  m.classList.toggle('show', on);
+  if (on) { const b = $('#pfTabs [data-list="user"]'); m.style.left = (b.offsetLeft + b.offsetWidth / 2) + 'px'; m.style.top = (b.offsetTop + b.offsetHeight) + 'px'; }
+}
+function updateSortMenu() { $$('#pfSort button').forEach((x) => x.classList.toggle('on', +x.dataset.sort === (state.pfSort || 0))); }
+$$('#pfSort button').forEach((b) => b.addEventListener('click', () => {
+  state.pfSort = +b.dataset.sort;
+  updateSortMenu();
+  toggleSortMenu(false);
+  showProfileList('user');
+}));
+document.addEventListener('click', (e) => { if (!e.target.closest('#pfSort')) toggleSortMenu(false); }, true);
 
 function showProfileList(list) {
   const it = state.profileFor; if (!it) return;
@@ -1505,7 +1590,10 @@ function showProfileList(list) {
   $('#pfSub').classList.toggle('show', list === 'favorites');
   $$('#pfSub button').forEach((x) => x.classList.toggle('on', x.dataset.sub === 'posts'));
   showCollections(false);
-  const f = feedFor(list + ':' + it.secUid);
+  const key = list + ':' + it.secUid + (list === 'user' && state.pfSort ? '|' + state.pfSort : '');
+  const old = feeds.get(key);
+  if (old && old.stale && old !== state.feed) feeds.delete(key);
+  const f = feedFor(key);
   f.title = list === 'user' ? '@' + it.author : $(`#pfTabs [data-list="${list}"]`).title + ' · @' + it.author;
   state.profileKey = f.key;
   renderGrid($('#pfGrid'), $('#pfMore'), f);
@@ -1575,12 +1663,97 @@ $('#pfMsg').addEventListener('click', async () => {
   if (c) { closePanels(); openChat(c); }
   else { closePanels(); send({ t: 'web', url: 'https://www.tiktok.com/messages' }); toast(t('Inicia el chat desde Mensajes')); }
 });
-$('#pfEdit').addEventListener('click', () => {
-  const it = state.profileFor; if (!it) return;
-  closePanels();
-  send({ t: 'web', url: 'https://www.tiktok.com/@' + it.author });
-  toast(t('Usa «Editar perfil» en la página oficial'));
-});
+$('#pfEdit').addEventListener('click', () => openEditProfile());
+
+// ---------- Editar perfil: el formulario oficial corre oculto y se muestra como la pantalla de la app ----------
+let editOpen = false, editData = null, editVals = null, editField = null;
+const EDIT_FIELDS = { name: [() => t('Nombre'), 30], username: [() => t('Nombre de usuario'), 24], bio: [() => t('Presentación'), 80] };
+
+function openEditProfile() {
+  if (!state.me) return askLogin();
+  const it = state.profileFor;
+  editOpen = true; editData = null; editVals = null; editField = null;
+  $('#optsBody').innerHTML = `<div class="cp-title">${esc(t('Editar perfil'))}</div><div class="sheet-msg"><div class="spinner"></div></div>`;
+  openPanel('opts', true);
+  busy(1);
+  send({ t: 'editopen', user: it && isMine(it) ? it.author : state.me.uniqueId });
+}
+
+function onEditState(m) {
+  busy(-1);
+  if (!editOpen) return;
+  if (m.keep) { renderEdit(); return; }
+  let s = null;
+  try { s = m.s ? JSON.parse(m.s) : null; } catch { }
+  if (!s) {
+    $('#optsBody').innerHTML = `<div class="cp-title">${esc(t('Editar perfil'))}</div><div class="sheet-msg">${esc(t('No se pudo abrir el editor de perfil.'))}</div>`;
+    editOpen = false; send({ t: 'editclose' });
+    return;
+  }
+  if (s.closed) {
+    editOpen = false;
+    closePanel('opts');
+    toast(t('Perfil actualizado'));
+    const p = state.profileFor;
+    if (p && isMine(p) && editVals) { p.nick = editVals.name; p.author = editVals.username; p.signature = editVals.bio; setTimeout(() => openProfile(p), 600); }
+    return;
+  }
+  editData = s;
+  if (!editVals) editVals = { name: s.name, username: s.username, bio: s.bio };
+  if (s.error || s.extra.length) editField = editField || null;
+  renderEdit();
+}
+
+function renderEdit() {
+  const s = editData, body = $('#optsBody');
+  if (!s) return;
+  // Un diálogo encima (recorte de la foto, confirmación): se muestran sus botones tal cual
+  if (s.extra.length) {
+    body.innerHTML = `<div class="rp-head"><span>${esc(t('Editar perfil'))}</span></div>
+      ${s.avatar ? `<div class="ep-photo"><img alt="" src="${esc(s.avatar)}"></div>` : ''}
+      ${s.extraText ? `<div class="rp-text">${esc(s.extraText)}</div>` : ''}
+      ${s.extra.map((b) => `<button class="pill rp-act ep-act" data-i="${b.i}" ${b.off ? 'disabled' : ''}>${esc(b.text)}</button>`).join('')}`;
+    $$('.ep-act', body).forEach((b) => b.onclick = () => editSend({ t: 'editact', i: +b.dataset.i }));
+    return;
+  }
+  if (editField) {
+    const [label, max] = EDIT_FIELDS[editField];
+    const tip = editField === 'name' ? s.nameTip : editField === 'username' ? s.userTip : '';
+    const v = editVals[editField] || '';
+    body.innerHTML = `<div class="ep-head"><button class="ep-back">${ICON.back}</button><span>${esc(label())}</span><button class="ep-save">${esc(t('Guardar'))}</button></div>
+      <div class="ep-in">${editField === 'bio' ? `<textarea id="epIn" rows="4" maxlength="${max}">${esc(v)}</textarea>` : `<input id="epIn" maxlength="${max}" value="${esc(v)}">`}
+      <div class="ep-cnt"><span id="epCnt">${v.length}</span>/${max}</div></div>
+      ${editField === 'username' ? `<div class="ep-link">www.tiktok.com/@<span id="epLink">${esc(v)}</span></div>` : ''}
+      ${tip ? `<div class="ep-tip">${esc(tip)}</div>` : ''}
+      ${s.error ? `<div class="ep-err">${esc(s.error)}</div>` : ''}`;
+    const inp = $('#epIn');
+    inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length);
+    inp.oninput = () => { editVals[editField] = inp.value; $('#epCnt').textContent = inp.value.length; if ($('#epLink')) $('#epLink').textContent = inp.value; };
+    $('.ep-back', body).onclick = () => { editField = null; renderEdit(); };
+    $('.ep-save', body).onclick = () => editSend({ t: 'editsave', ...editVals });
+    return;
+  }
+  const rows = Object.entries(EDIT_FIELDS).map(([k, [label]]) =>
+    `<button class="ep-row" data-k="${k}"><span>${esc(label())}</span><span class="ep-v">${esc(editVals[k] || (k === 'bio' ? t('Agrega una presentación') : ''))}</span><span class="chev">›</span></button>`).join('');
+  body.innerHTML = `<div class="ep-head"><button class="ep-back">${ICON.back}</button><span>${esc(t('Editar perfil'))}</span><span></span></div>
+    <div class="ep-photo"><button class="ep-av"><img alt="" src="${esc(s.avatar)}"><span class="ep-cam">${ICON.pencil}</span></button><div class="ep-chg">${esc(t('Cambiar foto'))}</div></div>
+    <div class="ep-sec">${esc(t('Acerca de ti'))}</div>${rows}
+    ${s.error ? `<div class="ep-err">${esc(s.error)}</div>` : ''}`;
+  $('.ep-back', body).onclick = () => closePanel('opts');
+  $$('.ep-av, .ep-chg', body).forEach((b) => b.onclick = () => editSend({ t: 'editavatar' }));
+  $$('.ep-row', body).forEach((b) => b.onclick = () => { editField = b.dataset.k; renderEdit(); });
+}
+
+function editSend(msg) {
+  $('#optsBody').insertAdjacentHTML('beforeend', '<div class="sheet-msg ep-wait"><div class="spinner"></div></div>');
+  busy(1);
+  send(msg);
+}
+
+// Si se cierra la hoja a mitad de camino, se cancela el formulario oficial
+new MutationObserver(() => {
+  if (editOpen && !$('#opts').classList.contains('open')) { editOpen = false; send({ t: 'editclose' }); }
+}).observe($('#opts'), { attributes: true, attributeFilter: ['class'] });
 $('#pfOpen').addEventListener('click', () => { const it = state.profileFor; if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author }); });
 $('#pfBody').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
@@ -1661,7 +1834,7 @@ async function searchUsers(kw) {
     const u = users[+b.dataset.i];
     openProfile({ secUid: u.sec_uid, author: u.unique_id, nick: u.nickname, authorId: u.uid,
       avatar: u.avatar_thumb && u.avatar_thumb.url_list && u.avatar_thumb.url_list[0], signature: u.signature,
-      followed: u.follow_status === 1 || u.follow_status === 2 });
+      followed: followedOf(u.uid, u.follow_status === 1 || u.follow_status === 2) });
   });
 }
 $('#search').addEventListener('scroll', (e) => {
@@ -2045,6 +2218,7 @@ host && host.addEventListener('message', (e) => {
     case 'conv': onConv(m); break;
     case 'dm': onDm(m); break;
     case 'reportstate': onReportState(m); break;
+    case 'editstate': onEditState(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
@@ -2301,7 +2475,7 @@ async function addToCollection(it, c) {
   closePanel('opts');
   if (!it.saved) await favorite(it);
   const ok = await act('/api/collection/modify_items/', { collectionId: c.collectionId, commitIds: it.id });
-  if (ok) { toast(t('Guardado en {0}', c.name)); c.total = String((+c.total || 0) + 1); }
+  if (ok) { toast(t('Guardado en {0}', c.name)); c.total = String((+c.total || 0) + 1); markStale('coll:' + c.collectionId); }
 }
 
 function newCollectionForm(it) {
@@ -2322,3 +2496,103 @@ function newCollectionForm(it) {
     addToCollection(it, c);
   };
 }
+// ---------- Búfer en disco y videos sin conexión ----------
+const offline = { buffer: new Map(), saved: new Map(), size: { buffer: 0, saved: 0 }, items: [], wait: new Map(), busy: false, running: false, tried: new Set() };
+const offUrl = (it) => offline.saved.get(it.id) || offline.buffer.get(it.id) || null;
+const mb = (n) => n >= 1073741824 ? (n / 1073741824).toFixed(1) + ' GB' : Math.round(n / 1048576) + ' MB';
+
+function offSave(kind, it) {
+  return new Promise((res) => {
+    offline.wait.set(kind + it.id, res);
+    send({ t: 'offsave', kind, id: it.id, url: it.src, cover: it.cover, meta: JSON.stringify({ ...it, src: '' }) });
+  });
+}
+
+function offList(kind, clear) {
+  return new Promise((res) => { offline.wait.set('list' + kind, res); send({ t: clear ? 'offclear' : 'offlist', kind }); });
+}
+
+// Guarda en disco los videos que vienen después de los precargados, para que arranquen al instante
+async function bufferAhead() {
+  const f = state.feed;
+  if (!opt.buffer || !f || f.key === 'offline' || offline.running) return;
+  offline.running = true;
+  try {
+    const from = f.idx + opt.preload + 1;
+    for (let i = from; i < Math.min(f.items.length, from + opt.buffer); i++) {
+      const it = f.items[i];
+      if (!it.src || it.photos.length || it.ad || offUrl(it)) continue;
+      await offSave('buffer', it);
+      if (state.feed !== f) break;
+    }
+  } finally { offline.running = false; }
+}
+
+function onOffSaved(m) {
+  const map = offline[m.kind === 'saved' ? 'saved' : 'buffer'];
+  if (m.url) map.set(m.id, m.url);
+  // El disco guarda los últimos 15 del búfer: aquí se recuerdan menos para no apuntar a uno borrado
+  if (m.kind !== 'saved' && map.size > 12) map.delete(map.keys().next().value);
+  offline.size[m.kind] = m.size;
+  const r = offline.wait.get(m.kind + m.id);
+  if (r) { offline.wait.delete(m.kind + m.id); r(m.url); }
+}
+
+function onOffList(m) {
+  const kind = m.kind === 'saved' ? 'saved' : 'buffer';
+  offline[kind].clear();
+  for (const id of m.ids) offline[kind].set(id, `https://offline.tokdesk/${kind}/${id}.mp4`);
+  offline.size[kind] = m.size;
+  if (kind === 'saved') offline.items = m.items || [];
+  const r = offline.wait.get('list' + kind);
+  if (r) { offline.wait.delete('list' + kind); r(); }
+  if ($('#settings').classList.contains('open') && typeof renderSettings === 'function') renderSettings();
+}
+
+function offStatus() {
+  const n = offline.saved.size;
+  return t('{0} videos · {1}', n, mb(offline.size.saved)) + (opt.offlineSize ? ' / ' + mb(opt.offlineSize * 1048576) : '');
+}
+
+// Llena la biblioteca sin conexión con videos de «Para ti» hasta el tamaño elegido
+async function offlineDownload(renew) {
+  if (offline.busy) return;
+  const limit = opt.offlineSize * 1048576;
+  if (!limit) { toast(t('Elige primero cuánto espacio usar')); return; }
+  offline.busy = true;
+  const refresh = () => { if ($('#settings').classList.contains('open')) renderSettings(); };
+  refresh();
+  try {
+    if (renew) await offList('saved', true);
+    const f = feedFor('foryou');
+    let waits = 0;
+    while (offline.size.saved < limit && waits < 30) {
+      const it = f.items.find((x) => x.src && !x.photos.length && !x.ad && !offline.saved.has(x.id) && !offline.tried.has(x.id));
+      if (!it) { waits++; f.load(f); await new Promise((r) => setTimeout(r, 2500)); continue; }
+      offline.tried.add(it.id);
+      await offSave('saved', it);
+      refresh();
+    }
+    await offList('saved');
+    toast(t('Videos sin conexión listos: {0}', offline.saved.size));
+  } finally { offline.busy = false; refresh(); }
+}
+
+function openOffline() {
+  const list = offline.items.filter((x) => offline.saved.has(x.id));
+  if (!list.length) { toast(t('No hay videos sin conexión. Descárgalos en Configuración.')); return; }
+  feeds.delete('offline');
+  const f = makeFeed('offline', { title: t('Videos sin conexión'), hasMore: false, load() { } });
+  for (const x of list) {
+    const it = { ...x, src: `https://offline.tokdesk/saved/${x.id}.mp4`, cover: `https://offline.tokdesk/saved/${x.id}.jpg`, photos: [], subtitles: [] };
+    f.ids.add(it.id); f.items.push(it);
+  }
+  closePanels();
+  openSubFeed(f, 0);
+}
+
+offList('buffer'); offList('saved');
+// Sin internet: se ofrecen los videos guardados, como en la app
+function offerOffline() { if (offline.saved.size) notice(t('Sin conexión'), t('Ver videos sin conexión') + ' ›', openOffline); }
+window.addEventListener('offline', offerOffline);
+setTimeout(() => { if (!navigator.onLine) offerOffline(); }, 1500);

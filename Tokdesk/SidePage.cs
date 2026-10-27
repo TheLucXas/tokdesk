@@ -139,6 +139,14 @@ sealed class SidePage
     {
         _locked = false;
         await Go(url);
+        // TikTok a veces responde 403 a la primera carga: se reintenta una vez
+        if ((_wv.Source ?? "").StartsWith("chrome-error") || await Eval("location.protocol") == "chrome-error:")
+        {
+            await Task.Delay(2000);
+            _nav = new TaskCompletionSource<bool>();
+            _wv.Navigate(url);
+            await Task.WhenAny(_nav.Task, Task.Delay(20000));
+        }
         _locked = true;
         var opened = await Poll(string.IsNullOrEmpty(comment) ? ReportVideoJs : ReportCommentJs(comment), 20000);
         if (opened == null) { _locked = false; return null; }
@@ -170,6 +178,126 @@ sealed class SidePage
         finally { _locked = false; }
     }
 
+    // ---------- Editar perfil: el formulario oficial corre oculto y se muestra en la interfaz propia ----------
+
+    const string EditStateJs = """
+        (() => {
+          const q = (s) => document.querySelector(s);
+          const save = q('[data-e2e="edit-profile-save"]');
+          if (!save) return JSON.stringify({ closed: true });
+          const txt = (n) => ((q('[data-e2e="' + n + '"]') || {}).innerText || '').trim();
+          const img = q('[data-e2e="edit-profile-avatar"] img');
+          // Pasos encima del formulario (recorte de foto, confirmaciones): botones sin data-e2e dentro del mismo modal
+          const btns = [...(save.closest('[role="dialog"]') || document).querySelectorAll('button')]
+            .filter((b) => !b.closest('[data-e2e^="edit-profile"]') && b.textContent.trim());
+          const extra = btns.map((b, i) => ({ i, text: b.textContent.trim(), off: !!b.disabled }));
+          let box = btns.length ? btns[0] : null;
+          while (box && box.parentElement && !box.parentElement.querySelector('[data-e2e="edit-profile-save"]')) box = box.parentElement;
+          const extraText = box ? (box.innerText || '').split('\n').map((s) => s.trim()).filter((s) => s && !extra.some((b) => b.text === s)).join('\n').slice(0, 600) : '';
+          const err = [...document.querySelectorAll('[data-e2e^="edit-profile"] [class*="Error"], [data-e2e^="edit-profile"] [class*="error"], [role="alert"]')]
+            .map((e) => e.innerText.trim()).filter(Boolean).join('\n');
+          return JSON.stringify({
+            username: (q('[data-e2e="edit-profile-username-input"] input') || {}).value || '',
+            name: (q('[data-e2e="edit-profile-name-input"] input') || {}).value || '',
+            bio: (q('[data-e2e="edit-profile-bio-input"]') || {}).value || '',
+            userTip: txt('edit-profile-username-tip'), nameTip: txt('edit-profile-name-input'),
+            avatar: img ? img.src : '', saveOff: !!save.disabled, error: err, extra, extraText,
+          });
+        })()
+        """;
+
+    /// <summary>Abre (oculto) el formulario oficial de «Editar perfil» y devuelve sus datos.</summary>
+    public async Task<string> OpenEditProfile(string user)
+    {
+        _locked = false;
+        await Go("https://www.tiktok.com/@" + user);
+        _locked = true;
+        var opened = await Poll("""
+            (() => {
+              if (document.querySelector('[data-e2e="edit-profile-save"]')) return 'ok';
+              const b = document.querySelector('[data-e2e="edit-profile-entrance"]');
+              if (b) b.click();
+              return null;
+            })()
+            """, 20000);
+        if (opened == null) { _locked = false; return null; }
+        await Task.Delay(300);
+        return await Eval(EditStateJs);
+    }
+
+    /// <summary>Escribe los campos (como si se tipearan) y toca Guardar.</summary>
+    public async Task<string> EditProfileSave(string username, string name, string bio)
+    {
+        if (!_locked) return null;
+        await Eval($$"""
+            (() => {
+              const set = (el, v) => {
+                if (!el || el.value === v) return;
+                Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, v);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+              };
+              set(document.querySelector('[data-e2e="edit-profile-username-input"] input'), {{JsonSerializer.Serialize(username ?? "")}});
+              set(document.querySelector('[data-e2e="edit-profile-name-input"] input'), {{JsonSerializer.Serialize(name ?? "")}});
+              set(document.querySelector('[data-e2e="edit-profile-bio-input"]'), {{JsonSerializer.Serialize(bio ?? "")}});
+              return null;
+            })()
+            """);
+        await Task.Delay(700);
+        await Eval("(() => { const s = document.querySelector('[data-e2e=\"edit-profile-save\"]'); if (s && !s.disabled) s.click(); return null; })()");
+        // Se espera a que el formulario se cierre (guardado) o aparezca un error o una confirmación
+        string state = null;
+        for (var t = 0; t < 8000; t += 500)
+        {
+            await Task.Delay(500);
+            state = await Eval(EditStateJs);
+            if (state == null || state.Contains("\"closed\":true") || state.Contains("\"extra\":[{") || !state.Contains("\"error\":\"\"")) break;
+        }
+        if (state != null && state.Contains("\"closed\":true")) _locked = false;
+        return state;
+    }
+
+    /// <summary>Sube una foto nueva al campo de archivo del formulario (vía DevTools, sin diálogo).</summary>
+    public async Task<string> EditProfileAvatar(string file)
+    {
+        if (!_locked) return null;
+        var doc = JsonDocument.Parse(await _wv.CallDevToolsProtocolMethodAsync("DOM.getDocument", "{\"depth\":0}"));
+        var root = doc.RootElement.GetProperty("root").GetProperty("nodeId").GetInt32();
+        var found = JsonDocument.Parse(await _wv.CallDevToolsProtocolMethodAsync("DOM.querySelector",
+            JsonSerializer.Serialize(new { nodeId = root, selector = "[data-e2e=\"edit-profile-photo\"] input[type=file], [data-e2e^=\"edit-profile\"] input[type=file]" })));
+        var node = found.RootElement.GetProperty("nodeId").GetInt32();
+        if (node == 0) return await Eval(EditStateJs);
+        await _wv.CallDevToolsProtocolMethodAsync("DOM.setFileInputFiles", JsonSerializer.Serialize(new { files = new[] { file }, nodeId = node }));
+        await Task.Delay(1500);
+        return await Eval(EditStateJs);
+    }
+
+    /// <summary>Toca un botón de un diálogo encima del formulario (p. ej. «Aplicar» en el recorte).</summary>
+    public async Task<string> EditProfileAct(int index)
+    {
+        if (!_locked) return null;
+        await Eval($$"""
+            (() => {
+              const save = document.querySelector('[data-e2e="edit-profile-save"]');
+              const list = [...((save && save.closest('[role="dialog"]')) || document).querySelectorAll('button')]
+                .filter((b) => !b.closest('[data-e2e^="edit-profile"]') && b.textContent.trim());
+              const b = list[{{index}}];
+              if (b) b.click();
+              return null;
+            })()
+            """);
+        await Task.Delay(1500);
+        var state = await Eval(EditStateJs);
+        if (state != null && state.Contains("\"closed\":true")) _locked = false;
+        return state;
+    }
+
+    public async Task EditProfileClose()
+    {
+        if (!_locked) return;
+        try { await Eval("(() => { const c = document.querySelector('[data-e2e=\"edit-profile-cancel\"]'); if (c) c.click(); return null; })()"); }
+        finally { _locked = false; }
+    }
+
     // Abre la ventana oficial de denuncia del video (menú ⋯ › Denunciar)
     public const string ReportVideoJs = """
         (() => {
@@ -189,14 +317,21 @@ sealed class SidePage
           const want = {{JsonSerializer.Serialize((text ?? "").Trim())}}.slice(0, 40);
           const rep = document.querySelector('[data-e2e="comment-report"]');
           if (rep) { rep.click(); return null; }
-          const tab = [...document.querySelectorAll('[role="tab"], button, span')].find(e => /^(Comentarios|Comments)/i.test((e.textContent || '').trim()));
-          const item = [...document.querySelectorAll('[data-e2e^="comment-level"], [class*="CommentItem"]')]
-            .find(e => (e.textContent || '').includes(want));
-          if (!item) { if (tab) tab.click(); return null; }
+          // Los comentarios solo se cargan al tocar el ícono de comentarios del video
+          const list = document.querySelector('[class*="DivCommentListContainer"]');
+          if (!list) { const i = document.querySelector('[data-e2e="comment-icon"]'); if (i) i.click(); return null; }
+          const item = [...list.querySelectorAll('[class*="DivCommentItemWrapper"]')]
+            .find(e => [...e.querySelectorAll('[data-e2e^="comment-level"]')].some(s => s.textContent.includes(want)));
+          if (!item) {
+            // Puede estar más abajo: se desplaza la lista para que cargue más
+            let sc = list;
+            while (sc && sc.scrollHeight <= sc.clientHeight + 20) sc = sc.parentElement;
+            if (sc) sc.scrollTop = sc.scrollHeight;
+            return null;
+          }
           item.scrollIntoView({ block: 'center' });
-          ['mouseover', 'mouseenter', 'mousemove'].forEach(t => item.dispatchEvent(new MouseEvent(t, { bubbles: true })));
-          const more = item.querySelector('[data-e2e="comment-more-icon"]') || item.parentElement.querySelector('[data-e2e="comment-more-icon"]');
-          if (more) { ['mouseover', 'mouseenter'].forEach(t => more.dispatchEvent(new MouseEvent(t, { bubbles: true }))); more.click(); }
+          const more = item.querySelector('[class*="DivMoreTriggerWrapper"]');
+          if (more) ['mousedown', 'mouseup', 'click'].forEach(t => more.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window })));
           return null;
         })()
         """;

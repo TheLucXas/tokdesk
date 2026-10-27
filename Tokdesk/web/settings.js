@@ -138,11 +138,19 @@ function renderSettings() {
           sub: HEVC_OK ? '' : t('Gratis en Microsoft Store. Reinicia la app después.'), fn: () => send({ t: 'open', url: 'ms-windows-store://pdp/?ProductId=9N4WGH0Z6VHQ' }) }),
         row({ type: 'toggle', label: t('Ahorro de datos'), hint: t('Usa la versión más liviana de cada video'), value: opt.dataSaver, fn: (v) => { opt.dataSaver = v; } }),
         row({ type: 'seg', label: t('Videos precargados'), value: opt.preload, options: [[0, '0'], [1, '1'], [2, '2'], [3, '3']], fn: (v) => { opt.preload = v; } }),
+        row({ type: 'seg', label: t('Búfer en disco'), hint: t('Descarga por adelantado los próximos videos para que arranquen al instante'), value: opt.buffer, options: [[0, '0'], [3, '3'], [5, '5'], [10, '10']], fn: (v) => { opt.buffer = v; } }),
         row({ type: 'toggle', label: t('Ocultar publicidad'), value: opt.hideAds, fn: (v) => { opt.hideAds = v; } }),
         row({ type: 'toggle', label: t('Ocultar directos (LIVE)'), value: opt.hideLives, fn: (v) => { opt.hideLives = v; } }),
         row({ type: 'toggle', label: t('Ocultar comentarios al marcar «no me gusta»'), value: opt.hideDisliked, fn: (v) => { opt.hideDisliked = v; } }),
         row({ type: 'toggle', label: t('Doble clic para dar me gusta'), value: opt.dblLike, fn: (v) => { opt.dblLike = v; } }),
         row({ type: 'range', label: t('Sensibilidad de la rueda'), min: 10, max: 120, step: 5, value: 130 - opt.wheel, fn: (v) => { opt.wheel = 130 - v; } }),
+      ]],
+      [t('Videos sin conexión'), [
+        row({ type: 'seg', label: t('Espacio para videos sin conexión'), hint: t('Mira videos guardados cuando no tengas internet'), value: opt.offlineSize, options: [[0, t('No')], [100, '100 MB'], [1024, '1 GB'], [2048, '2 GB']], fn: (v) => { opt.offlineSize = v; } }),
+        row({ type: 'link', ic: 'download', label: offline.busy ? t('Descargando…') : t('Descargar ahora'), sub: offStatus(), fn: () => offlineDownload(false) }),
+        row({ type: 'link', ic: 'repost', label: t('Renovar'), sub: t('Borra los guardados y descarga videos nuevos'), fn: () => offlineDownload(true) }),
+        row({ type: 'link', ic: 'close', label: t('Borrar videos sin conexión'), fn: () => offList('saved', true) }),
+        row({ type: 'link', ic: 'play', label: t('Ver videos sin conexión'), fn: () => openOffline() }),
       ]],
       [t('Descargas'), [
         row({ type: 'toggle', label: t('Preguntar dónde guardar cada archivo'), value: !!N.AskDownloadFolder, fn: (v) => send({ t: 'setsetting', k: 'AskDownloadFolder', v }) }),
@@ -437,6 +445,8 @@ function onHostMessage(m) {
       renderSettings();
       break;
     case 'dl': onDownload(m); break;
+    case 'offsaved': onOffSaved(m); break;
+    case 'offlist': onOffList(m); break;
     case 'win': win = m; applyWinState(); break;
     case 'hotkey':
       if (m.a === 'toggle') togglePause(); else if (m.a === 'next') go(1); else if (m.a === 'prev') go(-1);

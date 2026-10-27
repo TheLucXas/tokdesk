@@ -697,3 +697,52 @@ body.light .rp-text { color: rgba(22,24,35,.7); }
 .rp-act:disabled { opacity: .5; }
 .rp-done { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0 18px; font-weight: 600; }
 .rp-done svg { width: 48px; height: 48px; color: #25c26e; }
+
+/* Orden de los videos del perfil */
+#pfBody { position: relative; }
+#pfTabs [data-list="user"] .caret { font-size: 10px; margin-left: 3px; opacity: .8; }
+.pf-sortmenu { position: absolute; z-index: 5; transform: translate(-50%, 4px) scale(.96); opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s;
+  background: #2b2b2b; border-radius: 8px; padding: 6px 0; min-width: 170px; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+.pf-sortmenu.show { opacity: 1; transform: translate(-50%, 4px) scale(1); pointer-events: auto; }
+.pf-sortmenu button { display: flex; width: 100%; padding: 10px 16px; font-size: 14px; color: inherit; text-align: left; justify-content: space-between; }
+.pf-sortmenu button:hover { background: rgba(255,255,255,.06); }
+.pf-sortmenu button.on::after { content: '✓'; color: var(--accent, #fe2c55); }
+body.light .pf-sortmenu { background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+body.light .pf-sortmenu button:hover { background: rgba(0,0,0,.05); }
+
+/* Barra de progreso: punto, tiempo y vista previa al arrastrar (como en la app) */
+.progress .fill { position: relative; }
+.progress .fill::after { content: ''; position: absolute; right: -6px; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: #fff;
+  transform: translateY(-50%) scale(0); transition: transform .12s; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+.progress:hover .fill::after, .slide.scrubbing .progress .fill::after { transform: translateY(-50%) scale(1); }
+.slide.scrubbing .progress .track { height: 5px; }
+.progress .scrub { position: absolute; bottom: 22px; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.slide.scrubbing .progress .scrub { display: flex; }
+.progress .scrub canvas { width: 96px; border-radius: 6px; border: 2px solid #fff; background: #000; box-shadow: 0 4px 16px rgba(0,0,0,.5); opacity: 0; transition: opacity .1s; }
+.progress .scrub canvas.ok { opacity: 1; }
+.progress .scrub .tm { font-size: 22px; font-weight: 600; color: rgba(255,255,255,.65); text-shadow: 0 1px 4px rgba(0,0,0,.6); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.progress .scrub .tm b { color: #fff; }
+.slide.scrubbing .rail, .slide.scrubbing .meta { opacity: 0; transition: opacity .15s; }
+
+/* Editar perfil (como la pantalla de la app) */
+.ep-head { display: grid; grid-template-columns: 60px 1fr 60px; align-items: center; text-align: center; font-weight: 700; font-size: 16px; padding: 0 0 12px; }
+.ep-back { width: 30px; height: 30px; padding: 5px; color: inherit; }
+.ep-save { color: var(--accent, #fe2c55); font-weight: 600; font-size: 15px; justify-self: end; }
+.ep-photo { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 0 18px; }
+.ep-av { position: relative; width: 96px; height: 96px; border-radius: 50%; overflow: hidden; padding: 0; }
+.ep-photo img { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; display: block; }
+.ep-cam { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.35); color: #fff; }
+.ep-cam svg { width: 26px; height: 26px; }
+.ep-chg { font-size: 14px; font-weight: 600; cursor: pointer; }
+.ep-sec { font-size: 12px; color: rgba(255,255,255,.5); padding: 4px 2px 6px; }
+.ep-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 2px; font-size: 15px; color: inherit; text-align: left; }
+.ep-row > span:first-child { flex: 0 0 auto; min-width: 140px; }
+.ep-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; color: rgba(255,255,255,.6); }
+.ep-row .chev { color: rgba(255,255,255,.4); font-size: 20px; }
+.ep-in { border-bottom: 1px solid rgba(255,255,255,.15); padding: 6px 0; }
+.ep-in input, .ep-in textarea { width: 100%; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 16px; resize: none; }
+.ep-cnt { text-align: right; font-size: 12px; color: rgba(255,255,255,.5); }
+.ep-link, .ep-tip { font-size: 13px; color: rgba(255,255,255,.55); padding: 10px 0 0; line-height: 1.4; }
+.ep-err { font-size: 13px; color: #ff4d67; padding: 10px 0 0; white-space: pre-line; }
+body.light .ep-sec, body.light .ep-v, body.light .ep-cnt, body.light .ep-link, body.light .ep-tip { color: rgba(22,24,35,.55); }
+body.light .ep-in { border-color: rgba(22,24,35,.15); }

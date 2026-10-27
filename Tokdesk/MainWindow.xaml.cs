@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     Updater.Info _pendingUpdate;
     readonly AppSettings _settings = AppSettings.Load();
     static readonly HttpClient Http = new();
+    Offline _off;
 
     public MainWindow()
     {
@@ -260,6 +261,9 @@ public partial class MainWindow : Window
         ui.Settings.AreBrowserAcceleratorKeysEnabled = false;
         ui.SetVirtualHostNameToFolderMapping(UiHost, AppInfo.WebDir(),
             CoreWebView2HostResourceAccessKind.Allow);
+        // Videos guardados en disco (búfer y sin conexión)
+        _off = new Offline(Http, () => _engine.CookieHeader(), () => _engine.UserAgent);
+        ui.SetVirtualHostNameToFolderMapping(Offline.Host, Offline.Dir, CoreWebView2HostResourceAccessKind.Allow);
 
         // Los CDN de video e imagen exigen el Referer de la web oficial
         ui.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.Media);
@@ -286,9 +290,9 @@ public partial class MainWindow : Window
             src.CopyTo(dst);
         }
         catch (Exception ex) { Log.Write("Ícono para el mezclador: " + ex.Message); }
-        Task.Run(() => AudioSessions.Watch("Tokdesk", AppInfo.ExePath + ",0"));
+        Task.Run(() => AudioSessions.Watch("Tokdesk", AppInfo.ExePath));
         // EarTrumpet no lee bien un .ico suelto (mostraba una "T"): se usa el ícono del propio .exe
-        ico = AppInfo.ExePath + ",0";
+        ico = AppInfo.ExePath;
         mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", ico));
         mixer.Start();
 
@@ -325,6 +329,15 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "api", rid = m.GetProperty("rid").GetInt32(), status, body });
                     break;
                 }
+                case "offsave":
+                    {
+                        var kind = S("kind"); var id = S("id");
+                        var url = await _off.Save(kind, id, S("url"), S("cover"), S("meta"));
+                        PostToUi(new { t = "offsaved", kind, id, url, size = _off.Size(kind) });
+                        break;
+                    }
+                case "offlist": PostToUi(_off.List(S("kind"))); break;
+                case "offclear": _off.Clear(S("kind")); PostToUi(_off.List(S("kind"))); break;
                 case "download": await Download(S("url"), S("name"), S("ext") ?? "mp4", m.TryGetProperty("rid", out var dr) ? dr.GetInt32() : 0); break;
                 case "showfile":
                     if (File.Exists(S("file"))) Process.Start("explorer.exe", $"/select,\"{S("file")}\"");
@@ -359,6 +372,23 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
+                case "editopen":
+                    PostToUi(new { t = "editstate", s = await _side.OpenEditProfile(S("user")) });
+                    break;
+                case "editsave":
+                    PostToUi(new { t = "editstate", s = await _side.EditProfileSave(S("username"), S("name"), S("bio")) });
+                    break;
+                case "editavatar":
+                    {
+                        var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Imágenes|*.jpg;*.jpeg;*.png;*.webp" };
+                        if (dlg.ShowDialog(this) != true) { PostToUi(new { t = "editstate", s = (string)null, keep = true }); break; }
+                        PostToUi(new { t = "editstate", s = await _side.EditProfileAvatar(dlg.FileName) });
+                        break;
+                    }
+                case "editact":
+                    PostToUi(new { t = "editstate", s = await _side.EditProfileAct(m.GetProperty("i").GetInt32()) });
+                    break;
+                case "editclose": await _side.EditProfileClose(); break;
                 case "report":
                     ShowPanel(_side);
                     await _side.Show(S("url"), string.IsNullOrEmpty(S("comment")) ? SidePage.ReportVideoJs : SidePage.ReportCommentJs(S("comment")));
