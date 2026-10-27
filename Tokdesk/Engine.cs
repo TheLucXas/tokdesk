@@ -195,13 +195,41 @@ sealed class Engine
     public async Task<(int status, string body)> Api(string method, string path, IEnumerable<(string k, string v)> query)
     {
         await Task.WhenAny(_feedReady.Task, Task.Delay(10000));
-        var url = Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, query.ToArray());
-        var result = await PageFetch(url, method);
+        var q = query.ToArray();
+        var result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method);
+        if (result.status == 200 && string.IsNullOrEmpty(result.body))
+        {
+            // TikTok devuelve 200 vacío cuando la sesión de la página quedó vieja (msToken vencido):
+            // se recarga la página oficial y se reintenta una vez
+            Log.Write($"API {method} {path}: respuesta vacía; se refresca la sesión y se reintenta");
+            await RefreshSession();
+            result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method);
+        }
         if (result.status != 200 || string.IsNullOrEmpty(result.body))
             Log.Write($"API {method} {path}: status {result.status}, {result.body?.Length ?? 0} bytes");
         else if (Dump)
             Log.Write($"API {method} {path} -> {result.body[..Math.Min(300, result.body.Length)]}");
         return result;
+    }
+
+    Task _refreshing;
+    DateTime _lastRefresh;
+
+    // Una sola recarga a la vez, y no más de una cada 20 s aunque fallen varios pedidos juntos
+    Task RefreshSession()
+    {
+        if (_refreshing != null && !_refreshing.IsCompleted) return _refreshing;
+        if (DateTime.Now - _lastRefresh < TimeSpan.FromSeconds(20)) return Task.CompletedTask;
+        _lastRefresh = DateTime.Now;
+        return _refreshing = Reload();
+
+        async Task Reload()
+        {
+            _feedReady = new();
+            _wv.Reload();
+            await Task.WhenAny(_feedReady.Task, Task.Delay(15000));
+            await Task.Delay(500);
+        }
     }
 
     // Arma la URL con los mismos parámetros de sesión que usa la página, sin sus firmas

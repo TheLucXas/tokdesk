@@ -1656,6 +1656,17 @@ function cmtHtml(cm, reply, parentCid) {
   const disliked = state.cmtDislikes.has(cm.cid);
   const it = currentItem();
   const authorAv = it && it.avatar;
+  // Como en la app: con «no me gusta» se ocultan el texto y la imagen, y queda el pulgar para deshacerlo
+  if (disliked && opt.hideDisliked) {
+    return `<div class="cmt hidden-cmt ${reply ? 'reply' : ''}" data-cid="${esc(cm.cid)}" data-parent="${esc(parentCid || '')}">
+      <img class="cav" alt="" src="${esc(av)}">
+      <div class="body">
+        <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span></div>
+        <div class="sub"><span class="gone">${esc(t('Este comentario ya no se te mostrará'))}</span>
+          <span class="right"><span class="dislike on" data-cid="${esc(cm.cid)}" title="${esc(t('Quitar no me gusta'))}">${ICON.thumbdownfill}</span></span></div>
+      </div>
+    </div>`;
+  }
   return `<div class="cmt ${reply ? 'reply' : ''}" data-cid="${esc(cm.cid)}" data-parent="${esc(parentCid || '')}">
     <img class="cav" alt="" src="${esc(av)}" data-full="${esc((u.avatar_medium && u.avatar_medium.url_list && u.avatar_medium.url_list[0]) || av)}" title="${esc(t('Ver foto'))}">
     <div class="body">
@@ -1690,7 +1701,6 @@ function cmtDislike(id, cm) {
   else state.cmtDislikes.delete(cm.cid);
   pref.set('cmtDislikes', [...state.cmtDislikes].slice(-500));
   renderComments();
-  if (on && opt.hideDisliked) notice(t('Comentario ocultado'), t('Deshacer'), () => cmtDislike(id, cm));
 }
 
 function openCommentOptions(id, cm, parentCid) {
@@ -1754,10 +1764,10 @@ function renderComments() {
     return;
   }
   const keepScroll = list.scrollTop;
-  list.innerHTML = c.list.filter((cm) => !(opt.hideDisliked && state.cmtDislikes.has(cm.cid))).map((cm) => {
+  list.innerHTML = c.list.map((cm) => {
     const r = c.replies.get(cm.cid);
     let html = cmtHtml(cm, false);
-    if (r && r.list.length && !r.collapsed) html += `<div class="replies">${r.list.filter((x) => !(opt.hideDisliked && state.cmtDislikes.has(x.cid))).map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
+    if (r && r.list.length && !r.collapsed) html += `<div class="replies">${r.list.map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
     const left = (cm.reply_comment_total || 0) - (r ? r.list.length : 0);
     if (r && r.collapsed) {
       html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${(cm.reply_comment_total > 1 ? t('Ver {0} respuestas', cm.reply_comment_total) : t('Ver 1 respuesta')) + ' ▾'}</button>`;

@@ -644,3 +644,5 @@ body.light .lessreplies { color: rgba(22,24,35,.55); }
 
 /* Directos */
 .livebtn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; background: var(--red); color: #fff; font-weight: 700; padding: 10px 18px; border-radius: 22px; }
+.cmt.hidden-cmt .gone { font-size: 13px; color: rgba(255,255,255,.45); }
+body.light .cmt.hidden-cmt .gone { color: rgba(22,24,35,.45); }
