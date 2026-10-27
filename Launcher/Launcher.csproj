@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Lanzador: .NET Framework 4.8 viene con Windows 10/11, así que arranca siempre.
+       Instala el .NET 8 Desktop Runtime si falta y abre la app incrustada. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>Tokdesk</AssemblyName>
+    <RootNamespace>TokdeskLauncher</RootNamespace>
+    <ApplicationIcon>..\Tokdesk\app.ico</ApplicationIcon>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Version>1.0.0</Version>
+    <Product>Tokdesk</Product>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- La app real (publicada por publish.ps1) va dentro del lanzador -->
+    <EmbeddedResource Include="..\dist\app\Tokdesk.exe" LogicalName="app.exe" />
+  </ItemGroup>
+
+</Project>

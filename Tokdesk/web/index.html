@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tokdesk</title>
+<link rel="stylesheet" href="app.css">
+<link rel="icon" href="logo.png">
+<style id="userTheme"></style>
+</head>
+<body>
+  <header id="top">
+    <button id="btnSearch" class="topicon" title="Buscar (/)"></button>
+    <div class="tabs">
+      <button class="tab" data-feed="explore" data-i18n>Explorar</button>
+      <button class="tab" data-feed="following" data-i18n>Siguiendo</button>
+      <button class="tab active" data-feed="foryou" data-i18n>Para ti</button>
+    </div>
+    <div id="backbar"><button id="btnBack" title="Volver (Retroceso)"></button><span id="backTitle"></span></div>
+    <div class="winbtns">
+      <button id="btnSettings" title="Configuración (Ctrl+,)"></button>
+      <div id="volwrap">
+        <button id="btnMute" title="Silenciar (M)"></button>
+        <div id="volpop"><input id="vol" type="range" min="0" max="100" step="1" value="100" title="Volumen"></div>
+      </div>
+      <button id="btnTop" title="Siempre visible"></button>
+      <button id="btnMin" title="Minimizar"></button>
+      <button id="btnMax" title="Maximizar (F)"></button>
+      <button id="btnClose" title="Cerrar"></button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <div id="pager"></div>
+    <div id="empty"><img class="logo" src="logo.png" alt=""><div class="spinner"></div><p id="emptyText" data-i18n>Cargando videos…</p></div>
+    <div id="toast"></div>
+    <div id="notice"></div>
+    <div id="speedBadge"></div>
+    <button id="cleanExit" data-i18n>Salir de pantalla limpia</button>
+  </main>
+
+  <nav id="bottom">
+    <button class="nav active" data-nav="home"><span class="ic" data-ic="home"></span><span data-i18n>Inicio</span></button>
+    <button class="nav" data-nav="friends"><span class="ic" data-ic="friends"></span><span data-i18n>Amigos</span></button>
+    <button class="nav plus" data-nav="upload" title="Subir video"><span class="plusbox"></span></button>
+    <button class="nav" data-nav="inbox"><span class="ic" data-ic="inbox"></span><span data-i18n>Mensajes</span><i id="inboxBadge"></i></button>
+    <button class="nav" data-nav="me"><span class="ic" data-ic="me"></span><span data-i18n>Perfil</span></button>
+  </nav>
+
+  <!-- Comentarios -->
+  <section id="sheet" class="panel" aria-hidden="true">
+    <div class="sheet-head">
+      <span id="sheetTitle" data-i18n>Comentarios</span>
+      <button class="xbtn" data-close="sheet" title="Cerrar (Esc)">✕</button>
+    </div>
+    <div id="sheetList"></div>
+    <form id="cmtForm">
+      <img id="cmtMe" alt="">
+      <input id="cmtInput" maxlength="150" placeholder="Agregar comentario…" data-i18n-ph autocomplete="off">
+      <button id="cmtSend" type="submit" title="Publicar">↑</button>
+    </form>
+  </section>
+
+  <!-- Compartir -->
+  <section id="share" class="panel" aria-hidden="true">
+    <div class="share-head"><button class="sbtn" id="friendSearch" title="Buscar amigos"></button><span data-i18n>Enviar a</span><button class="xbtn" data-close="share">✕</button></div>
+    <input id="friendFilter" placeholder="Buscar" data-i18n-ph autocomplete="off">
+    <div id="friends" class="row scroll"></div>
+    <div class="divider"></div>
+    <div id="shareApps" class="row scroll"></div>
+    <div class="divider"></div>
+    <div id="shareActs" class="row scroll"></div>
+    <button class="cancel" data-close="share" data-i18n>Cancelar</button>
+  </section>
+
+  <!-- Perfil -->
+  <section id="profile" class="panel dark" aria-hidden="true">
+    <div class="sheet-head"><button class="pf-back" data-close="profile" id="pfBack"></button><span id="pfTitle"></span></div>
+    <div id="pfBody">
+      <div class="pf-head">
+        <img id="pfAvatar" alt="">
+        <div class="pf-name"><span id="pfName"></span><button class="pen" id="pfPen" title="Editar perfil"></button></div>
+        <div class="pf-handle" id="pfHandle"></div>
+        <div class="pf-stats">
+          <div><b id="pfFollowing">–</b><span data-i18n>Siguiendo</span></div>
+          <div><b id="pfFollowers">–</b><span data-i18n>Seguidores</span></div>
+          <div><b id="pfLikes">–</b><span data-i18n>Me gusta</span></div>
+        </div>
+        <div class="pf-btns">
+          <button id="pfFollow" class="btn-red" data-i18n>Seguir</button>
+          <button id="pfEdit" class="btn-gray" style="display:none" data-i18n>Editar perfil</button>
+          <button id="pfMsg" class="btn-gray" style="display:none">Mensajes</button>
+          <button id="pfOpen" class="btn-gray" title="Abrir en el navegador">↗</button>
+        </div>
+        <div class="pf-bio" id="pfBio"></div>
+      </div>
+      <div class="pf-tabs icons" id="pfTabs">
+        <button data-list="user" class="on" title="Videos" data-ic="grid"></button>
+        <button data-list="reposts" title="Republicados" data-ic="repost"></button>
+        <button data-list="favorites" title="Favoritos" data-ic="bookmark"></button>
+        <button data-list="liked" title="Me gusta" data-ic="heartline"></button>
+      </div>
+      <div class="pf-sub" id="pfSub">
+        <button data-sub="posts" class="on" data-i18n>Publicaciones</button>
+        <button data-sub="collections" data-i18n>Colecciones</button>
+      </div>
+      <div id="pfColl"></div>
+      <div id="pfGrid"></div>
+      <div id="pfMore" class="sheet-msg"></div>
+    </div>
+  </section>
+
+  <!-- Búsqueda -->
+  <section id="search" class="panel dark full" aria-hidden="true">
+    <form id="searchForm">
+      <button type="button" class="xbtn" data-close="search" id="searchBack"></button>
+      <div class="sbox"><span id="sIcon"></span><input id="searchInput" placeholder="Buscar" data-i18n-ph autocomplete="off"></div>
+      <button type="submit" class="go" data-i18n>Buscar</button>
+    </form>
+    <div id="searchHome"></div>
+    <div class="pf-tabs" id="searchTabs">
+      <button data-st="videos" class="on" data-i18n>Videos</button>
+      <button data-st="users" data-i18n>Usuarios</button>
+    </div>
+    <div id="searchGrid"></div>
+    <div id="searchUsers"></div>
+    <div id="searchMore" class="sheet-msg"></div>
+  </section>
+
+  <!-- Bandeja de entrada -->
+  <section id="inbox" class="panel dark" aria-hidden="true">
+    <div class="ib-head"><button class="backbtn" data-close="inbox" id="ibClose"></button><span data-i18n>Mensajes</span><span class="ondot"></span><button class="refresh" id="ibRefresh" title="Actualizar">⟳</button><button class="ibsearch" id="ibSearchBtn" title="Buscar"></button></div>
+    <input id="ibFilter" placeholder="Buscar en mensajes" data-i18n-ph autocomplete="off">
+    <div id="ibBody"></div>
+  </section>
+
+  <!-- Actividad -->
+  <section id="activity" class="panel dark" aria-hidden="true">
+    <div class="ib-head"><button class="backbtn" id="actBack"></button><span id="actTitle" data-i18n>Actividad</span></div>
+    <div id="actBody"></div>
+  </section>
+
+  <!-- Conversación -->
+  <section id="chat" class="panel dark" aria-hidden="true">
+    <div class="ib-head chat-head"><button class="backbtn" id="chatBack" title="Volver"></button>
+      <img id="chatAvatar" alt=""><div class="who"><span id="chatName"></span><small id="chatUid"></small></div></div>
+    <div id="chatList"></div>
+    <div id="chatQuick"></div>
+    <form id="chatForm">
+      <input id="chatInput" maxlength="1000" placeholder="Enviar un mensaje…" data-i18n-ph autocomplete="off">
+      <button id="chatSend" type="submit" title="Enviar">↑</button>
+    </form>
+  </section>
+
+  <!-- Opciones (mantener presionado / clic derecho) -->
+  <section id="opts" class="panel" aria-hidden="true"><div class="grab"></div><div id="optsBody"></div></section>
+
+  <!-- Configuración -->
+  <section id="settings" class="panel dark" aria-hidden="true">
+    <div class="ib-head"><button class="backbtn" id="setBack"></button><span id="setTitle" data-i18n>Configuración</span></div>
+    <div id="setBody"></div>
+  </section>
+
+  <!-- Ayuda -->
+  <section id="help" class="panel dark" aria-hidden="true">
+    <div class="sheet-head"><span data-i18n>Atajos de teclado</span><button class="xbtn" data-close="help">✕</button></div>
+    <div id="helpList"></div>
+  </section>
+
+  <!-- Menú de clic derecho -->
+  <div id="ctx" role="menu"></div>
+  <div id="scrim"></div>
+
+  <script src="icons.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

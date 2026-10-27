@@ -1,0 +1,9 @@
+bin/
+obj/
+tools/
+dist/
+*.user
+.vs/
+# Tokens de GitHub: nunca al repositorio
+secrets/
+Tokdesk/update.token

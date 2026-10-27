@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Tokdesk</AssemblyName>
+    <RootNamespace>Tokdesk</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <!-- Versión de la app: el actualizador la compara con el tag de la release (vX.Y.Z) -->
+    <Version>1.0.0</Version>
+    <Product>Tokdesk</Product>
+  </PropertyGroup>
+
+  <!-- Publicación: un único .exe que usa el .NET 8 instalado (lo instala el lanzador si falta) -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>es</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- WinForms solo se usa para el ícono de bandeja; no se importa globalmente para no chocar con WPF -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- La interfaz va incrustada en el .exe; la copia suelta solo se usa al desarrollar -->
+    <EmbeddedResource Include="web\**" LogicalName="web/%(RecursiveDir)%(Filename)%(Extension)" WithCulture="false" />
+    <None Include="web\**" CopyToOutputDirectory="PreserveNewest" Condition="'$(PublishSingleFile)' != 'true'" />
+    <EmbeddedResource Include="update.json" LogicalName="update.json" Condition="Exists('update.json')" />
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+</Project>
