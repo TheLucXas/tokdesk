@@ -286,7 +286,9 @@ public partial class MainWindow : Window
             src.CopyTo(dst);
         }
         catch (Exception ex) { Log.Write("Ícono para el mezclador: " + ex.Message); }
-        Task.Run(() => AudioSessions.Watch("Tokdesk", ico));
+        Task.Run(() => AudioSessions.Watch("Tokdesk", AppInfo.ExePath + ",0"));
+        // EarTrumpet no lee bien un .ico suelto (mostraba una "T"): se usa el ícono del propio .exe
+        ico = AppInfo.ExePath + ",0";
         mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", ico));
         mixer.Start();
 
@@ -350,9 +352,16 @@ public partial class MainWindow : Window
                     Application.Current.Shutdown();
                     break;
                 case "open": Process.Start(new ProcessStartInfo(S("url")) { UseShellExecute = true }); break;
+                case "reportopen":
+                    PostToUi(new { t = "reportstate", s = await _side.OpenReport(S("url"), S("comment")) });
+                    break;
+                case "reportact":
+                    PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
+                    break;
+                case "reportclose": await _side.ReportClose(); break;
                 case "report":
                     ShowPanel(_side);
-                    await _side.Show(S("url"));
+                    await _side.Show(S("url"), string.IsNullOrEmpty(S("comment")) ? SidePage.ReportVideoJs : SidePage.ReportCommentJs(S("comment")));
                     break;
                 case "web":
                     ShowPanel(_side);

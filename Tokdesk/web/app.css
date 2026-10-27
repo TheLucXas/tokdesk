@@ -646,3 +646,54 @@ body.light .lessreplies { color: rgba(22,24,35,.55); }
 .livebtn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; background: var(--red); color: #fff; font-weight: 700; padding: 10px 18px; border-radius: 22px; }
 .cmt.hidden-cmt .gone { font-size: 13px; color: rgba(255,255,255,.45); }
 body.light .cmt.hidden-cmt .gone { color: rgba(22,24,35,.45); }
+
+/* Reacción del chat: pastilla debajo del mensaje, del lado izquierdo (como en la app) */
+.msg .mwrap { position: relative; min-width: 0; }
+.msg.reacted { margin-bottom: 14px; }
+.msg .react { position: absolute; left: 6px; right: auto; bottom: -14px; font-size: 12px; line-height: 1; background: #2a2a2a;
+  border: 2px solid #121212; border-radius: 12px; padding: 3px 6px; box-shadow: none; }
+.msg.mine .react { left: auto; right: 6px; }
+body.light .msg .react { background: #f1f1f2; border-color: #fff; }
+
+/* Seguir: el + se vuelve ✓ con rebote y desaparece */
+.avatar.follow-anim .follow { background: #fff; color: var(--red); transform: scale(1); opacity: 1; animation: followpop 1.1s ease forwards; }
+.avatar.follow-anim .follow::after { content: "✓"; position: absolute; inset: 0; background: #fff; border-radius: 50%; font-size: 13px; line-height: 20px; }
+@keyframes followpop { 0% { transform: rotate(-90deg) scale(.6); } 25% { transform: rotate(0) scale(1.25); } 45% { transform: scale(1); } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+
+/* Me gusta y guardar: rebote al activarse */
+.act.liked .ico { animation: likepop .45s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes likepop { 0% { transform: scale(.6); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.act.saved .ico { animation: savepop .45s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes savepop { 0% { transform: scale(.7) translateY(4px); } 55% { transform: scale(1.2) translateY(-2px); } 100% { transform: scale(1); } }
+
+/* Selector de colecciones */
+.cp-title { text-align: center; font-weight: 700; font-size: 15px; padding: 2px 0 12px; }
+.cp-list { max-height: 60vh; overflow-y: auto; }
+.cp-row { display: flex; align-items: center; gap: 12px; padding: 8px 4px; cursor: pointer; border-radius: 8px; }
+.cp-row:hover { background: #2a2a2a; }
+.cp-cover { width: 48px; height: 48px; border-radius: 6px; overflow: hidden; background: #333; flex: none; display: flex; align-items: center; justify-content: center; padding: 0; }
+.cp-cover img { width: 100%; height: 100%; object-fit: cover; }
+.cp-cover svg { width: 26px; height: 26px; color: #aaa; }
+.cp-tx { flex: 1; min-width: 0; }
+.cp-name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-sub { font-size: 12px; color: rgba(255,255,255,.5); }
+.cp-add { font-size: 22px; width: 36px; height: 36px; color: #fff; }
+.cp-form { display: flex; flex-direction: column; gap: 12px; padding: 4px 4px 8px; }
+.cp-form input#cpName { background: #2a2a2a; color: #fff; border: 0; border-radius: 8px; padding: 10px 12px; font: inherit; outline: none; }
+.cp-pub { font-size: 13px; display: flex; gap: 8px; align-items: center; }
+body.light .cp-row:hover { background: #f1f1f2; }
+body.light .cp-sub { color: rgba(22,24,35,.5); }
+body.light .cp-add { color: #161823; }
+body.light .cp-form input#cpName { background: #f1f1f2; color: #161823; }
+
+/* Hoja de denuncia */
+.rp-head { position: relative; text-align: center; font-weight: 700; font-size: 15px; padding: 2px 36px 12px; }
+.rp-back { position: absolute; left: 0; top: -4px; width: 30px; height: 30px; padding: 5px; color: inherit; }
+.rp-text { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,.7); white-space: pre-line; padding: 0 4px 12px; max-height: 40vh; overflow-y: auto; }
+body.light .rp-text { color: rgba(22,24,35,.7); }
+.rp-reason { justify-content: space-between; }
+.rp-reason .chev { margin-left: auto; color: rgba(255,255,255,.4); font-size: 20px; }
+.rp-act { display: block; width: 100%; margin: 4px 0 2px; padding: 11px; font-size: 15px; border-radius: 6px; }
+.rp-act:disabled { opacity: .5; }
+.rp-done { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0 18px; font-weight: 600; }
+.rp-done svg { width: 48px; height: 48px; color: #25c26e; }

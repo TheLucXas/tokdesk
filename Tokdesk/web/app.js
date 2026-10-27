@@ -412,7 +412,13 @@ function buildSlide(it) {
   }
 
   $('.avatar img', el).addEventListener('click', (e) => { e.stopPropagation(); openProfile(it); });
-  $('.follow', el).addEventListener('click', (e) => { e.stopPropagation(); follow(it, true); });
+  $('.follow', el).addEventListener('click', (e) => {
+    e.stopPropagation();
+    const av = $('.avatar', el);
+    av.classList.add('follow-anim');
+    setTimeout(() => av.classList.remove('follow-anim'), 1100);
+    follow(it, true);
+  });
   $('.like', el).addEventListener('click', (e) => { e.stopPropagation(); like(it); });
   $('.cmts', el).addEventListener('click', (e) => { e.stopPropagation(); openComments(it); });
   $('.save', el).addEventListener('click', (e) => { e.stopPropagation(); favorite(it); });
@@ -551,7 +557,8 @@ async function favorite(it) {
   const on = !it.saved;
   it.saved = on; it.saves += on ? 1 : -1; refreshSlide(it);
   const ok = await act('/api/item/collect/', { aid: 1988, itemId: it.id, action: on ? 1 : 2, secUid: it.secUid });
-  if (ok) toast(on ? t('Añadido a Favoritos') : t('Quitado de Favoritos'));
+  if (ok && on) notice('✓ ' + t('Guardado'), t('Colecciones') + ' ›', () => openCollectionPicker(it));
+  else if (ok) toast(t('Quitado de Favoritos'));
   else { it.saved = !on; it.saves += on ? -1 : 1; refreshSlide(it); }
 }
 
@@ -591,11 +598,58 @@ function copyLink(it) {
   navigator.clipboard.writeText(linkOf(it)).then(() => toast(t('Enlace copiado')), () => toast(t('No se pudo copiar')));
 }
 
-function report(it) {
-  closePanels();
-  send({ t: 'report', url: linkOf(it) });
-  notice(t('En la página oficial usa ⋯ › Denunciar y luego «Volver»'));
+// Denunciar: el formulario oficial corre oculto y se muestra en una hoja propia (sin abrir la web)
+let reportOpen = false;
+function report(it, commentText) {
+  const keep = !!commentText && $('#sheet').classList.contains('open');
+  if (!keep) closePanels();
+  reportOpen = true;
+  $('#optsBody').innerHTML = `<div class="cp-title">${esc(t('Denunciar'))}</div><div class="sheet-msg"><div class="spinner"></div><div>${esc(t('Abriendo formulario de denuncia…'))}</div></div>`;
+  openPanel('opts', true);
+  busy(1);
+  send({ t: 'reportopen', url: linkOf(it), comment: commentText || '' });
 }
+
+function onReportState(m) {
+  busy(-1);
+  if (!reportOpen) return;
+  let s = null;
+  try { s = m.s ? JSON.parse(m.s) : null; } catch { }
+  const body = $('#optsBody');
+  if (!s) {
+    body.innerHTML = `<div class="cp-title">${esc(t('Denunciar'))}</div><div class="sheet-msg">${esc(t('No se pudo abrir la denuncia.'))}</div>`;
+    reportOpen = false;
+    send({ t: 'reportclose' });
+    return;
+  }
+  if (s.closed) {
+    // El formulario se cerró solo: la denuncia se envió
+    body.innerHTML = `<div class="rp-done">${ICON.check}<div>${esc(t('Gracias por denunciar'))}</div></div>`;
+    reportOpen = false;
+    send({ t: 'reportclose' });
+    setTimeout(() => closePanel('opts'), 1600);
+    return;
+  }
+  const back = s.buttons.find((b) => !b.text && b.e2e !== 'report-card-cancel');
+  const actions = s.buttons.filter((b) => b.text && b.e2e !== 'report-card-cancel');
+  body.innerHTML = `<div class="rp-head">${back ? `<button class="rp-back" data-b="${back.i}">${ICON.back}</button>` : ''}<span>${esc(s.title || t('Denunciar'))}</span></div>
+    ${s.text ? `<div class="rp-text">${esc(s.text)}</div>` : ''}
+    <div class="og">${s.reasons.map((r, i) => `<button class="oi rp-reason" data-r="${i}"><span>${esc(r)}</span><span class="chev">›</span></button>`).join('')}</div>
+    ${actions.map((b) => `<button class="pill rp-act" data-b="${b.i}" ${b.off ? 'disabled' : ''}>${esc(b.text)}</button>`).join('')}`;
+  $$('.rp-reason', body).forEach((b) => b.onclick = () => reportAct('reason', +b.dataset.r));
+  $$('.rp-act, .rp-back', body).forEach((b) => b.onclick = () => reportAct('button', +b.dataset.b));
+}
+
+function reportAct(kind, i) {
+  $('#optsBody').insertAdjacentHTML('beforeend', '<div class="sheet-msg"><div class="spinner"></div></div>');
+  busy(1);
+  send({ t: 'reportact', kind, i });
+}
+
+// Si se cierra la hoja a mitad de camino, se cancela el formulario oficial
+new MutationObserver(() => {
+  if (reportOpen && !$('#opts').classList.contains('open')) { reportOpen = false; send({ t: 'reportclose' }); }
+}).observe($('#opts'), { attributes: true, attributeFilter: ['class'] });
 
 function setSpeed(s) {
   state.speed = s; pref.set('speed', s);
@@ -1263,7 +1317,7 @@ function onConv(m) {
     if (!inner && x.other) inner = esc(x.other);
     if (!inner) inner = `<i>${t('Mensaje no compatible')}</i>`;
     const bubble = (x.video || x.shared >= 0 || x.image) && !x.text ? inner : `<div class="bub">${inner}</div>`;
-    return `<div class="msg ${x.mine ? 'mine' : ''}" data-idx="${x.idx}" data-text="${esc((x.text || x.ref || x.sharedBy || '').slice(0, 120))}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar || d.avatar || avatarOf(chatConv))}">`}${bubble}</div>`;
+    return `<div class="msg ${x.mine ? 'mine' : ''}${x.reaction ? ' reacted' : ''}" data-idx="${x.idx}" data-text="${esc((x.text || x.ref || x.sharedBy || '').slice(0, 120))}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar || d.avatar || avatarOf(chatConv))}">`}<div class="mwrap">${bubble}${x.reaction ? `<span class="react">${esc(x.reaction)}</span>` : ''}</div></div>`;
   }).join('');
   // Portadas de videos compartidos: se piden por id (la página oficial no las trae en el mensaje)
   $$('.vthumb[data-id]', list).forEach((v) => {
@@ -1716,7 +1770,7 @@ function openCommentOptions(id, cm, parentCid) {
     { ic: 'user', label: t('Ver perfil de {0}', u.nickname || u.unique_id), fn: () => openUserByName(u.unique_id) },
   ], [
     mine ? { ic: 'broken', label: t('Eliminar'), danger: true, fn: () => { back(); deleteComment(id, cm, parentCid); } }
-      : { ic: 'flag', label: t('Denunciar'), danger: true, fn: () => { const it = currentItem(); if (it) report(it); } },
+      : { ic: 'flag', label: t('Denunciar'), danger: true, fn: () => { const it = currentItem(); if (it) report(it, cm.text); } },
   ]], true);
 }
 
@@ -1775,7 +1829,7 @@ function renderComments() {
     }
     if (r && r.list.length) html += `<button class="lessreplies" data-cid="${esc(cm.cid)}">${esc(t('Ocultar respuestas'))} ▴</button>`;
     if (left > 0 && (!r || r.hasMore)) {
-      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${r && r.loading ? t('Cargando…') : (left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
+      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${r && r.loading ? t('Cargando…') : r && r.error ? t('No se pudieron cargar las respuestas') + ' · ' + t('Reintentar') : (left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
     }
     return html;
   }).join('') + (c.hasMore ? '<div class="sheet-msg"><div class="spinner"></div></div>' : '');
@@ -1815,13 +1869,14 @@ $('#sheetList').addEventListener('click', async (e) => {
   if (!r) { r = { list: [], cursor: 0, hasMore: true, loading: false }; c.replies.set(cid, r); }
   if (r.loading) return;
   r.loading = true;
+  r.error = false;
   renderComments();
   const res = await api('GET', '/api/comment/list/reply/', { item_id: id, comment_id: cid, count: 10, cursor: r.cursor });
   r.loading = false;
   const d = res.data;
   if (d && Array.isArray(d.comments)) {
     r.list.push(...d.comments); r.cursor = d.cursor || r.cursor + d.comments.length; r.hasMore = !!d.has_more;
-  } else { r.hasMore = false; toast(t('No se pudieron cargar las respuestas')); }
+  } else { r.error = true; toast(t('No se pudieron cargar las respuestas')); }
   if (state.sheetFor === id) renderComments();
 });
 
@@ -1989,6 +2044,7 @@ host && host.addEventListener('message', (e) => {
     case 'text': { const r = textWaiting.get(m.rid); if (r) { textWaiting.delete(m.rid); r(m.body); } break; }
     case 'conv': onConv(m); break;
     case 'dm': onDm(m); break;
+    case 'reportstate': onReportState(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
@@ -2093,7 +2149,8 @@ $('#chatReplyX').addEventListener('click', () => setChatReply(null));
 function reactToMessage(row) {
   if (!chatConv || !row) return;
   const idx = +row.dataset.idx;
-  if (!row.querySelector('.react')) row.insertAdjacentHTML('beforeend', '<span class="react">❤️</span>');
+  const wrap = row.querySelector('.mwrap') || row;
+  if (!row.querySelector('.react')) { wrap.insertAdjacentHTML('beforeend', '<span class="react">❤️</span>'); row.classList.add('reacted'); }
   send({ t: 'dmreact', id: chatConv.id, i: idx, emoji: '❤️' });
 }
 
@@ -2192,9 +2249,9 @@ function normalizeLive(it) {
   const b = $('.nav[data-nav="logo"]');
   if (!b) return;
   b.addEventListener('click', (e) => {
-    if (e.ctrlKey || e.shiftKey) { send({ t: 'open', url: 'https://github.com/TheLucXas/tokdesk' }); return; }
     const img = $('img', b);
     img.classList.remove('spin'); void img.offsetWidth; img.classList.add('spin');
+    if (e.ctrlKey || e.shiftKey) setTimeout(() => send({ t: 'open', url: 'https://github.com/TheLucXas/tokdesk' }), 450);
   });
 })();
 
@@ -2209,3 +2266,59 @@ document.addEventListener('pointerdown', (e) => {
 
 // Foto del perfil ampliable
 $('#pfAvatar').addEventListener('click', () => { const s = $('#pfAvatar').src; if (s) openViewer(s); });
+// ---------- Selector de colecciones (como «Guárdalo en la colección» de la app) ----------
+let myCollections = null;
+async function openCollectionPicker(it) {
+  if (!state.me) return askLogin();
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(t('Guárdalo en la colección'))}</div><div class="sheet-msg"><div class="spinner"></div></div>`;
+  openPanel('opts', true);
+  if (!myCollections) {
+    const r = await api('GET', '/api/user/collection_list/', { secUid: state.me.secUid, count: 30, cursor: 0 });
+    myCollections = (r.data && (r.data.collectionList || r.data.collection_list)) || [];
+  }
+  renderCollectionPicker(it);
+}
+
+function renderCollectionPicker(it) {
+  const body = $('#optsBody');
+  const rows = myCollections.map((c, i) => {
+    const cover = (c.cover && c.cover.urlList && c.cover.urlList[0]) || '';
+    const priv = +c.status !== 3;
+    return `<div class="cp-row" data-i="${i}">
+      <div class="cp-cover">${cover ? `<img alt="" src="${esc(cover)}">` : ICON.folder}</div>
+      <div class="cp-tx"><div class="cp-name">${esc(c.name)}${priv ? ' 🔒' : ''}</div><div class="cp-sub">${esc(t('{0} publicaciones', fmt(c.total)))}</div></div>
+      <button class="cp-add" title="${esc(t('Agregar'))}">＋</button></div>`;
+  }).join('');
+  body.innerHTML = `<div class="cp-title">${esc(t('Guárdalo en la colección'))}</div><div class="cp-list">${rows}
+    <div class="cp-row cp-new"><div class="cp-cover">${ICON.grid}</div><div class="cp-tx"><div class="cp-name">${esc(t('Crear una nueva colección'))}</div>
+    <div class="cp-sub">${esc(t('Organiza las publicaciones para revisarlas rápidamente'))}</div></div><button class="cp-add">＋</button></div></div>`;
+  $$('.cp-row[data-i]', body).forEach((r) => r.onclick = () => addToCollection(it, myCollections[+r.dataset.i]));
+  $('.cp-new', body).onclick = () => newCollectionForm(it);
+}
+
+async function addToCollection(it, c) {
+  closePanel('opts');
+  if (!it.saved) await favorite(it);
+  const ok = await act('/api/collection/modify_items/', { collectionId: c.collectionId, commitIds: it.id });
+  if (ok) { toast(t('Guardado en {0}', c.name)); c.total = String((+c.total || 0) + 1); }
+}
+
+function newCollectionForm(it) {
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(t('Crear una nueva colección'))}</div>
+    <div class="cp-form"><input id="cpName" maxlength="30" placeholder="${esc(t('Nombre de la colección'))}">
+    <label class="cp-pub"><input type="checkbox" id="cpPublic"> ${esc(t('Hacer pública'))}</label>
+    <button class="pill" id="cpCreate">${esc(t('Crear'))}</button></div>`;
+  $('#cpName').focus();
+  $('#cpCreate').onclick = async () => {
+    const name = $('#cpName').value.trim();
+    if (!name) return;
+    const status = $('#cpPublic').checked ? 3 : 1;
+    const d = await act('/api/collection/create/', { name, status, collectionName: name, collectionStatus: status });
+    if (!d) return;
+    const c = { collectionId: d.collectionIdString || String(d.collectionId), name, status, total: '0' };
+    myCollections.unshift(c);
+    addToCollection(it, c);
+  };
+}

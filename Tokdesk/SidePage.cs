@@ -89,7 +89,7 @@ sealed class SidePage
     {
         await Ensure();
         // Mientras el usuario ve una página oficial (denunciar, subir, etc.) no se la cambia por detrás
-        if (_visible) throw new InvalidOperationException("página oficial en uso");
+        if (Busy) throw new InvalidOperationException("página oficial en uso");
         if (_wv.Source != null && _wv.Source.StartsWith(url)) return;
         _nav = new TaskCompletionSource<bool>();
         _wv.Navigate(url);
@@ -116,6 +116,91 @@ sealed class SidePage
 
     public bool Visible => _visible;
 
+    // Mientras se ve una página oficial o se usa el formulario de denuncia, nada más la mueve
+    bool _locked;
+    bool Busy => _visible || _locked;
+
+    // Estado del formulario oficial de denuncia, para mostrarlo en la interfaz propia
+    const string ReportStateJs = """
+        (() => {
+          const f = document.querySelector('[data-e2e="report-form"]');
+          if (!f) return JSON.stringify({ closed: true });
+          const title = ((f.querySelector('[data-e2e="report-title"]') || {}).textContent || '').trim();
+          const reasons = [...f.querySelectorAll('[data-e2e^="report-card-reason"]')].map(e => e.textContent.trim());
+          const buttons = [...f.querySelectorAll('button')].map((b, i) => ({ i, e2e: b.dataset.e2e || '', text: b.textContent.trim(), off: !!b.disabled }));
+          const skip = new Set([title, ...reasons, ...buttons.map(b => b.text)]);
+          const lines = f.innerText.split('\n').map(s => s.trim()).filter(s => s && !skip.has(s));
+          return JSON.stringify({ title, reasons, buttons, text: lines.join('\n').slice(0, 1500) });
+        })()
+        """;
+
+    /// <summary>Abre (oculto) el formulario oficial de denuncia de un video o comentario.</summary>
+    public async Task<string> OpenReport(string url, string comment)
+    {
+        _locked = false;
+        await Go(url);
+        _locked = true;
+        var opened = await Poll(string.IsNullOrEmpty(comment) ? ReportVideoJs : ReportCommentJs(comment), 20000);
+        if (opened == null) { _locked = false; return null; }
+        await Task.Delay(300);
+        return await Eval(ReportStateJs);
+    }
+
+    /// <summary>Hace clic en un motivo o en un botón del formulario y devuelve el estado nuevo.</summary>
+    public async Task<string> ReportAct(string kind, int index)
+    {
+        if (!_locked) return null;
+        var sel = kind == "reason" ? "[data-e2e^=\"report-card-reason\"]" : "button";
+        await Eval($$"""
+            (() => {
+              const f = document.querySelector('[data-e2e="report-form"]');
+              const el = f && f.querySelectorAll('{{sel}}')[{{index}}];
+              if (el) el.click();
+              return null;
+            })()
+            """);
+        await Task.Delay(1200);
+        return await Eval(ReportStateJs);
+    }
+
+    public async Task ReportClose()
+    {
+        if (!_locked) return;
+        try { await Eval("(() => { const c = document.querySelector('[data-e2e=\"report-card-cancel\"]'); if (c) c.click(); return null; })()"); }
+        finally { _locked = false; }
+    }
+
+    // Abre la ventana oficial de denuncia del video (menú ⋯ › Denunciar)
+    public const string ReportVideoJs = """
+        (() => {
+          if (document.querySelector('[data-e2e="report-form"]')) return 'ok';
+          const r = document.querySelector('[data-e2e="more-menu-popover_report"]');
+          if (r) { r.click(); return null; }
+          const m = document.querySelector('[data-e2e="more-menu-icon"]');
+          if (m) { ['mouseover', 'mouseenter'].forEach(t => m.dispatchEvent(new MouseEvent(t, { bubbles: true }))); m.click(); }
+          return null;
+        })()
+        """;
+
+    // Abre la ventana oficial de denuncia de un comentario, buscándolo por su texto
+    public static string ReportCommentJs(string text) => $$"""
+        (() => {
+          if (document.querySelector('[data-e2e="report-form"]')) return 'ok';
+          const want = {{JsonSerializer.Serialize((text ?? "").Trim())}}.slice(0, 40);
+          const rep = document.querySelector('[data-e2e="comment-report"]');
+          if (rep) { rep.click(); return null; }
+          const tab = [...document.querySelectorAll('[role="tab"], button, span')].find(e => /^(Comentarios|Comments)/i.test((e.textContent || '').trim()));
+          const item = [...document.querySelectorAll('[data-e2e^="comment-level"], [class*="CommentItem"]')]
+            .find(e => (e.textContent || '').includes(want));
+          if (!item) { if (tab) tab.click(); return null; }
+          item.scrollIntoView({ block: 'center' });
+          ['mouseover', 'mouseenter', 'mousemove'].forEach(t => item.dispatchEvent(new MouseEvent(t, { bubbles: true })));
+          const more = item.querySelector('[data-e2e="comment-more-icon"]') || item.parentElement.querySelector('[data-e2e="comment-more-icon"]');
+          if (more) { ['mouseover', 'mouseenter'].forEach(t => more.dispatchEvent(new MouseEvent(t, { bubbles: true }))); more.click(); }
+          return null;
+        })()
+        """;
+
     // Para el modo de prueba
     public async Task<string> Run(string js) { await Ensure(); return await _wv.ExecuteScriptAsync(js); }
     public Task Open(string url) => Go(url);
@@ -131,7 +216,7 @@ sealed class SidePage
         _nav = new TaskCompletionSource<bool>();
         _wv.Navigate(url);
         await Task.WhenAny(_nav.Task, Task.Delay(20000));
-        if (autoScript != null) await Poll(autoScript, 8000);
+        if (autoScript != null) await Poll(autoScript, 15000);
     }
 
     public void Hide()
@@ -255,6 +340,7 @@ sealed class SidePage
               sharedBy,
               itemId,
               ref: ref ? ref.textContent.trim() : '',
+              reaction: (() => { const r = el.querySelector('[data-e2e="dm-new-reaction-display"]'); return r ? ([...r.querySelectorAll('img')].map(i => i.alt).join('') || r.textContent.trim()) : ''; })(),
               other: !txt && !vid && !shared && !imgs.length ? (el.textContent || '').trim().slice(0, 200) : ''
             });
           });
@@ -266,7 +352,7 @@ sealed class SidePage
     /// <summary>Chats recientes y notificaciones de actividad.</summary>
     public async Task<string> LoadInbox()
     {
-        if (_visible) return null;
+        if (Busy) return null;
         await Go(Messages);
         if (await Poll(InboxJs, 30000) == null) return null;
         // La actividad (me gusta, comentarios, seguidores) se carga al abrir el panel de notificaciones
@@ -296,7 +382,7 @@ sealed class SidePage
     /// <summary>Abre (si hace falta) la conversación y devuelve sus mensajes.</summary>
     public async Task<string> ReadConv(string convId)
     {
-        if (_visible) return null;
+        if (Busy) return null;
         if (!await SelectConv(convId)) return null;
         await Task.Delay(300);
         return await Poll(ConvJs, 6000);
@@ -305,7 +391,7 @@ sealed class SidePage
     /// <summary>Abre el video compartido número <paramref name="n"/> del chat y devuelve su enlace.</summary>
     public async Task<string> OpenShared(string convId, int n)
     {
-        if (_visible) return null;
+        if (Busy) return null;
         if (!await SelectConv(convId)) return null;
         var start = _wv.Source;
         await Eval($"(() => {{ const v = document.querySelectorAll('[data-e2e=\"dm-new-shared-video\"]')[{n}]; if (v) v.click(); return null; }})()");
@@ -322,7 +408,7 @@ sealed class SidePage
     /// <summary>Baja la lista de conversaciones para que la página cargue las más antiguas.</summary>
     public async Task<string> LoadMoreConvs()
     {
-        if (_visible) return null;
+        if (Busy) return null;
         await Go(Messages);
         if (await Poll(InboxJs, 30000) == null) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-conversation-item\"]').length)";
@@ -347,7 +433,7 @@ sealed class SidePage
     /// <summary>Sube hasta el principio de la conversación para que la página cargue mensajes anteriores.</summary>
     public async Task<string> LoadOlder(string convId)
     {
-        if (_visible) return null;
+        if (Busy) return null;
         if (!await SelectConv(convId)) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-chat-item\"]').length)";
         var before = await Eval(countJs);
@@ -379,7 +465,9 @@ sealed class SidePage
         if (!await SelectConv(convId)) return false;
         var js = $$"""
             (() => {
-              const el = document.querySelectorAll('[data-e2e="dm-new-chat-item"]')[{{index}}];
+              // Solo los mensajes de la conversación (no otros elementos de la página con el mismo atributo)
+              const list = document.querySelector('[data-e2e="dm-new-message-list"]');
+              const el = list && list.querySelectorAll('[data-e2e="dm-new-chat-item"]')[{{index}}];
               if (!el) return null;
               ['mouseover', 'mouseenter', 'mousemove'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true })));
               const b = el.querySelector('[data-e2e="{{e2e}}"]');
@@ -394,7 +482,7 @@ sealed class SidePage
     /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
     public async Task<bool> React(string convId, int index, string emoji)
     {
-        if (_visible) return false;
+        if (Busy) return false;
         if (!await MessageButton(convId, index, "dm-new-reaction-btn")) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
@@ -414,7 +502,7 @@ sealed class SidePage
     /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
     public async Task<bool> Reply(string convId, int index, string text)
     {
-        if (_visible) return false;
+        if (Busy) return false;
         if (!await MessageButton(convId, index, "dm-new-reply-btn")) return false;
         await Task.Delay(300);
         return await SendText(convId, text);
@@ -422,7 +510,7 @@ sealed class SidePage
     /// <summary>Escribe y envía un mensaje de texto en la conversación indicada.</summary>
     public async Task<bool> SendText(string convId, string text)
     {
-        if (_visible) return false;
+        if (Busy) return false;
         if (!await SelectConv(convId)) return false;
         var found = await Poll("""
             (() => {
