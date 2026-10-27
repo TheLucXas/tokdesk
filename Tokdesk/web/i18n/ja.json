@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "1080pで動画を見る: HEVC拡張機能をインストール",
   "Videos en 1080p (H.265) activados": "1080p (H.265) 動画を有効にしました",
   "{0} videos": "{0} 件の動画",
-  "{0} visualizaciones": "{0} 回視聴"
+  "{0} visualizaciones": "{0} 回視聴",
+  "Buscando el mensaje…": "メッセージを検索しています…",
+  "Cargando mensajes anteriores…": "過去のメッセージを読み込んでいます…",
+  "Cargar mensajes anteriores": "過去のメッセージを読み込む",
+  "Este usuario no tiene colecciones públicas.": "このユーザーには公開コレクションがありません。",
+  "Ir al mensaje": "メッセージに移動",
+  "No se encontró el mensaje original": "元のメッセージが見つかりません"
 }

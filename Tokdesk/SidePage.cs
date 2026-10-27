@@ -358,7 +358,7 @@ sealed class SidePage
             })()
             """);
         // Espera a que aparezcan mensajes nuevos arriba (o se rinde a los 4 s)
-        for (var t = 0; t < 4000; t += 400)
+        for (var t = 0; t < 8000; t += 400)
         {
             await Task.Delay(400);
             if (await Eval(countJs) != before) break;

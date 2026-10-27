@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Videoları 1080p izle: HEVC uzantısını yükle",
   "Videos en 1080p (H.265) activados": "1080p (H.265) videolar etkinleştirildi",
   "{0} videos": "{0} video",
-  "{0} visualizaciones": "{0} görüntülenme"
+  "{0} visualizaciones": "{0} görüntülenme",
+  "Buscando el mensaje…": "Mesaj aranıyor…",
+  "Cargando mensajes anteriores…": "Eski mesajlar yükleniyor…",
+  "Cargar mensajes anteriores": "Eski mesajları yükle",
+  "Este usuario no tiene colecciones públicas.": "Bu kullanıcının herkese açık koleksiyonu yok.",
+  "Ir al mensaje": "Mesaja git",
+  "No se encontró el mensaje original": "Orijinal mesaj bulunamadı"
 }

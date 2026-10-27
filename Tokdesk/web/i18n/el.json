@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Δείτε βίντεο σε 1080p: εγκαταστήστε την επέκταση HEVC",
   "Videos en 1080p (H.265) activados": "Τα βίντεο 1080p (H.265) ενεργοποιήθηκαν",
   "{0} videos": "{0} βίντεο",
-  "{0} visualizaciones": "{0} προβολές"
+  "{0} visualizaciones": "{0} προβολές",
+  "Buscando el mensaje…": "Αναζήτηση μηνύματος…",
+  "Cargando mensajes anteriores…": "Φόρτωση παλαιότερων μηνυμάτων…",
+  "Cargar mensajes anteriores": "Φόρτωση παλαιότερων μηνυμάτων",
+  "Este usuario no tiene colecciones públicas.": "Αυτός ο χρήστης δεν έχει δημόσιες συλλογές.",
+  "Ir al mensaje": "Μετάβαση στο μήνυμα",
+  "No se encontró el mensaje original": "Το αρχικό μήνυμα δεν βρέθηκε"
 }

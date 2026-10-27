@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "شاهد الفيديوهات بدقة 1080p: ثبّت إضافة HEVC",
   "Videos en 1080p (H.265) activados": "تم تفعيل فيديوهات 1080p (H.265)",
   "{0} videos": "{0} فيديو",
-  "{0} visualizaciones": "{0} مشاهدة"
+  "{0} visualizaciones": "{0} مشاهدة",
+  "Buscando el mensaje…": "جارٍ البحث عن الرسالة…",
+  "Cargando mensajes anteriores…": "جارٍ تحميل الرسائل الأقدم…",
+  "Cargar mensajes anteriores": "تحميل الرسائل الأقدم",
+  "Este usuario no tiene colecciones públicas.": "لا يحتوي هذا المستخدم على مجموعات عامة.",
+  "Ir al mensaje": "الانتقال إلى الرسالة",
+  "No se encontró el mensaje original": "تعذر العثور على الرسالة الأصلية"
 }

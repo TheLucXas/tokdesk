@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Manood ng mga video sa 1080p: i-install ang HEVC extension",
   "Videos en 1080p (H.265) activados": "Naka-on na ang mga video sa 1080p (H.265)",
   "{0} videos": "{0} video",
-  "{0} visualizaciones": "{0} view"
+  "{0} visualizaciones": "{0} view",
+  "Buscando el mensaje…": "Hinahanap ang mensahe…",
+  "Cargando mensajes anteriores…": "Nilo-load ang mas lumang mga mensahe…",
+  "Cargar mensajes anteriores": "I-load ang mas lumang mga mensahe",
+  "Este usuario no tiene colecciones públicas.": "Walang pampublikong koleksyon ang user na ito.",
+  "Ir al mensaje": "Pumunta sa mensahe",
+  "No se encontró el mensaje original": "Hindi makita ang orihinal na mensahe"
 }

@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "1080p로 동영상 보기: HEVC 확장 설치",
   "Videos en 1080p (H.265) activados": "1080p (H.265) 동영상이 활성화되었습니다",
   "{0} videos": "동영상 {0}개",
-  "{0} visualizaciones": "조회수 {0}회"
+  "{0} visualizaciones": "조회수 {0}회",
+  "Buscando el mensaje…": "메시지를 검색하는 중…",
+  "Cargando mensajes anteriores…": "이전 메시지를 불러오는 중…",
+  "Cargar mensajes anteriores": "이전 메시지 불러오기",
+  "Este usuario no tiene colecciones públicas.": "이 사용자는 공개 컬렉션이 없습니다.",
+  "Ir al mensaje": "메시지로 이동",
+  "No se encontró el mensaje original": "원본 메시지를 찾을 수 없습니다"
 }

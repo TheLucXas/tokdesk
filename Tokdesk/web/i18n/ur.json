@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "ویڈیوز 1080p میں دیکھیں: HEVC ایکسٹینشن انسٹال کریں",
   "Videos en 1080p (H.265) activados": "1080p (H.265) ویڈیوز فعال ہو گئیں",
   "{0} videos": "{0} ویڈیوز",
-  "{0} visualizaciones": "{0} ویوز"
+  "{0} visualizaciones": "{0} ویوز",
+  "Buscando el mensaje…": "پیغام تلاش کیا جا رہا ہے…",
+  "Cargando mensajes anteriores…": "پرانے پیغامات لوڈ ہو رہے ہیں…",
+  "Cargar mensajes anteriores": "پرانے پیغامات لوڈ کریں",
+  "Este usuario no tiene colecciones públicas.": "اس صارف کے کوئی عوامی مجموعے نہیں ہیں۔",
+  "Ir al mensaje": "پیغام پر جائیں",
+  "No se encontró el mensaje original": "اصل پیغام نہیں ملا"
 }

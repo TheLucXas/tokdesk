@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Дивитися відео в 1080p: встановити розширення HEVC",
   "Videos en 1080p (H.265) activados": "Відео в 1080p (H.265) увімкнено",
   "{0} videos": "{0} відео",
-  "{0} visualizaciones": "{0} переглядів"
+  "{0} visualizaciones": "{0} переглядів",
+  "Buscando el mensaje…": "Пошук повідомлення…",
+  "Cargando mensajes anteriores…": "Завантаження попередніх повідомлень…",
+  "Cargar mensajes anteriores": "Завантажити попередні повідомлення",
+  "Este usuario no tiene colecciones públicas.": "Цей користувач не має публічних колекцій.",
+  "Ir al mensaje": "Перейти до повідомлення",
+  "No se encontró el mensaje original": "Початкове повідомлення не знайдено"
 }

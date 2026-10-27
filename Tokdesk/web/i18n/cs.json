@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Sledovat videa v 1080p: nainstalovat rozšíření HEVC",
   "Videos en 1080p (H.265) activados": "Videa v 1080p (H.265) zapnuta",
   "{0} videos": "{0} videí",
-  "{0} visualizaciones": "{0} zhlédnutí"
+  "{0} visualizaciones": "{0} zhlédnutí",
+  "Buscando el mensaje…": "Hledání zprávy…",
+  "Cargando mensajes anteriores…": "Načítání starších zpráv…",
+  "Cargar mensajes anteriores": "Načíst starší zprávy",
+  "Este usuario no tiene colecciones públicas.": "Tento uživatel nemá žádné veřejné kolekce.",
+  "Ir al mensaje": "Přejít na zprávu",
+  "No se encontró el mensaje original": "Původní zpráva nebyla nalezena"
 }

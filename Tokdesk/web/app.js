@@ -92,11 +92,12 @@ const waiting = new Map();
 function api(m, path, q = {}) {
   return new Promise((resolve) => {
     const id = ++rid;
-    waiting.set(id, resolve);
+    busy(1);
+    waiting.set(id, (v) => { busy(-1); resolve(v); });
     const qs = {};
     for (const k in q) if (q[k] != null) qs[k] = String(q[k]);
     send({ t: 'api', rid: id, m, path, q: qs });
-    setTimeout(() => { if (waiting.delete(id)) resolve({ status: 0, data: null }); }, 25000);
+    setTimeout(() => { if (waiting.delete(id)) { busy(-1); resolve({ status: 0, data: null }); } }, 25000);
   });
 }
 function onApi(msg) {
@@ -1003,7 +1004,7 @@ function renderFriends() {
   for (const c of state.chats.filter((x) => !q || x.name.toLowerCase().includes(q))) {
     const b = document.createElement('button');
     b.className = 'chip';
-    b.innerHTML = `<img alt="" src="${esc(c.avatar)}"><span class="lbl">${esc(c.name)}</span>`;
+    b.innerHTML = `<img alt="" src="${esc(avatarOf(c))}"><span class="lbl">${esc(c.name)}</span>`;
     b.onclick = () => {
       if (b.classList.contains('sent') || !state.shareFor) return;
       $('.lbl', b).textContent = t('Enviando…');
@@ -1037,11 +1038,12 @@ function onDm(m) {
 let inboxData = null;
 function loadInbox() {
   if (!state.me) return;
-  if (state.chats !== 'loading') { state.chats = 'loading'; send({ t: 'inbox' }); }
+  if (state.chats !== 'loading') { state.chats = 'loading'; busy(1); send({ t: 'inbox' }); }
   renderFriends();
 }
 
 function onInbox(m) {
+  if (m.more || state.chats === 'loading') busy(-1);
   const before = inboxData ? inboxData.convs.length : 0;
   if (m.more) {
     inboxMoreBusy = false;
@@ -1060,6 +1062,7 @@ function onInbox(m) {
   }
   try { inboxData = m.data ? JSON.parse(m.data) : { convs: [], activity: [] }; } catch { inboxData = { convs: [], activity: [] }; }
   state.chats = inboxData.convs || [];
+  rememberAvatars(state.chats);
   if (m.more && state.chats.length <= before) inboxNoMore = true;
   renderFriends();
   renderInbox();
@@ -1100,7 +1103,7 @@ function renderInbox() {
       <div class="tx"><div class="nm">${t('Actividad')}</div><div class="ls">${esc(others[0] ? actLine(others[0]) : t('Me gusta, comentarios y menciones'))}</div></div></button>`;
   }
   html += convs.length ? convs.map((c) => `<button class="ib-item ${c.unread ? 'unread' : ''}" data-id="${esc(c.id)}">
-      <img class="av" alt="" src="${esc(c.avatar)}">
+      <img class="av" alt="" src="${esc(avatarOf(c))}">
       <div class="tx"><div class="nm">${esc(c.name)}</div><div class="ls">${esc(c.last)}${c.time ? ' · ' + esc(c.time) : ''}</div></div>
       ${c.unread ? `<span class="badge">${c.unread}</span>` : ''}</button>`).join('')
     : `<div class="sheet-msg">${q ? t('Sin resultados.') : t('No hay conversaciones.')}</div>`;
@@ -1144,6 +1147,7 @@ $('#ibBody').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
   if (inboxMoreBusy || inboxNoMore || !inboxData || l.scrollTop + l.clientHeight < l.scrollHeight - 200) return;
   inboxMoreBusy = true;
+  busy(1);
   l.insertAdjacentHTML('beforeend', '<div class="sheet-msg" id="ibMore"><div class="spinner"></div></div>');
   send({ t: 'inboxmore' });
 });
@@ -1151,17 +1155,18 @@ $('#ibRefresh').addEventListener('click', () => { inboxData = null; renderInbox(
 
 let chatConv = null, chatTimer = null, chatCount = -1;
 function openChat(c) {
-  chatConv = c; chatCount = -1; olderLoading = false; noOlder = false;
+  chatConv = c; chatCount = -1; olderLoading = false; noOlder = false; olderMisses = 0;
   $('#chatName').textContent = c.name;
   $('#chatUid').textContent = t('');
-  $('#chatAvatar').src = c.avatar || '';
+  $('#chatAvatar').src = avatarOf(c);
   $('#chatList').innerHTML = '<div class="sheet-msg"><div class="spinner"></div></div>';
   $('#inbox').classList.remove('open');
   $('#chat').classList.add('open');
   send({ t: 'chatvis', on: true });
+  busy(1); state.convBusy = true;
   send({ t: 'conv', id: c.id });
   clearInterval(chatTimer);
-  chatTimer = setInterval(() => { if (chatConv && !dmQueue.length && !state.openingShared) send({ t: 'conv', id: chatConv.id }); }, 4000);
+  chatTimer = setInterval(() => { if (chatConv && !dmQueue.length && !state.openingShared) send({ t: 'conv', id: chatConv.id }); }, 6000);
   setTimeout(() => $('#chatInput').focus(), 300);
 }
 function closeChat() {
@@ -1172,6 +1177,7 @@ function closeChat() {
 $('#chatBack').addEventListener('click', () => { closeChat(); openInbox(); });
 
 function onConv(m) {
+  if (state.convBusy) { state.convBusy = false; busy(-1); }
   if (!chatConv || m.id !== chatConv.id) return;
   let d = null;
   try { d = m.data ? JSON.parse(m.data) : null; } catch { }
@@ -1181,7 +1187,17 @@ function onConv(m) {
   if (d.avatar) $('#chatAvatar').src = d.avatar;
   if (m.older) {
     olderLoading = false;
-    if (d.messages.length <= chatCount) { noOlder = true; $('#chatOlder') && $('#chatOlder').remove(); return; }
+    if (d.messages.length <= chatCount) {
+      // La página puede tardar: se reintenta y recién después de 3 intentos se deja un botón
+      olderMisses++;
+      if (olderMisses >= 3) noOlder = true;
+      const o = $('#chatOlder');
+      if (o) o.innerHTML = noOlder ? `<button class="pill" id="olderBtn">${esc(t('Cargar mensajes anteriores'))}</button>` : `<div class="spinner"></div>`;
+      if (noOlder) $('#olderBtn').onclick = () => { noOlder = false; olderMisses = 0; requestOlder(); };
+      else setTimeout(requestOlder, 800);
+      return;
+    }
+    olderMisses = 0;
   }
   if (d.messages.length === chatCount) return;
   const prevHeight = list.scrollHeight;
@@ -1190,7 +1206,7 @@ function onConv(m) {
   list.innerHTML = d.messages.map((x) => {
     if (x.sep != null) return `<div class="sep">${esc(x.sep)}</div>`;
     let inner = '';
-    if (x.ref) inner += `<div class="ref">${esc(x.ref)}</div>`;
+    if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
     if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
@@ -1199,7 +1215,7 @@ function onConv(m) {
     if (!inner && x.other) inner = esc(x.other);
     if (!inner) inner = `<i>${t('Mensaje no compatible')}</i>`;
     const bubble = (x.video || x.shared >= 0 || x.image) && !x.text ? inner : `<div class="bub">${inner}</div>`;
-    return `<div class="msg ${x.mine ? 'mine' : ''}" data-idx="${x.idx}" data-text="${esc((x.text || x.ref || x.sharedBy || '').slice(0, 120))}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar || d.avatar || chatConv.avatar || '')}">`}${bubble}</div>`;
+    return `<div class="msg ${x.mine ? 'mine' : ''}" data-idx="${x.idx}" data-text="${esc((x.text || x.ref || x.sharedBy || '').slice(0, 120))}">${x.mine ? '' : `<img class="av" alt="" src="${esc(x.avatar || d.avatar || avatarOf(chatConv))}">`}${bubble}</div>`;
   }).join('');
   // Portadas de videos compartidos: se piden por id (la página oficial no las trae en el mensaje)
   $$('.vthumb[data-id]', list).forEach((v) => {
@@ -1215,20 +1231,25 @@ function onConv(m) {
     else if (v.dataset.url) openVideoLink(v.dataset.url);
     else if (!state.openingShared) { state.openingShared = true; toast(t('Abriendo video…')); send({ t: 'openshared', id: chatConv.id, n: +v.dataset.n }); }
   });
-  if (!noOlder) list.insertAdjacentHTML('afterbegin', `<div class="sheet-msg" id="chatOlder">${t('Sube para ver mensajes anteriores')}</div>`);
+  list.insertAdjacentHTML('afterbegin', `<div class="sheet-msg" id="chatOlder">${noOlder ? `<button class="pill" id="olderBtn">${esc(t('Cargar mensajes anteriores'))}</button>` : esc(t('Sube para ver mensajes anteriores'))}</div>`);
+  if (noOlder) $('#olderBtn').onclick = () => { noOlder = false; olderMisses = 0; requestOlder(); };
   if (state.chatRestoreScroll != null) { list.scrollTop = state.chatRestoreScroll; state.chatRestoreScroll = null; }
   else if (atBottom) list.scrollTop = list.scrollHeight;
   else if (m.older) list.scrollTop = list.scrollHeight - prevHeight;
 }
 
 // Al llegar arriba del chat se piden los mensajes anteriores
-let olderLoading = false, noOlder = false;
+let olderLoading = false, noOlder = false, olderMisses = 0;
+function requestOlder() {
+  if (olderLoading || !chatConv) return;
+  olderLoading = true;
+  const o = $('#chatOlder'); if (o) o.innerHTML = `<div class="spinner"></div><div>${esc(t('Cargando mensajes anteriores…'))}</div>`;
+  send({ t: 'convold', id: chatConv.id });
+}
 $('#chatList').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
   if (l.scrollTop > 40 || olderLoading || noOlder || !chatConv || chatCount <= 0) return;
-  olderLoading = true;
-  const o = $('#chatOlder'); if (o) o.innerHTML = '<div class="spinner"></div>';
-  send({ t: 'convold', id: chatConv.id });
+  requestOlder();
 });
 
 $('#chatForm').addEventListener('submit', (e) => {
@@ -1361,6 +1382,13 @@ $$('#pfTabs button').forEach((b) => {
 function showProfileList(list) {
   const it = state.profileFor; if (!it) return;
   $$('#pfTabs button').forEach((x) => x.classList.toggle('on', x.dataset.list === list));
+  // En perfiles ajenos, Favoritos son solo sus colecciones públicas (la web no expone sus videos guardados)
+  if (list === 'favorites' && !isMine(it)) {
+    $$('#pfTabs button').forEach((x) => x.classList.toggle('on', x.dataset.list === list));
+    $('#pfSub').classList.remove('show');
+    loadCollections();
+    return;
+  }
   $('#pfSub').classList.toggle('show', list === 'favorites');
   $$('#pfSub button').forEach((x) => x.classList.toggle('on', x.dataset.sub === 'posts'));
   showCollections(false);
@@ -1394,7 +1422,7 @@ async function loadCollections() {
   const d = r.data || {};
   const list = d.collectionList || d.collection_list || [];
   if (!list.length) {
-    box.innerHTML = `<div class="sheet-msg coll-back">${r.data ? t('No hay colecciones.') : t('No se pudieron cargar las colecciones.')}</div>`;
+    box.innerHTML = `<div class="sheet-msg coll-back">${r.data ? (isMine(it) ? t('No hay colecciones.') : t('Este usuario no tiene colecciones públicas.')) : t('No se pudieron cargar las colecciones.')}</div>`;
     if (r.data) log('colecciones: ' + JSON.stringify(d).slice(0, 300));
     return;
   }
@@ -2022,4 +2050,44 @@ async function openCreatorOf(itemId) {
   const a = it && it.author;
   if (!a) { toast(t('No se pudo abrir el perfil')); return; }
   openProfile({ secUid: a.secUid, author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb, authorId: a.id, signature: a.signature });
+}
+// ---------- Fotos de perfil de los chats: se recuerdan para no depender de la página oculta ----------
+const avatarStore = new Map(Object.entries(pref.get('avatars', {})));
+function rememberAvatars(convs) {
+  let changed = false;
+  for (const c of convs) if (c.avatar && avatarStore.get(c.id) !== c.avatar) { avatarStore.set(c.id, c.avatar); changed = true; }
+  if (changed) pref.set('avatars', Object.fromEntries([...avatarStore].slice(-300)));
+}
+const avatarOf = (c) => (c && (c.avatar || avatarStore.get(c.id))) || '';
+
+// ---------- Ir al mensaje citado ----------
+let jumpTries = 0;
+function jumpToMessage(ref) {
+  const key = ref.replace(/\s+/g, ' ').trim().slice(0, 40);
+  const target = $$('#chatList .msg').find((m) => (m.dataset.text || '').replace(/\s+/g, ' ').trim().startsWith(key));
+  if (target) {
+    jumpTries = 0;
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    target.classList.add('flash');
+    setTimeout(() => target.classList.remove('flash'), 1600);
+    return;
+  }
+  // No está cargado todavía: se piden mensajes anteriores y se vuelve a buscar
+  if (jumpTries++ >= 6 || noOlder) { jumpTries = 0; toast(t('No se encontró el mensaje original')); return; }
+  toast(t('Buscando el mensaje…'));
+  requestOlder();
+  setTimeout(() => jumpToMessage(ref), 2500);
+}
+$('#chatList').addEventListener('click', (e) => {
+  const r = e.target.closest('.ref[data-ref]');
+  if (r) { e.stopPropagation(); jumpTries = 0; jumpToMessage(r.dataset.ref); }
+});
+
+// ---------- Indicador de carga (barra fina arriba) ----------
+let busyCount = 0, busyTimer;
+function busy(delta) {
+  busyCount = Math.max(0, busyCount + delta);
+  clearTimeout(busyTimer);
+  if (busyCount > 0) busyTimer = setTimeout(() => $('#busy').classList.add('show'), 250);
+  else $('#busy').classList.remove('show');
 }

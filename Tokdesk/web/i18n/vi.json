@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Xem video 1080p: cài tiện ích HEVC",
   "Videos en 1080p (H.265) activados": "Đã bật video 1080p (H.265)",
   "{0} videos": "{0} video",
-  "{0} visualizaciones": "{0} lượt xem"
+  "{0} visualizaciones": "{0} lượt xem",
+  "Buscando el mensaje…": "Đang tìm tin nhắn…",
+  "Cargando mensajes anteriores…": "Đang tải tin nhắn cũ hơn…",
+  "Cargar mensajes anteriores": "Tải tin nhắn cũ hơn",
+  "Este usuario no tiene colecciones públicas.": "Người dùng này không có bộ sưu tập công khai.",
+  "Ir al mensaje": "Đi tới tin nhắn",
+  "No se encontró el mensaje original": "Không tìm thấy tin nhắn gốc"
 }

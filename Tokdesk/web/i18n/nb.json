@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Se videoer i 1080p: installer HEVC-utvidelsen",
   "Videos en 1080p (H.265) activados": "Videoer i 1080p (H.265) aktivert",
   "{0} videos": "{0} videoer",
-  "{0} visualizaciones": "{0} visninger"
+  "{0} visualizaciones": "{0} visninger",
+  "Buscando el mensaje…": "Søker etter meldingen…",
+  "Cargando mensajes anteriores…": "Laster eldre meldinger…",
+  "Cargar mensajes anteriores": "Last inn eldre meldinger",
+  "Este usuario no tiene colecciones públicas.": "Denne brukeren har ingen offentlige samlinger.",
+  "Ir al mensaje": "Gå til meldingen",
+  "No se encontró el mensaje original": "Opprinnelig melding ble ikke funnet"
 }

@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "צפה בסרטונים ב-1080p: התקן את תוסף HEVC",
   "Videos en 1080p (H.265) activados": "סרטוני 1080p (H.265) הופעלו",
   "{0} videos": "{0} סרטונים",
-  "{0} visualizaciones": "{0} צפיות"
+  "{0} visualizaciones": "{0} צפיות",
+  "Buscando el mensaje…": "מחפש את ההודעה…",
+  "Cargando mensajes anteriores…": "טוען הודעות ישנות יותר…",
+  "Cargar mensajes anteriores": "טען הודעות ישנות יותר",
+  "Este usuario no tiene colecciones públicas.": "למשתמש זה אין אוספים ציבוריים.",
+  "Ir al mensaje": "עבור להודעה",
+  "No se encontró el mensaje original": "ההודעה המקורית לא נמצאה"
 }

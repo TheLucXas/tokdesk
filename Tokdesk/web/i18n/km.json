@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "មើលវីដេអូ 1080p៖ ដំឡើងកម្មវិធីបន្ថែម HEVC",
   "Videos en 1080p (H.265) activados": "បានបើកវីដេអូ 1080p (H.265)",
   "{0} videos": "វីដេអូ {0}",
-  "{0} visualizaciones": "{0} ដងមើល"
+  "{0} visualizaciones": "{0} ដងមើល",
+  "Buscando el mensaje…": "កំពុងស្វែងរកសារ…",
+  "Cargando mensajes anteriores…": "កំពុងផ្ទុកសារចាស់…",
+  "Cargar mensajes anteriores": "ផ្ទុកសារចាស់",
+  "Este usuario no tiene colecciones públicas.": "អ្នកប្រើនេះមិនមានបណ្ដុំសាធារណៈទេ។",
+  "Ir al mensaje": "ទៅកាន់សារ",
+  "No se encontró el mensaje original": "រកមិនឃើញសារដើមទេ"
 }

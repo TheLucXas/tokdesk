@@ -612,3 +612,16 @@ body.light #setSearch { background: #f1f1f2; color: #161823; }
 #chatReplyBar.show { display: flex; }
 #chatReplyBar span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.light #chatReplyBar { background: #f1f1f2; color: rgba(22,24,35,.7); }
+
+/* Barra de carga arriba */
+#busy { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200; pointer-events: none; opacity: 0; transition: opacity .2s;
+  background: linear-gradient(90deg, transparent, var(--red), #25f4ee, transparent); background-size: 50% 100%; background-repeat: no-repeat; }
+#busy.show { opacity: 1; animation: busy 1.1s linear infinite; }
+@keyframes busy { from { background-position: -50% 0; } to { background-position: 150% 0; } }
+.sheet-msg .spinner + div { margin-top: 8px; }
+
+/* Cita tocable y resaltado del mensaje original */
+.msg .ref[data-ref] { cursor: pointer; }
+.msg .ref[data-ref]:hover { color: #fff; }
+.msg.flash .bub, .msg.flash .vthumb { animation: flash 1.6s ease; }
+@keyframes flash { 0%, 60% { box-shadow: 0 0 0 3px var(--red); } 100% { box-shadow: 0 0 0 0 transparent; } }

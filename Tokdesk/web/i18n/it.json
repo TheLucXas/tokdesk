@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Guarda i video in 1080p: installa l'estensione HEVC",
   "Videos en 1080p (H.265) activados": "Video in 1080p (H.265) attivati",
   "{0} videos": "{0} video",
-  "{0} visualizaciones": "{0} visualizzazioni"
+  "{0} visualizaciones": "{0} visualizzazioni",
+  "Buscando el mensaje…": "Ricerca del messaggio…",
+  "Cargando mensajes anteriores…": "Caricamento dei messaggi precedenti…",
+  "Cargar mensajes anteriores": "Carica messaggi precedenti",
+  "Este usuario no tiene colecciones públicas.": "Questo utente non ha raccolte pubbliche.",
+  "Ir al mensaje": "Vai al messaggio",
+  "No se encontró el mensaje original": "Messaggio originale non trovato"
 }

@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Katso videoita 1080p-tarkkuudella: asenna HEVC-laajennus",
   "Videos en 1080p (H.265) activados": "1080p-videot (H.265) otettu käyttöön",
   "{0} videos": "{0} videota",
-  "{0} visualizaciones": "{0} katselukertaa"
+  "{0} visualizaciones": "{0} katselukertaa",
+  "Buscando el mensaje…": "Etsitään viestiä…",
+  "Cargando mensajes anteriores…": "Ladataan vanhempia viestejä…",
+  "Cargar mensajes anteriores": "Lataa vanhempia viestejä",
+  "Este usuario no tiene colecciones públicas.": "Tällä käyttäjällä ei ole julkisia kokoelmia.",
+  "Ir al mensaje": "Siirry viestiin",
+  "No se encontró el mensaje original": "Alkuperäistä viestiä ei löytynyt"
 }

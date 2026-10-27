@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Смотреть видео в 1080p: установить расширение HEVC",
   "Videos en 1080p (H.265) activados": "Видео в 1080p (H.265) включены",
   "{0} videos": "{0} видео",
-  "{0} visualizaciones": "{0} просмотров"
+  "{0} visualizaciones": "{0} просмотров",
+  "Buscando el mensaje…": "Поиск сообщения…",
+  "Cargando mensajes anteriores…": "Загрузка более ранних сообщений…",
+  "Cargar mensajes anteriores": "Загрузить более ранние сообщения",
+  "Este usuario no tiene colecciones públicas.": "У этого пользователя нет публичных коллекций.",
+  "Ir al mensaje": "Перейти к сообщению",
+  "No se encontró el mensaje original": "Исходное сообщение не найдено"
 }

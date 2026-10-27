@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "1080p-তে ভিডিও দেখুন: HEVC এক্সটেনশন ইনস্টল করুন",
   "Videos en 1080p (H.265) activados": "1080p (H.265) ভিডিও চালু হয়েছে",
   "{0} videos": "{0}টি ভিডিও",
-  "{0} visualizaciones": "{0}টি ভিউ"
+  "{0} visualizaciones": "{0}টি ভিউ",
+  "Buscando el mensaje…": "বার্তা খোঁজা হচ্ছে…",
+  "Cargando mensajes anteriores…": "পুরনো বার্তা লোড হচ্ছে…",
+  "Cargar mensajes anteriores": "পুরনো বার্তা লোড করুন",
+  "Este usuario no tiene colecciones públicas.": "এই ব্যবহারকারীর কোনো পাবলিক সংগ্রহ নেই।",
+  "Ir al mensaje": "বার্তায় যান",
+  "No se encontró el mensaje original": "মূল বার্তাটি পাওয়া যায়নি"
 }

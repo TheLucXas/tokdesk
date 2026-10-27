@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "觀看 1080p 影片：安裝 HEVC 擴充功能",
   "Videos en 1080p (H.265) activados": "已啟用 1080p (H.265) 影片",
   "{0} videos": "{0} 部影片",
-  "{0} visualizaciones": "{0} 次觀看"
+  "{0} visualizaciones": "{0} 次觀看",
+  "Buscando el mensaje…": "正在搜尋訊息…",
+  "Cargando mensajes anteriores…": "正在載入較早的訊息…",
+  "Cargar mensajes anteriores": "載入較早的訊息",
+  "Este usuario no tiene colecciones públicas.": "此使用者沒有公開收藏。",
+  "Ir al mensaje": "前往訊息",
+  "No se encontró el mensaje original": "找不到原始訊息"
 }

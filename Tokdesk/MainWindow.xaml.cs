@@ -277,7 +277,16 @@ public partial class MainWindow : Window
 
         // Nombre e ícono propios en el mezclador de volumen (las sesiones aparecen al empezar a sonar)
         var mixer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", AppInfo.ExePath + ",0"));
+        // Los mezcladores leen mejor un .ico suelto que un ícono dentro del .exe
+        var ico = Path.Combine(AppInfo.DataDir, "tokdesk.ico");
+        try
+        {
+            using var src = Application.GetResourceStream(new Uri("pack://application:,,,/app.ico")).Stream;
+            using var dst = File.Create(ico);
+            src.CopyTo(dst);
+        }
+        catch (Exception ex) { Log.Write("Ícono para el mezclador: " + ex.Message); }
+        mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", ico));
         mixer.Start();
 
         var hwnd = new WindowInteropHelper(this).Handle;

@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "1080p ဖြင့် ဗီဒီယိုကြည့်ရန်- HEVC extension ထည့်သွင်းပါ",
   "Videos en 1080p (H.265) activados": "1080p (H.265) ဗီဒီယိုများ ဖွင့်ထားသည်",
   "{0} videos": "ဗီဒီယို {0} ခု",
-  "{0} visualizaciones": "ကြည့်ရှုမှု {0} ကြိမ်"
+  "{0} visualizaciones": "ကြည့်ရှုမှု {0} ကြိမ်",
+  "Buscando el mensaje…": "မက်ဆေ့ချ်ကို ရှာနေသည်…",
+  "Cargando mensajes anteriores…": "အဟောင်းမက်ဆေ့ချ်များ ဖွင့်နေသည်…",
+  "Cargar mensajes anteriores": "အဟောင်းမက်ဆေ့ချ်များ ဖွင့်ရန်",
+  "Este usuario no tiene colecciones públicas.": "ဤအသုံးပြုသူတွင် အများပိုင်စုဆောင်းမှုများ မရှိပါ။",
+  "Ir al mensaje": "မက်ဆေ့ချ်သို့ သွားရန်",
+  "No se encontró el mensaje original": "မူရင်းမက်ဆေ့ချ်ကို မတွေ့ပါ"
 }

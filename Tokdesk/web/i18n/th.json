@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "ดูวิดีโอ 1080p: ติดตั้งส่วนขยาย HEVC",
   "Videos en 1080p (H.265) activados": "เปิดใช้วิดีโอ 1080p (H.265) แล้ว",
   "{0} videos": "{0} วิดีโอ",
-  "{0} visualizaciones": "{0} ครั้งที่ดู"
+  "{0} visualizaciones": "{0} ครั้งที่ดู",
+  "Buscando el mensaje…": "กำลังค้นหาข้อความ…",
+  "Cargando mensajes anteriores…": "กำลังโหลดข้อความเก่า…",
+  "Cargar mensajes anteriores": "โหลดข้อความเก่า",
+  "Este usuario no tiene colecciones públicas.": "ผู้ใช้นี้ไม่มีคอลเลกชันสาธารณะ",
+  "Ir al mensaje": "ไปที่ข้อความ",
+  "No se encontró el mensaje original": "ไม่พบข้อความต้นฉบับ"
 }

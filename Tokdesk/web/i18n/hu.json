@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Videók megtekintése 1080p-ben: telepítsd a HEVC bővítményt",
   "Videos en 1080p (H.265) activados": "1080p (H.265) videók bekapcsolva",
   "{0} videos": "{0} videó",
-  "{0} visualizaciones": "{0} megtekintés"
+  "{0} visualizaciones": "{0} megtekintés",
+  "Buscando el mensaje…": "Üzenet keresése…",
+  "Cargando mensajes anteriores…": "Régebbi üzenetek betöltése…",
+  "Cargar mensajes anteriores": "Régebbi üzenetek betöltése",
+  "Este usuario no tiene colecciones públicas.": "Ennek a felhasználónak nincsenek nyilvános gyűjteményei.",
+  "Ir al mensaje": "Ugrás az üzenethez",
+  "No se encontró el mensaje original": "Az eredeti üzenet nem található"
 }

@@ -127,7 +127,8 @@ static class AudioSessions
                     var hr = s.GetProcessId(out var pid);
                     if (hr != 0 || !mine.Contains(pid)) continue;
                     s.GetDisplayName(out var current);
-                    if (current == name) continue;
+                    s.GetIconPath(out var icon);
+                    if (current == name && icon == iconPath) continue;
                     var ctx = Ctx;
                     s.SetDisplayName(name, ref ctx);
                     s.SetIconPath(iconPath, ref ctx);

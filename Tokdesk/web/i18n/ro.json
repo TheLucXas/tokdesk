@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Vezi videoclipuri în 1080p: instalează extensia HEVC",
   "Videos en 1080p (H.265) activados": "Videoclipuri în 1080p (H.265) activate",
   "{0} videos": "{0} videoclipuri",
-  "{0} visualizaciones": "{0} vizualizări"
+  "{0} visualizaciones": "{0} vizualizări",
+  "Buscando el mensaje…": "Se caută mesajul…",
+  "Cargando mensajes anteriores…": "Se încarcă mesajele mai vechi…",
+  "Cargar mensajes anteriores": "Încarcă mesajele mai vechi",
+  "Este usuario no tiene colecciones públicas.": "Acest utilizator nu are colecții publice.",
+  "Ir al mensaje": "Mergi la mesaj",
+  "No se encontró el mensaje original": "Mesajul original nu a fost găsit"
 }

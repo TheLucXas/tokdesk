@@ -306,5 +306,11 @@
   "Ver videos en 1080p: instalar la extensión HEVC": "Video's in 1080p bekijken: installeer de HEVC-extensie",
   "Videos en 1080p (H.265) activados": "1080p-video's (H.265) ingeschakeld",
   "{0} videos": "{0} video's",
-  "{0} visualizaciones": "{0} weergaven"
+  "{0} visualizaciones": "{0} weergaven",
+  "Buscando el mensaje…": "Bericht zoeken…",
+  "Cargando mensajes anteriores…": "Oudere berichten laden…",
+  "Cargar mensajes anteriores": "Oudere berichten laden",
+  "Este usuario no tiene colecciones públicas.": "Deze gebruiker heeft geen openbare collecties.",
+  "Ir al mensaje": "Ga naar bericht",
+  "No se encontró el mensaje original": "Oorspronkelijk bericht niet gevonden"
 }
