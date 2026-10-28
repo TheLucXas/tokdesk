@@ -762,3 +762,6 @@ body.light .sortbtn { color: #161823; }
 /* El menú de ordenar queda por encima de la lista de comentarios */
 #sheet .sheet-head { position: relative; z-index: 3; }
 .cmt-sortmenu { z-index: 60; }
+
+/* Los avisos se ven también con un panel abierto (Configuración, perfil…) */
+#notice { z-index: 70; }

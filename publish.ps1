@@ -22,7 +22,13 @@ if ($LASTEXITCODE -ne 0) { throw "Falló la compilación de la app" }
 $launcher = Join-Path $root "Launcher\Launcher.csproj"
 dotnet build $launcher -c Release "-p:Version=$version" -o (Join-Path $dist "launcher") -v q -nologo
 if ($LASTEXITCODE -ne 0) { throw "Falló la compilación del lanzador" }
-Copy-Item (Join-Path $dist "launcher\Tokdesk.exe") (Join-Path $dist "Tokdesk.exe") -Force
+# Si el notificador en segundo plano está usando el .exe, se aparta (renombrar un .exe en uso sí se puede)
+$exe = Join-Path $dist "Tokdesk.exe"
+if (Test-Path $exe) {
+  Remove-Item "$exe.old" -Force -ErrorAction SilentlyContinue
+  try { Remove-Item $exe -Force -ErrorAction Stop } catch { Rename-Item $exe "Tokdesk.exe.old" }
+}
+Copy-Item (Join-Path $dist "launcher\Tokdesk.exe") $exe -Force
 $zip = Join-Path $dist "Tokdesk-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path (Join-Path $dist "Tokdesk.exe") -DestinationPath $zip
