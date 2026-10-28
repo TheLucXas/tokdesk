@@ -529,7 +529,7 @@ public partial class MainWindow : Window
                 case "inboxmore":
                     PostToUi(new { t = "inbox", more = true, data = await _side.LoadMoreConvs() });
                     break;
-                case "chatvis": await _side.SetBackground(m.GetProperty("on").GetBoolean()); break;
+                case "chatvis": _side.ChatOpen = m.GetProperty("on").GetBoolean(); await _side.SetBackground(_side.ChatOpen); break;
                 case "convold":
                     PostToUi(new { t = "conv", id = S("id"), older = true, data = await _side.LoadOlder(S("id")) });
                     break;

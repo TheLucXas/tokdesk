@@ -122,16 +122,29 @@ sealed class SidePage
     // Mientras está bloqueada la página queda "visible" detrás de la ventana: oculta, Chromium frena sus
     // temporizadores y el formulario tardaba ~15 s en aparecer
     bool _lockedValue, _bgWas;
+    DateTime _lockedAt;
     bool _locked
     {
-        get => _lockedValue;
+        get
+        {
+            // Seguro: nunca queda tomada más de un minuto (si algo se colgó, se libera)
+            if (_lockedValue && DateTime.UtcNow - _lockedAt > TimeSpan.FromSeconds(60)) { Log.Write("Página oculta: se libera tras 60 s ocupada"); _locked = false; }
+            return _lockedValue;
+        }
         set
         {
             if (value == _lockedValue) return;
             _lockedValue = value;
-            if (value) _bgWas = _background;
+            if (value) { _bgWas = _background; _lockedAt = DateTime.UtcNow; }
             _ = SetBackground(value || _bgWas);
         }
+    }
+
+    // Si la página está ocupada (compartir, denunciar, editar perfil), los chats esperan a que se libere
+    async Task<bool> Idle()
+    {
+        for (var t = 0; t < 45000 && Busy; t += 300) await Task.Delay(300);
+        return !Busy;
     }
     bool Busy => _visible || _locked;
 
@@ -248,6 +261,30 @@ sealed class SidePage
         await Ensure();
         if (Busy || (_wv.Source ?? "").StartsWith("https://www.tiktok.com/")) return;
         try { await Go(Messages); } catch { }
+    }
+
+    /// <summary>
+    /// Lleva la página a Mensajes lo más rápido posible: si ya está ahí no hace nada; si no, navegación
+    /// interna (sin recargar) y solo si no responde, carga completa. Mientras tanto queda «visible» detrás de
+    /// la ventana, porque oculta Chromium la frena.
+    /// </summary>
+    // La interfaz avisa si hay un chat abierto (entonces la página debe seguir «visible»)
+    public bool ChatOpen { get; set; }
+
+    async Task<bool> ToMessages()
+    {
+        await Ensure();
+        var was = _background;
+        if (!was) await SetBackground(true);
+        try
+        {
+            var src = _wv.Source ?? "";
+            if (src.StartsWith(Messages) && await Poll(InboxJs, 15000) != null) return true;
+            if (await GoFast(Messages) && await Poll(InboxJs, 6000) != null) return true;
+            await Reload(Messages);
+            return await Poll(InboxJs, 25000) != null;
+        }
+        finally { if (!was && !_locked && !ChatOpen) await SetBackground(false); }
     }
 
     async Task<bool> GoFast(string url)
@@ -604,8 +641,7 @@ sealed class SidePage
         // Si la página está ocupada (compartir, denunciar, editar perfil) se espera un poco en vez de fallar
         for (var t = 0; t < 30000 && Busy; t += 300) await Task.Delay(300);
         if (Busy) { Log.Write("Bandeja: la página oculta sigue ocupada"); return null; }
-        await Go(Messages);
-        if (await Poll(InboxJs, 30000) == null) return null;
+        if (!await ToMessages()) return null;
         // La actividad (me gusta, comentarios, seguidores) se carga al abrir el panel de notificaciones
         await Eval("""
             (() => {
@@ -622,8 +658,7 @@ sealed class SidePage
 
     async Task<bool> SelectConv(string convId)
     {
-        await Go(Messages);
-        if (await Poll(InboxJs, 30000) == null) return false;
+        if (!await ToMessages()) return false;
         var sel = JsonSerializer.Serialize($"[data-conv-id=\"{convId}\"]");
         var ok = await Eval($"(() => {{ const el = document.querySelector({sel}); if (!el) return null; if (el.getAttribute('aria-selected') !== 'true') el.click(); return 'ok'; }})()");
         if (ok == null) return false;
@@ -633,7 +668,7 @@ sealed class SidePage
     /// <summary>Abre (si hace falta) la conversación y devuelve sus mensajes.</summary>
     public async Task<string> ReadConv(string convId)
     {
-        if (Busy) return null;
+        if (!await Idle()) return null;
         if (!await SelectConv(convId)) return null;
         await Task.Delay(300);
         return await Poll(ConvJs, 6000);
@@ -642,7 +677,7 @@ sealed class SidePage
     /// <summary>Abre el video compartido número <paramref name="n"/> del chat y devuelve su enlace.</summary>
     public async Task<string> OpenShared(string convId, int n)
     {
-        if (Busy) return null;
+        if (!await Idle()) return null;
         if (!await SelectConv(convId)) return null;
         var start = _wv.Source;
         await Eval($"(() => {{ const v = document.querySelectorAll('[data-e2e=\"dm-new-shared-video\"]')[{n}]; if (v) v.click(); return null; }})()");
@@ -659,9 +694,8 @@ sealed class SidePage
     /// <summary>Baja la lista de conversaciones para que la página cargue las más antiguas.</summary>
     public async Task<string> LoadMoreConvs()
     {
-        if (Busy) return null;
-        await Go(Messages);
-        if (await Poll(InboxJs, 30000) == null) return null;
+        if (!await Idle()) return null;
+        if (!await ToMessages()) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-conversation-item\"]').length)";
         var before = await Eval(countJs);
         await Eval("""
@@ -684,7 +718,7 @@ sealed class SidePage
     /// <summary>Sube hasta el principio de la conversación para que la página cargue mensajes anteriores.</summary>
     public async Task<string> LoadOlder(string convId)
     {
-        if (Busy) return null;
+        if (!await Idle()) return null;
         if (!await SelectConv(convId)) return null;
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-chat-item\"]').length)";
         var before = await Eval(countJs);
@@ -733,7 +767,7 @@ sealed class SidePage
     /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
     public async Task<bool> React(string convId, int index, string emoji)
     {
-        if (Busy) return false;
+        if (!await Idle()) return false;
         if (!await MessageButton(convId, index, "dm-new-reaction-btn")) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
@@ -753,7 +787,7 @@ sealed class SidePage
     /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
     public async Task<bool> Reply(string convId, int index, string text)
     {
-        if (Busy) return false;
+        if (!await Idle()) return false;
         if (!await MessageButton(convId, index, "dm-new-reply-btn")) return false;
         await Task.Delay(300);
         return await SendText(convId, text);
@@ -761,7 +795,7 @@ sealed class SidePage
     /// <summary>Escribe y envía un mensaje de texto en la conversación indicada.</summary>
     public async Task<bool> SendText(string convId, string text)
     {
-        if (Busy) return false;
+        if (!await Idle()) return false;
         if (!await SelectConv(convId)) return false;
         var found = await Poll("""
             (() => {
