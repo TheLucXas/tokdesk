@@ -1,3 +1,8 @@
+/* Símbolos técnicos (p. ej. ⏾ en apodos): Segoe UI Semibold dice tenerlos pero dibuja un recuadro, así que esta
+   fuente (Noto Sans Symbols 2, OFL, incluida en web/fonts) va primero solo para ese bloque. Se excluyen los
+   caracteres que Windows muestra como emoji a color (⌚⌛⏩–⏳⏸–⏺). */
+@font-face { font-family: "Tok Symbols"; src: url("fonts/NotoSansSymbols2-symbols.woff2") format("woff2"); font-display: swap;
+  unicode-range: U+2300-2319, U+231C-23E8, U+23F4-23F7, U+23FB-23FF, U+2400-244A, U+2800-28FF, U+4DC0-4DFF; }
 :root {
   --red: #fe2c55;
   --cyan: #25f4ee;
@@ -11,7 +16,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: #fff; overflow: hidden; user-select: none;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, "Segoe UI Emoji", "Segoe UI Symbol", "Segoe UI Historic", "Noto Sans Symbols 2", "Noto Sans Symbols", "Noto Sans Math", "Microsoft YaHei UI", "Microsoft JhengHei UI", "Yu Gothic UI", "Malgun Gothic", "Nirmala UI", "Leelawadee UI", "Khmer UI", "Myanmar Text", "Javanese Text", "Ebrima", "Gadugi", "Cambria Math", sans-serif; -webkit-font-smoothing: antialiased; }
+  font-family: "Tok Symbols", "Segoe UI Variable Text", "Segoe UI", system-ui, "Segoe UI Emoji", "Segoe UI Symbol", "Segoe UI Historic", "Noto Sans Symbols 2", "Noto Sans Symbols", "Noto Sans Math", "Microsoft YaHei UI", "Microsoft JhengHei UI", "Yu Gothic UI", "Malgun Gothic", "Nirmala UI", "Leelawadee UI", "Khmer UI", "Myanmar Text", "Javanese Text", "Ebrima", "Gadugi", "Cambria Math", sans-serif; -webkit-font-smoothing: antialiased; }
 button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
 svg { display: block; width: 100%; height: 100%; }
 

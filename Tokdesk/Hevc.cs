@@ -30,12 +30,30 @@ static class Hevc
         "<TicketType Name=\"MSA\" Version=\"1.0\" Policy=\"MBI_SSL\"><user></user></TicketType></wuws:WindowsUpdateTicketsToken></o:Security></s:Header>" +
         $"<s:Body>{body}</s:Body></s:Envelope>";
 
+    // Si el servidor principal no responde se reintenta, también con el alternativo (fe3 en vez de fe3cr)
+    static readonly HttpClient Soap = new(new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromSeconds(15) }) { Timeout = TimeSpan.FromSeconds(60) };
+
     static async Task<string> Post(HttpClient http, string url, string body)
     {
-        using var content = new StringContent(body, Encoding.UTF8, "application/soap+xml");
-        using var resp = await http.PostAsync(url, content);
-        resp.EnsureSuccessStatusCode();
-        return await resp.Content.ReadAsStringAsync();
+        Exception last = null;
+        for (var i = 0; i < 4; i++)
+        {
+            var target = i % 2 == 0 ? url : url.Replace("://fe3cr.", "://fe3.");
+            try
+            {
+                using var content = new StringContent(body, Encoding.UTF8, "application/soap+xml");
+                using var resp = await Soap.PostAsync(target, content);
+                resp.EnsureSuccessStatusCode();
+                return await resp.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                last = ex;
+                Log.Write($"HEVC: {new Uri(target).Host} no respondió ({ex.Message}), reintentando");
+                await Task.Delay(1500);
+            }
+        }
+        throw new InvalidOperationException("No se pudo conectar con Microsoft. Revisa tu conexión e inténtalo de nuevo.", last);
     }
 
     /// <summary>Pide a Microsoft la dirección de descarga de la última versión del paquete.</summary>
