@@ -601,7 +601,9 @@ sealed class SidePage
     /// <summary>Chats recientes y notificaciones de actividad.</summary>
     public async Task<string> LoadInbox()
     {
-        if (Busy) return null;
+        // Si la página está ocupada (compartir, denunciar, editar perfil) se espera un poco en vez de fallar
+        for (var t = 0; t < 30000 && Busy; t += 300) await Task.Delay(300);
+        if (Busy) { Log.Write("Bandeja: la página oculta sigue ocupada"); return null; }
         await Go(Messages);
         if (await Poll(InboxJs, 30000) == null) return null;
         // La actividad (me gusta, comentarios, seguidores) se carga al abrir el panel de notificaciones
