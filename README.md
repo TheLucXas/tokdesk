@@ -71,6 +71,7 @@ The published `Tokdesk.exe` is a small .NET Framework 4.8 launcher (built into W
 ## 🙏 Credits
 
 - **Built with** [.NET 8 / WPF](https://github.com/dotnet/wpf) (MIT License) and the [Microsoft Edge WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) (Microsoft license, redistributable). The WebView2 runtime and the .NET runtime are installed from Microsoft, not bundled.
+- **Symbol fallback fonts:** [Noto Sans Symbols, Symbols 2 and Math](https://fonts.google.com/noto) by Google (SIL Open Font License 1.1), loaded from Google Fonts only when a character is missing from the Windows fonts.
 - **Made with AI**: code, the Tokdesk icon, the interface icons (hand-drawn SVG), and the 37 translations were generated with Claude for this project. No third-party icon packs, fonts, or images are included; the UI uses the Windows system font.
 - **Badges** by [shields.io](https://shields.io).
 

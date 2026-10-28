@@ -395,6 +395,7 @@ sealed class SidePage
     // Para el modo de prueba
     public async Task<string> Run(string js) { await Ensure(); return await _wv.ExecuteScriptAsync(js); }
     public Task Open(string url) => Go(url);
+    public async Task AddInitScript(string js) { await Ensure(); await _wv.AddScriptToExecuteOnDocumentCreatedAsync(js); }
 
     public async Task Show(string url, string autoScript = null)
     {

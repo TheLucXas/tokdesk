@@ -294,6 +294,9 @@ public partial class MainWindow : Window
 
         if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") StartTestHook();
 
+        // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
+        _settings.ApplyShortcuts();
+
         // Nombre e ícono propios en el mezclador de volumen (las sesiones aparecen al empezar a sonar)
         var mixer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         // Los mezcladores leen mejor un .ico suelto que un ícono dentro del .exe
@@ -624,6 +627,7 @@ public partial class MainWindow : Window
                     await Ui.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, fs);
                 }
                 else if (line.StartsWith("http:")) { var r = await FetchText(line[5..]); Log.Write("TEST http " + (r == null ? "null" : r[..Math.Min(r.Length, 1500)])); }
+                else if (line.StartsWith("sideinit:")) { await _side.AddInitScript(line[9..]); Log.Write("TEST sideinit ok"); }
                 else if (line.StartsWith("sidego:")) { await _side.Open(line[7..]); Log.Write("TEST side en " + line[7..]); }
                 else if (line.StartsWith("side:")) Log.Write("TEST " + await _side.Run(line[5..]));
                 else Log.Write("TEST " + await Ui.CoreWebView2.ExecuteScriptAsync(line));

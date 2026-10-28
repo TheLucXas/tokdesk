@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
 
@@ -65,6 +65,8 @@ sealed class AppSettings
     /// <summary>Crea o borra los accesos directos del menú Inicio y del escritorio.</summary>
     public void ApplyShortcuts()
     {
+        // La build de desarrollo no crea accesos: quedarían apuntando a su .exe en vez del lanzador
+        if (!AppInfo.HasLauncher) return;
         Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Tokdesk.lnk"), StartMenuShortcut);
         Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Tokdesk.lnk"), DesktopShortcut);
     }

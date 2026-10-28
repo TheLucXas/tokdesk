@@ -25,6 +25,9 @@ static class AppInfo
         }
     }
 
+    // Abierta desde el lanzador (instalación real), no la build de desarrollo
+    public static bool HasLauncher => !string.Equals(StartPath, ExePath, StringComparison.OrdinalIgnoreCase);
+
     public static Version Version => Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0);
 
     public static string VersionText => $"{Version.Major}.{Version.Minor}.{Version.Build}";

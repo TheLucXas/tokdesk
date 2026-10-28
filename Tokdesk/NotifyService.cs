@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,8 +18,7 @@ static class NotifyService
     const string RunName = "TokdeskNotify";
 
     // Solo existe con el lanzador (la build de desarrollo se abre sin él)
-    public static bool Available =>
-        !string.Equals(Path.GetFullPath(AppInfo.StartPath), Path.GetFullPath(AppInfo.ExePath), StringComparison.OrdinalIgnoreCase);
+    public static bool Available => AppInfo.HasLauncher;
 
     static string Groups(AppSettings s) => string.Join(",", new[]
     {
