@@ -59,6 +59,28 @@ static class Links
         catch { return url; }
     }
 
+    [System.Runtime.InteropServices.ComImport, System.Runtime.InteropServices.Guid("1f76a169-f994-40ac-8fc8-0959e8874710"),
+     System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    interface IApplicationAssociationRegistrationUI
+    {
+        [System.Runtime.InteropServices.PreserveSig]
+        int LaunchAdvancedAssociationUI([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string appRegistryName);
+    }
+
+    // API de Windows para mostrar los valores predeterminados de una app registrada (la elección la hace el usuario)
+    static bool OpenAppDefaults(string app)
+    {
+        try
+        {
+            var t = Type.GetTypeFromCLSID(new Guid("1968106d-f3b5-44cf-890e-116fcb9ecef1"));
+            var ui = (IApplicationAssociationRegistrationUI)Activator.CreateInstance(t);
+            var hr = ui.LaunchAdvancedAssociationUI(app);
+            Log.Write($"Gestor de enlaces: página de {app} (hr=0x{hr:X8})");
+            return hr == 0;
+        }
+        catch (Exception ex) { Log.Write("Gestor de enlaces: " + ex.Message); return false; }
+    }
+
     /// <summary>Registra tokdesk:// para el usuario (sin administrador).</summary>
     public static void RegisterProtocol()
     {
@@ -108,9 +130,9 @@ static class Links
                     url.SetValue("https", ProgId);
                 }
                 using (var reg = Registry.CurrentUser.CreateSubKey(@"Software\RegisteredApplications")) reg.SetValue("Tokdesk", @"Software\Tokdesk\Capabilities");
-                // Página de valores predeterminados de Tokdesk (ahí se marcan HTTP y HTTPS); si no abre, la general
-                try { Process.Start(new ProcessStartInfo("control.exe", @"/name Microsoft.DefaultPrograms /page pageDefaultProgram\pageAdvancedSettings?pszAppName=Tokdesk") { UseShellExecute = true }); }
-                catch { Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true }); }
+                // Página de valores predeterminados de Tokdesk (la que Windows muestra para una app concreta);
+                // si no se puede, la lista general de apps predeterminadas
+                if (!OpenAppDefaults("Tokdesk")) Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
             }
             else
             {

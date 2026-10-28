@@ -425,5 +425,6 @@
   "{0} personas": "{0} orang",
   "Enviado a {0}": "Dihantar kepada {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tidak membenarkan apl menjadikan dirinya lalai secara automatik: dalam tetingkap yang dibuka, pilih Tokdesk untuk HTTP dan HTTPS.",
-  "Escribe un mensaje…": "Tulis mesej…"
+  "Escribe un mensaje…": "Tulis mesej…",
+  "No se pudo enviar a {0}": "Tidak dapat menghantar kepada {0}"
 }

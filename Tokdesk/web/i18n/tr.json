@@ -425,5 +425,6 @@
   "{0} personas": "{0} kişi",
   "Enviado a {0}": "{0} kişisine gönderildi",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows, bir uygulamanın kendini varsayılan yapmasına izin vermez: açılan pencerede HTTP ve HTTPS için Tokdesk\u0027i seç.",
-  "Escribe un mensaje…": "Bir mesaj yaz…"
+  "Escribe un mensaje…": "Bir mesaj yaz…",
+  "No se pudo enviar a {0}": "{0} kişisine gönderilemedi"
 }

@@ -1399,15 +1399,11 @@ $('#shareSend').addEventListener('click', () => {
   // El último que recibió algo pasa primero en la fila, como en la app (se recuerda entre sesiones)
   const ids = to.map((c) => c.id);
   pref.set('shareRecent', [...ids, ...pref.get('shareRecent', []).filter((x) => !ids.includes(x))].slice(0, 30));
-  let ok = 0, done = 0;
+  // Como en la app: el aviso sale al instante; si después algún envío falla, se avisa aparte
+  const who = to.length === 1 ? to[0].name : t('{0} personas', to.length);
+  notice('✓ ' + t('Enviado a {0}', who), to.length === 1 ? '›' : null, to.length === 1 ? () => openChat(to[0]) : null);
   for (const c of to) {
-    const finish = (good) => {
-      done++; if (good) ok++;
-      if (done < to.length) return;
-      if (!ok) { toast(t('No se pudo enviar')); return; }
-      const who = to.length === 1 ? to[0].name : t('{0} personas', ok);
-      notice('✓ ' + t('Enviado a {0}', who), to.length === 1 ? '›' : null, to.length === 1 ? () => openChat(to[0]) : null);
-    };
+    const finish = (good) => { if (!good) toast(t('No se pudo enviar a {0}', c.name)); };
     sendDm(c.id, linkOf(it), (good) => {
       if (good && msg) sendDm(c.id, msg, finish); else finish(good);
     });

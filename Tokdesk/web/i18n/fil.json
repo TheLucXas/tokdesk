@@ -425,5 +425,6 @@
   "{0} personas": "{0} tao",
   "Enviado a {0}": "Naipadala kay {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Hindi pinapayagan ng Windows na kusang maging default ang isang app: sa bintanang bumukas, piliin ang Tokdesk para sa HTTP at HTTPS.",
-  "Escribe un mensaje…": "Magsulat ng mensahe…"
+  "Escribe un mensaje…": "Magsulat ng mensahe…",
+  "No se pudo enviar a {0}": "Hindi naipadala kay {0}"
 }

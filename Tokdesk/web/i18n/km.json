@@ -425,5 +425,6 @@
   "{0} personas": "{0} នាក់",
   "Enviado a {0}": "បានផ្ញើទៅ {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows មិនអនុញ្ញាតឱ្យកម្មវិធីកំណត់ខ្លួនឯងជាលំនាំដើមដោយស្វ័យប្រវត្តិទេ៖ នៅក្នុងវិនដូដែលបានបើក សូមជ្រើសរើស Tokdesk សម្រាប់ HTTP និង HTTPS។",
-  "Escribe un mensaje…": "សរសេរសារ…"
+  "Escribe un mensaje…": "សរសេរសារ…",
+  "No se pudo enviar a {0}": "មិនអាចផ្ញើទៅ {0} បានទេ"
 }

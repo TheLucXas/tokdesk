@@ -425,5 +425,6 @@
   "{0} personas": "{0} personer",
   "Enviado a {0}": "Sendt til {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows lar ikke et program gjøre seg selv til standard: velg Tokdesk for HTTP og HTTPS i vinduet som åpnet seg.",
-  "Escribe un mensaje…": "Skriv en melding…"
+  "Escribe un mensaje…": "Skriv en melding…",
+  "No se pudo enviar a {0}": "Kunne ikke sende til {0}"
 }

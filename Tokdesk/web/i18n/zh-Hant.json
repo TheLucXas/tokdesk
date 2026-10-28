@@ -425,5 +425,6 @@
   "{0} personas": "{0} 人",
   "Enviado a {0}": "已傳送給 {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows 不允許應用程式自行設為預設：在開啟的視窗中，為 HTTP 和 HTTPS 選擇 Tokdesk。",
-  "Escribe un mensaje…": "輸入訊息…"
+  "Escribe un mensaje…": "輸入訊息…",
+  "No se pudo enviar a {0}": "無法傳送給 {0}"
 }

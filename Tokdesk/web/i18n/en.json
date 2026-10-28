@@ -425,5 +425,6 @@
   "{0} personas": "{0} people",
   "Enviado a {0}": "Sent to {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows doesn\u0027t let an app make itself the default on its own: in the window that opened, choose Tokdesk for HTTP and HTTPS.",
-  "Escribe un mensaje…": "Write a message…"
+  "Escribe un mensaje…": "Write a message…",
+  "No se pudo enviar a {0}": "Couldn\u0027t send to {0}"
 }

@@ -31,7 +31,10 @@ if (Test-Path $exe) {
 Copy-Item (Join-Path $dist "launcher\Tokdesk.exe") $exe -Force
 $zip = Join-Path $dist "Tokdesk-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip }
-Compress-Archive -Path (Join-Path $dist "Tokdesk.exe") -DestinationPath $zip
+# El .exe recién copiado puede estar un momento en uso (antivirus): se reintenta
+for ($i = 0; $i -lt 10 -and -not (Test-Path $zip); $i++) {
+  try { Compress-Archive -Path (Join-Path $dist "Tokdesk.exe") -DestinationPath $zip -ErrorAction Stop } catch { Start-Sleep -Milliseconds 800 }
+}
 Write-Host ("Listo: {0} ({1:N1} MB)" -f $zip, ((Get-Item $zip).Length / 1MB))
 
 if (-not $Release) { return }

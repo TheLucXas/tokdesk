@@ -425,5 +425,6 @@
   "{0} personas": "{0} άτομα",
   "Enviado a {0}": "Εστάλη στον/στην {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Τα Windows δεν επιτρέπουν σε μια εφαρμογή να οριστεί μόνη της ως προεπιλογή: στο παράθυρο που άνοιξε, διάλεξε Tokdesk για HTTP και HTTPS.",
-  "Escribe un mensaje…": "Γράψε ένα μήνυμα…"
+  "Escribe un mensaje…": "Γράψε ένα μήνυμα…",
+  "No se pudo enviar a {0}": "Δεν ήταν δυνατή η αποστολή στον/στην {0}"
 }

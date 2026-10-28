@@ -425,5 +425,6 @@
   "{0} personas": "{0} लोग",
   "Enviado a {0}": "{0} को भेजा गया",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows किसी ऐप को अपने आप डिफ़ॉल्ट नहीं बनने देता: जो विंडो खुली है उसमें HTTP और HTTPS के लिए Tokdesk चुनें।",
-  "Escribe un mensaje…": "संदेश लिखें…"
+  "Escribe un mensaje…": "संदेश लिखें…",
+  "No se pudo enviar a {0}": "{0} को भेजा नहीं जा सका"
 }

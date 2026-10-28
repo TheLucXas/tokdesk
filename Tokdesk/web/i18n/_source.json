@@ -224,7 +224,7 @@
   "No se pudo comprobar",
   "No se pudo copiar",
   "No se pudo descargar {0}",
-  "No se pudo enviar",
+  "No se pudo enviar a {0}",
   "No se pudo enviar el mensaje",
   "No se pudo instalar la extensión HEVC: {0}",
   "No se pudo reaccionar",

@@ -425,5 +425,6 @@
   "{0} personas": "{0} Personen",
   "Enviado a {0}": "An {0} gesendet",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows erlaubt es einer App nicht, sich selbst als Standard festzulegen: wähle im geöffneten Fenster Tokdesk für HTTP und HTTPS.",
-  "Escribe un mensaje…": "Nachricht schreiben…"
+  "Escribe un mensaje…": "Nachricht schreiben…",
+  "No se pudo enviar a {0}": "Senden an {0} fehlgeschlagen"
 }
