@@ -30,13 +30,15 @@
 | | Feature | What you can do |
 | :---: | --- | --- |
 | 📱 | **App-style feed** | Watch **For You**, **Following**, **Explore**, and **Friends** in a vertical window with smooth scrolling, preloading, and GPU decoding. |
-| ❤️ | **Interact** | Like, save to Favorites and collections, repost, follow, mark "Not interested", and report. |
-| 💬 | **Comments** | Read comments and replies, like, reply, post, and see image comments — in a panel that never covers the whole screen. |
+| ❤️ | **Interact** | Like, save to Favorites and collections, repost, follow, mark "Not interested", and report videos or comments from a built-in menu. |
+| 💬 | **Comments** | Read comments and replies, sort by popular or newest, like, reply, post, and see image comments — in a panel that never covers the whole screen. |
 | ✉️ | **Messages** | Inbox with activity and new followers, chats with bubbles, quick reactions, older messages, and shared videos that open in the app. |
-| 👤 | **Profiles** | Videos, reposts, favorites (with collections) and liked tabs; open hashtags, sounds, and @mentions. |
+| 👤 | **Profiles** | Videos (latest, popular, or oldest first), reposts, favorites (with collections) and liked tabs; edit your own profile; open hashtags, sounds, and @mentions. |
 | 🔎 | **Search** | Videos and users, search history, and live suggestions. |
 | ⬇️ | **Downloads** | MP4 without watermark, best quality, original with watermark, MP3 audio, and cover image — to a folder you choose. |
-| 🎛️ | **Playback** | Speed, captions, picture-in-picture, auto-scroll, background play, and global media keys. |
+| 🎛️ | **Playback** | Speed, captions, picture-in-picture, auto-scroll, background play, a seek bar with frame preview, and global media keys. |
+| 🎞️ | **1080p and offline** | One-click install of Microsoft's free HEVC extension for 1080p, a disk buffer so videos start instantly, and offline videos (100 MB–2 GB) for when you have no internet. |
+| 🔔 | **Notifications** | Windows notifications for likes, comments, mentions, followers, and messages, by category — even with the app closed, through a tiny helper (about 6 MB of RAM). |
 | 🎨 | **Make it yours** | Dark, light, or system theme, accent colors, interface zoom, custom CSS themes, and fully customizable keyboard shortcuts. |
 | 🪟 | **Desktop integration** | System tray, start with Windows, start minimized, close-to-tray, and remember window size. |
 | 🌍 | **37 languages** | Follows your TikTok account language automatically; falls back to English. |
@@ -55,6 +57,8 @@ Requires Windows 10 or 11 with Microsoft Edge WebView2 (included in Windows 11).
 - A hidden instance of the official TikTok website runs with your own session and makes its own requests; Tokdesk renders the data in its own lightweight interface.
 - Tokdesk does not forge request signatures or bypass verifications. If TikTok asks for a verification, you solve it on the official page.
 - Your session, settings, and logs are stored in `%LOCALAPPDATA%\Tokdesk`.
+- With notifications enabled, a small helper (`Tokdesk.exe --notify`) checks your TikTok activity every few minutes with your session cookies, which Tokdesk stores encrypted by Windows (DPAPI) for your user only. Turn it off in **Settings → Notifications**.
+- The HEVC button asks Microsoft's own Store delivery service for the free "HEVC Video Extensions from Device Manufacturer" package, downloads it from Microsoft's servers, and installs it for your user with `Add-AppxPackage` (Windows verifies Microsoft's signature).
 
 ## 🛠️ Build from source
 
@@ -72,7 +76,7 @@ The published `Tokdesk.exe` is a small .NET Framework 4.8 launcher (built into W
 
 - **Built with** [.NET 8 / WPF](https://github.com/dotnet/wpf) (MIT License) and the [Microsoft Edge WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) (Microsoft license, redistributable). The WebView2 runtime and the .NET runtime are installed from Microsoft, not bundled.
 - **Symbol fallback fonts:** [Noto Sans Symbols, Symbols 2 and Math](https://fonts.google.com/noto) by Google (SIL Open Font License 1.1), loaded from Google Fonts only when a character is missing from the Windows fonts. The symbols subset of Noto Sans Symbols 2 is bundled in `Tokdesk/web/fonts` with its license (`OFL.txt`).
-- **Made with AI**: code, the Tokdesk icon, the interface icons (hand-drawn SVG), and the 37 translations were generated with Claude for this project. No third-party icon packs, fonts, or images are included; the UI uses the Windows system font.
+- **Made with AI**: code, the Tokdesk icon, the interface icons (hand-drawn SVG), and the 37 translations were generated with Claude for this project. No third-party icon packs or images are included; the UI uses the Windows system font, plus the Noto symbol fonts above for rare characters.
 - **Badges** by [shields.io](https://shields.io).
 
 ## ™️ Trademarks
