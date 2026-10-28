@@ -134,9 +134,9 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Subtítulos'), value: state.cc, fn: (v) => setCaptions(v) }),
         row({ type: 'toggle', label: t('Reproducción en segundo plano'), hint: t('Sigue reproduciendo cuando usas otra ventana'), value: opt.bgPlay, fn: (v) => { opt.bgPlay = v; applyWinState(); } }),
         row({ type: 'toggle', label: t('Audio de fondo'), hint: t('Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja'), value: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } }),
-        row({ type: 'link', ic: 'speed', label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar gratis la extensión HEVC'),
-          sub: HEVC_OK ? '' : hevcText || t('Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.'),
-          fn: () => { if (!HEVC_OK && !hevcBusy) { hevcBusy = true; onHevc({ state: 'resolving' }); send({ t: 'hevcinstall' }); } } }),
+        row({ type: 'link', ic: 'speed', noChev: !HEVC_OK, label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar gratis la extensión HEVC'),
+          sub: hevcText || (HEVC_OK ? t('Extensión HEVC de Microsoft instalada') : t('Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.') + ' ' + t('La app se reinicia al terminar.')),
+          fn: () => { if (hevcBusy) return; if (HEVC_OK) hevcOptions(); else hevcRun('hevcinstall'); } }),
         row({ type: 'toggle', label: t('Ahorro de datos'), hint: t('Usa la versión más liviana de cada video'), value: opt.dataSaver, fn: (v) => { opt.dataSaver = v; } }),
         row({ type: 'seg', label: t('Videos precargados'), value: opt.preload, options: [[0, '0'], [1, '1'], [2, '2'], [3, '3']], fn: (v) => { opt.preload = v; } }),
         row({ type: 'seg', label: t('Búfer en disco'), hint: t('Descarga por adelantado los próximos videos para que arranquen al instante'), value: opt.buffer, options: [[0, '0'], [3, '3'], [5, '5'], [10, '10']], fn: (v) => { opt.buffer = v; } }),
@@ -296,7 +296,7 @@ function buildRow(r) {
       el.innerHTML = label;
       break;
     default: {
-      el.innerHTML = `${ICON[r.ic] || ''}${label}<span class="chev">›</span>`;
+      el.innerHTML = `${ICON[r.ic] || ''}${label}${r.noChev ? '' : '<span class="chev">›</span>'}`;
       el.onclick = r.fn;
     }
   }
@@ -499,11 +499,22 @@ function sendNotifyStrings() {
 let hevcBusy = false, hevcText = '';
 function onHevc(m) {
   if (m.state === 'resolving') hevcText = t('Buscando la extensión HEVC en Microsoft…');
+  else if (m.state === 'removing') hevcText = t('Desinstalando la extensión HEVC…');
   else if (m.state === 'downloading') hevcText = t('Descargando la extensión HEVC… {0}%', m.p);
   else if (m.state === 'installing') hevcText = t('Instalando la extensión HEVC…');
-  else if (m.state === 'done') { hevcBusy = false; hevcText = t('Extensión HEVC instalada. Reinicia la app para ver en 1080p.'); }
+  else if (m.state === 'done') hevcText = t('Extensión HEVC instalada. Reiniciando la app…');
+  else if (m.state === 'removed') hevcText = t('Extensión HEVC desinstalada. Reiniciando la app…');
   else if (m.state === 'error') { hevcBusy = false; hevcText = t('No se pudo instalar la extensión HEVC: {0}', m.msg || ''); }
-  if (m.state === 'done') notice(hevcText, t('Reiniciar'), () => send({ t: 'restart' }), true);
-  else notice(hevcText, null, null, m.state !== 'error');
+  notice(hevcText, null, null, m.state !== 'error');
+  // El navegador solo detecta el cambio de códecs al reiniciar
+  if (m.state === 'done' || m.state === 'removed') setTimeout(() => send({ t: 'restart' }), 2000);
   if (document.querySelector('#settings').classList.contains('open')) renderSettings();
+}
+
+function hevcRun(action) { hevcBusy = true; onHevc({ state: action === 'hevcuninstall' ? 'removing' : 'resolving' }); send({ t: action }); }
+function hevcOptions() {
+  openOptions([[
+    { ic: 'download', label: t('Reinstalar o reparar la extensión HEVC'), fn: () => { closePanel('opts'); hevcRun('hevcreinstall'); } },
+    { ic: 'close', label: t('Desinstalar la extensión HEVC'), danger: true, fn: () => { closePanel('opts'); hevcRun('hevcuninstall'); } },
+  ]], true);
 }

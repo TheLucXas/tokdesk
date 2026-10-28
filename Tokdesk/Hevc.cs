@@ -110,6 +110,29 @@ static class Hevc
         throw new InvalidOperationException("Microsoft no devolvió la dirección de descarga");
     }
 
+    static async Task Ps(string command)
+    {
+        var psi = new ProcessStartInfo("powershell.exe",
+            $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [Text.Encoding]::UTF8; {command}\"")
+        { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, StandardErrorEncoding = Encoding.UTF8 };
+        using var p = Process.Start(psi)!;
+        var err = await p.StandardError.ReadToEndAsync();
+        await p.WaitForExitAsync();
+        if (p.ExitCode != 0) throw new InvalidOperationException(err.Trim().Split('\n')[0]);
+    }
+
+    /// <summary>Quita la extensión (solo la del usuario actual). Devuelve el error o null.</summary>
+    public static async Task<string> Uninstall()
+    {
+        try
+        {
+            await Ps("Get-AppxPackage Microsoft.HEVCVideoExtension | Remove-AppxPackage");
+            Log.Write("HEVC: desinstalada");
+            return null;
+        }
+        catch (Exception ex) { Log.Write("HEVC: " + ex.Message); return ex.Message; }
+    }
+
     /// <summary>Descarga e instala el paquete. <paramref name="progress"/> recibe (etapa, porcentaje).</summary>
     public static async Task<string> Install(HttpClient http, Action<string, int> progress)
     {
@@ -137,13 +160,7 @@ static class Hevc
             }
             progress("installing", 100);
             // Instalación por usuario (sin administrador); Windows verifica la firma del paquete
-            var psi = new ProcessStartInfo("powershell.exe",
-                $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [Text.Encoding]::UTF8; Add-AppxPackage -Path '{file.Replace("'", "''")}'\"")
-            { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, StandardErrorEncoding = Encoding.UTF8 };
-            using var p = Process.Start(psi)!;
-            var err = await p.StandardError.ReadToEndAsync();
-            await p.WaitForExitAsync();
-            if (p.ExitCode != 0) throw new InvalidOperationException(err.Trim().Split('\n')[0]);
+            await Ps($"Add-AppxPackage -Path '{file.Replace("'", "''")}'");
             Log.Write("HEVC: instalada");
             return null;
         }

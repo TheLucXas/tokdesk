@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC 拡張機能をインストールしました。1080p で見るにはアプリを再起動してください。",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p で動画を見る: HEVC 拡張機能を無料でインストール",
   "Instalando la extensión HEVC…": "HEVC 拡張機能をインストール中…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft の公式で無料のパッケージをダウンロードしてインストールします。これがないと、TikTok は通常 540–720p で動画を送信します。"
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft の公式で無料のパッケージをダウンロードしてインストールします。これがないと、TikTok は通常 540–720p で動画を送信します。",
+  "Extensión HEVC de Microsoft instalada": "Microsoft HEVC拡張機能がインストールされました",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC拡張機能をインストールしました。アプリを再起動しています…",
+  "La app se reinicia al terminar.": "完了するとアプリが再起動します。",
+  "Desinstalar la extensión HEVC": "HEVC拡張機能をアンインストール",
+  "Reinstalar o reparar la extensión HEVC": "HEVC拡張機能を再インストールまたは修復",
+  "Desinstalando la extensión HEVC…": "HEVC拡張機能をアンインストール中…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC拡張機能をアンインストールしました。アプリを再起動しています…"
 }

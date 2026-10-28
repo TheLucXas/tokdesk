@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC-laajennus asennettu. Käynnistä sovellus uudelleen, jotta näet 1080p-laadulla.",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "Katso videot 1080p-laadulla: asenna HEVC-laajennus ilmaiseksi",
   "Instalando la extensión HEVC…": "Asennetaan HEVC-laajennusta…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Lataa Microsoftin virallisen ja ilmaisen paketin ja asentaa sen. Ilman sitä TikTok lähettää yleensä videot 540–720p-laatuisina."
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Lataa Microsoftin virallisen ja ilmaisen paketin ja asentaa sen. Ilman sitä TikTok lähettää yleensä videot 540–720p-laatuisina.",
+  "Extensión HEVC de Microsoft instalada": "Microsoftin HEVC-laajennus asennettu",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC-laajennus asennettu. Käynnistetään sovellus uudelleen…",
+  "La app se reinicia al terminar.": "Sovellus käynnistyy uudelleen, kun se on valmis.",
+  "Desinstalar la extensión HEVC": "Poista HEVC-laajennus",
+  "Reinstalar o reparar la extensión HEVC": "Asenna HEVC-laajennus uudelleen tai korjaa se",
+  "Desinstalando la extensión HEVC…": "Poistetaan HEVC-laajennusta…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-laajennus poistettu. Käynnistetään sovellus uudelleen…"
 }

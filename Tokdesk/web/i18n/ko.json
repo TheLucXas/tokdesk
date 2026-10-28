@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC 확장 프로그램이 설치되었습니다. 1080p로 보려면 앱을 다시 시작하세요.",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p로 동영상 보기: HEVC 확장 프로그램을 무료로 설치",
   "Instalando la extensión HEVC…": "HEVC 확장 프로그램 설치 중…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft의 공식 무료 패키지를 다운로드하여 설치합니다. 없으면 TikTok은 보통 동영상을 540–720p로 보냅니다."
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft의 공식 무료 패키지를 다운로드하여 설치합니다. 없으면 TikTok은 보통 동영상을 540–720p로 보냅니다.",
+  "Extensión HEVC de Microsoft instalada": "Microsoft HEVC 확장 프로그램이 설치됨",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC 확장 프로그램이 설치되었습니다. 앱을 다시 시작하는 중…",
+  "La app se reinicia al terminar.": "완료되면 앱이 다시 시작됩니다.",
+  "Desinstalar la extensión HEVC": "HEVC 확장 프로그램 제거",
+  "Reinstalar o reparar la extensión HEVC": "HEVC 확장 프로그램 다시 설치 또는 복구",
+  "Desinstalando la extensión HEVC…": "HEVC 확장 프로그램을 제거하는 중…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC 확장 프로그램이 제거되었습니다. 앱을 다시 시작하는 중…"
 }

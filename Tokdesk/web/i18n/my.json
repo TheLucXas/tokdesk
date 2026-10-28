@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC တိုးချဲ့ပရိုဂရမ် ထည့်သွင်းပြီးပါပြီ။ 1080p ဖြင့် ကြည့်ရန် အက်ပ်ကို ပြန်စတင်ပါ။",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "ဗီဒီယိုများကို 1080p ဖြင့် ကြည့်ပါ: HEVC တိုးချဲ့ပရိုဂရမ်ကို အခမဲ့ ထည့်သွင်းပါ",
   "Instalando la extensión HEVC…": "HEVC တိုးချဲ့ပရိုဂရမ်ကို ထည့်သွင်းနေသည်…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft ၏ တရားဝင်နှင့် အခမဲ့ ပက်ကေ့ဂျ်ကို ဒေါင်းလုဒ်လုပ်ပြီး ထည့်သွင်းသည်။ မရှိပါက TikTok သည် ဗီဒီယိုများကို 540–720p ဖြင့် ပို့လေ့ရှိသည်။"
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft ၏ တရားဝင်နှင့် အခမဲ့ ပက်ကေ့ဂျ်ကို ဒေါင်းလုဒ်လုပ်ပြီး ထည့်သွင်းသည်။ မရှိပါက TikTok သည် ဗီဒီယိုများကို 540–720p ဖြင့် ပို့လေ့ရှိသည်။",
+  "Extensión HEVC de Microsoft instalada": "Microsoft HEVC extension ထည့်သွင်းပြီးပါပြီ",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC extension ထည့်သွင်းပြီးပါပြီ။ အက်ပ်ကို ပြန်စတင်နေသည်…",
+  "La app se reinicia al terminar.": "ပြီးဆုံးသည်နှင့် အက်ပ်ကို ပြန်စတင်ပါမည်။",
+  "Desinstalar la extensión HEVC": "HEVC extension ကို ဖြုတ်ရန်",
+  "Reinstalar o reparar la extensión HEVC": "HEVC extension ကို ပြန်ထည့်ရန် သို့မဟုတ် ပြင်ရန်",
+  "Desinstalando la extensión HEVC…": "HEVC extension ကို ဖြုတ်နေသည်…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC extension ဖြုတ်ပြီးပါပြီ။ အက်ပ်ကို ပြန်စတင်နေသည်…"
 }

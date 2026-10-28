@@ -392,8 +392,17 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
-                case "hevcinstall":
+                case "hevcuninstall":
                     {
+                        var err = await Hevc.Uninstall();
+                        PostToUi(new { t = "hevc", state = err == null ? "removed" : "error", msg = err });
+                        break;
+                    }
+                case "hevcinstall":
+                case "hevcreinstall":
+                    {
+                        // Reparar = quitar y volver a instalar
+                        if (m.GetProperty("t").GetString() == "hevcreinstall") await Hevc.Uninstall();
                         var err = await Hevc.Install(Http, (st, p) => Dispatcher.Invoke(() => PostToUi(new { t = "hevc", state = st, p })));
                         PostToUi(new { t = "hevc", state = err == null ? "done" : "error", msg = err });
                         break;

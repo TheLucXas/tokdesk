@@ -583,6 +583,7 @@ function render() {
     if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
+      if (typeof markSeen === 'function') markSeen(it.id);
       if (typeof applyWinState === 'function') { delete el.dataset.autoMuted; applyWinState(); }
       if (state.cc) loadCaptions(el);
       if (m.paused && !el.dataset.userPaused && m.getAttribute('src')) m.play().catch((e) => log('play: ' + e.message));
@@ -2608,6 +2609,25 @@ async function bufferAhead() {
   } finally { offline.running = false; }
 }
 
+// Al abrir la app, mientras TikTok carga, se empieza con videos del búfer que todavía no viste: arrancan al instante
+var seenStore, seenTimer;
+function seenIds() { return seenStore || (seenStore = new Set(pref.get('seen', []))); }
+function markSeen(id) {
+  if (seenIds().has(id)) return;
+  seenIds().add(id);
+  clearTimeout(seenTimer);
+  seenTimer = setTimeout(() => pref.set('seen', [...seenIds()].slice(-400)), 2000);
+}
+function startFromBuffer(items) {
+  const f = feeds.get('foryou');
+  if (!f || f.items.length || state.feed !== f) return;
+  for (const x of items.filter((x) => !seenIds().has(x.id) && offline.buffer.has(x.id)).slice(0, 3)) {
+    const it = { ...x, src: offline.buffer.get(x.id), cover: `https://offline.tokdesk/buffer/${x.id}.jpg`, photos: [], subtitles: [] };
+    f.ids.add(it.id); f.items.push(it);
+  }
+  if (f.items.length) feedChanged(f);
+}
+
 function onOffSaved(m) {
   const map = offline[m.kind === 'saved' ? 'saved' : 'buffer'];
   if (m.url) map.set(m.id, m.url);
@@ -2624,6 +2644,7 @@ function onOffList(m) {
   for (const id of m.ids) offline[kind].set(id, `https://offline.tokdesk/${kind}/${id}.mp4`);
   offline.size[kind] = m.size;
   if (kind === 'saved') offline.items = m.items || [];
+  if (kind === 'buffer' && !offline.started) { offline.started = true; startFromBuffer(m.items || []); }
   const r = offline.wait.get('list' + kind);
   if (r) { offline.wait.delete('list' + kind); r(); }
   if ($('#settings').classList.contains('open') && typeof renderSettings === 'function') renderSettings();

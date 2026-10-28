@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC extension installed. Restart the app to watch in 1080p.",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "Watch videos in 1080p: install the HEVC extension for free",
   "Instalando la extensión HEVC…": "Installing the HEVC extension…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Downloads the official free package from Microsoft and installs it. Without it, TikTok usually sends videos at 540–720p."
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Downloads the official free package from Microsoft and installs it. Without it, TikTok usually sends videos at 540–720p.",
+  "Extensión HEVC de Microsoft instalada": "Microsoft HEVC extension installed",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC extension installed. Restarting the app…",
+  "La app se reinicia al terminar.": "The app restarts when finished.",
+  "Desinstalar la extensión HEVC": "Uninstall the HEVC extension",
+  "Reinstalar o reparar la extensión HEVC": "Reinstall or repair the HEVC extension",
+  "Desinstalando la extensión HEVC…": "Uninstalling the HEVC extension…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC extension uninstalled. Restarting the app…"
 }

@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "ติดตั้งส่วนขยาย HEVC แล้ว รีสตาร์ตแอปเพื่อดูในความละเอียด 1080p",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "ดูวิดีโอในความละเอียด 1080p: ติดตั้งส่วนขยาย HEVC ฟรี",
   "Instalando la extensión HEVC…": "กำลังติดตั้งส่วนขยาย HEVC…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "ดาวน์โหลดและติดตั้งแพ็กเกจทางการที่ฟรีจาก Microsoft หากไม่มี TikTok มักส่งวิดีโอในความละเอียด 540–720p"
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "ดาวน์โหลดและติดตั้งแพ็กเกจทางการที่ฟรีจาก Microsoft หากไม่มี TikTok มักส่งวิดีโอในความละเอียด 540–720p",
+  "Extensión HEVC de Microsoft instalada": "ติดตั้งส่วนขยาย HEVC ของ Microsoft แล้ว",
+  "Extensión HEVC instalada. Reiniciando la app…": "ติดตั้งส่วนขยาย HEVC แล้ว กำลังรีสตาร์ทแอป…",
+  "La app se reinicia al terminar.": "แอปจะรีสตาร์ทเมื่อเสร็จสิ้น",
+  "Desinstalar la extensión HEVC": "ถอนการติดตั้งส่วนขยาย HEVC",
+  "Reinstalar o reparar la extensión HEVC": "ติดตั้งใหม่หรือซ่อมแซมส่วนขยาย HEVC",
+  "Desinstalando la extensión HEVC…": "กำลังถอนการติดตั้งส่วนขยาย HEVC…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "ถอนการติดตั้งส่วนขยาย HEVC แล้ว กำลังรีสตาร์ทแอป…"
 }

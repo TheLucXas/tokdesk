@@ -397,5 +397,12 @@
   "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC এক্সটেনশন ইনস্টল হয়েছে। 1080p-তে দেখতে অ্যাপ রিস্টার্ট করুন।",
   "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p-তে ভিডিও দেখুন: HEVC এক্সটেনশন বিনামূল্যে ইনস্টল করুন",
   "Instalando la extensión HEVC…": "HEVC এক্সটেনশন ইনস্টল হচ্ছে…",
-  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft-এর অফিসিয়াল ও বিনামূল্যের প্যাকেজ ডাউনলোড করে ইনস্টল করে। এটি ছাড়া TikTok সাধারণত ভিডিও 540–720p-তে পাঠায়।"
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft-এর অফিসিয়াল ও বিনামূল্যের প্যাকেজ ডাউনলোড করে ইনস্টল করে। এটি ছাড়া TikTok সাধারণত ভিডিও 540–720p-তে পাঠায়।",
+  "Extensión HEVC de Microsoft instalada": "Microsoft HEVC এক্সটেনশন ইনস্টল হয়েছে",
+  "Extensión HEVC instalada. Reiniciando la app…": "HEVC এক্সটেনশন ইনস্টল হয়েছে। অ্যাপ আবার চালু হচ্ছে…",
+  "La app se reinicia al terminar.": "শেষ হলে অ্যাপ আবার চালু হবে।",
+  "Desinstalar la extensión HEVC": "HEVC এক্সটেনশন আনইনস্টল করুন",
+  "Reinstalar o reparar la extensión HEVC": "HEVC এক্সটেনশন পুনরায় ইনস্টল বা মেরামত করুন",
+  "Desinstalando la extensión HEVC…": "HEVC এক্সটেনশন আনইনস্টল করা হচ্ছে…",
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC এক্সটেনশন আনইনস্টল হয়েছে। অ্যাপ আবার চালু হচ্ছে…"
 }
