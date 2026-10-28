@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ไม่อนุญาตให้แอปตั้งค่าตัวเองเป็นค่าเริ่มต้นเอง: ในหน้าต่างที่เปิดขึ้น ให้เลือก Tokdesk สำหรับ HTTP และ HTTPS",
   "Escribe un mensaje…": "พิมพ์ข้อความ…",
   "No se pudo enviar a {0}": "ไม่สามารถส่งถึง {0} ได้",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "เสร็จแล้ว หากคุณเลือก Tokdesk สำหรับ HTTPS ให้เลือกเบราว์เซอร์ของคุณอีกครั้งในแอปเริ่มต้นของ Windows"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "เสร็จแล้ว หากคุณเลือก Tokdesk สำหรับ HTTPS ให้เลือกเบราว์เซอร์ของคุณอีกครั้งในแอปเริ่มต้นของ Windows",
+  "Se escucha aunque uses otra ventana": "ยังได้ยินเสียงแม้คุณจะใช้หน้าต่างอื่น",
+  "Silenciar sin foco": "ปิดเสียงเมื่อไม่โฟกัส",
+  "Silenciar al perder el foco": "ปิดเสียงเมื่อเสียโฟกัส",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "จะไม่ได้ยินเสียงขณะที่คุณใช้หน้าต่างอื่น เมื่อย่อแอปหรืออยู่ในถาด",
+  "Se silencia al usar otra ventana": "ปิดเสียงเมื่อใช้หน้าต่างอื่น"
 }

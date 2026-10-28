@@ -90,7 +90,33 @@ public partial class MainWindow : Window
         _settings.Save();
     }
 
-    void SendWinState() => PostToUi(new { t = "win", minimized = WindowState == WindowState.Minimized || !IsVisible, focused = IsActive });
+    // El foco se mide por la ventana que Windows tiene al frente: si la app abrió mientras usabas otra,
+    // WPF puede creerse activa sin estarlo y Activated/Deactivated no llegan
+    void SendWinState()
+    {
+        var focused = HasForeground();
+        var minimized = WindowState == WindowState.Minimized || !IsVisible;
+        _lastWin = (focused, minimized);
+        PostToUi(new { t = "win", minimized, focused });
+    }
+    (bool, bool) _lastWin;
+    System.Windows.Threading.DispatcherTimer _focusTimer;
+    void WatchForeground()
+    {
+        if (_focusTimer != null) return;
+        _focusTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _focusTimer.Tick += (_, _) => { if ((HasForeground(), WindowState == WindowState.Minimized || !IsVisible) != _lastWin) SendWinState(); };
+        _focusTimer.Start();
+    }
+    static bool HasForeground()
+    {
+        var h = GetForegroundWindow();
+        if (h == IntPtr.Zero) return false;
+        GetWindowThreadProcessId(h, out var pid);
+        return pid == Environment.ProcessId;
+    }
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out int pid);
 
     void UpdateTray() => _tray.Visible = _settings.MinimizeToTray || _settings.CloseToTray || !IsVisible;
 
@@ -339,6 +365,8 @@ public partial class MainWindow : Window
         // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
         _settings.ApplyShortcuts();
         Links.RegisterProtocol();
+        // La opción de enlaces predeterminados se quitó: si alguien la había activado, se deshace
+        if (_settings.LinkHandler) { _settings.LinkHandler = false; Links.ApplyHandler(false); _settings.Save(); }
 
         // Nombre e ícono propios en el mezclador de volumen (las sesiones aparecen al empezar a sonar)
         var mixer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -384,6 +412,7 @@ public partial class MainWindow : Window
                     _uiReady = true;
                     // Si la ventana abrió sin foco, Activated/Deactivated nunca llegan: se avisa el estado real
                     SendWinState();
+                    WatchForeground();
                     OpenPendingLink();
                     // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
                     _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });

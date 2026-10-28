@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tidak membenarkan apl menjadikan dirinya lalai secara automatik: dalam tetingkap yang dibuka, pilih Tokdesk untuk HTTP dan HTTPS.",
   "Escribe un mensaje…": "Tulis mesej…",
   "No se pudo enviar a {0}": "Tidak dapat menghantar kepada {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Selesai. Jika anda telah memilih Tokdesk untuk HTTPS, pilih semula pelayar anda dalam apl lalai Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Selesai. Jika anda telah memilih Tokdesk untuk HTTPS, pilih semula pelayar anda dalam apl lalai Windows.",
+  "Se escucha aunque uses otra ventana": "Tetap kedengaran walaupun anda menggunakan tetingkap lain",
+  "Silenciar sin foco": "Senyapkan tanpa fokus",
+  "Silenciar al perder el foco": "Senyapkan apabila hilang fokus",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Tidak kedengaran semasa anda menggunakan tetingkap lain, dengan apl diminimumkan atau dalam dulang",
+  "Se silencia al usar otra ventana": "Disenyapkan semasa menggunakan tetingkap lain"
 }

@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows không cho phép ứng dụng tự đặt làm mặc định: trong cửa sổ vừa mở, hãy chọn Tokdesk cho HTTP và HTTPS.",
   "Escribe un mensaje…": "Viết tin nhắn…",
   "No se pudo enviar a {0}": "Không thể gửi tới {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Xong. Nếu bạn đã chọn Tokdesk cho HTTPS, hãy chọn lại trình duyệt của bạn trong ứng dụng mặc định của Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Xong. Nếu bạn đã chọn Tokdesk cho HTTPS, hãy chọn lại trình duyệt của bạn trong ứng dụng mặc định của Windows.",
+  "Se escucha aunque uses otra ventana": "Vẫn nghe thấy dù bạn dùng cửa sổ khác",
+  "Silenciar sin foco": "Tắt tiếng khi mất tiêu điểm",
+  "Silenciar al perder el foco": "Tắt tiếng khi mất tiêu điểm cửa sổ",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Không nghe thấy khi bạn dùng cửa sổ khác, khi ứng dụng được thu nhỏ hoặc nằm trong khay",
+  "Se silencia al usar otra ventana": "Tắt tiếng khi dùng cửa sổ khác"
 }

@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows nu permite unei aplicații să se seteze singură ca implicită: în fereastra deschisă, alege Tokdesk pentru HTTP și HTTPS.",
   "Escribe un mensaje…": "Scrie un mesaj…",
   "No se pudo enviar a {0}": "Nu s-a putut trimite către {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Gata. Dacă ai ales Tokdesk pentru HTTPS, alege din nou browserul în aplicațiile prestabilite din Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Gata. Dacă ai ales Tokdesk pentru HTTPS, alege din nou browserul în aplicațiile prestabilite din Windows.",
+  "Se escucha aunque uses otra ventana": "Se aude chiar dacă folosești altă fereastră",
+  "Silenciar sin foco": "Dezactivează sunetul fără focus",
+  "Silenciar al perder el foco": "Dezactivează sunetul când pierde focusul",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Nu se aude cât timp folosești altă fereastră, cu aplicația minimizată sau în bara de sistem",
+  "Se silencia al usar otra ventana": "Sunetul se oprește când folosești altă fereastră"
 }

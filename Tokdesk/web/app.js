@@ -1252,7 +1252,7 @@ function openVideoOptions(it) {
       { ic: 'cc', label: t('Subtítulos'), toggle: true, on: state.cc, fn: setCaptions },
       it.src && { ic: 'pip', label: t('Imagen en imagen'), fn: () => pictureInPicture() },
       { ic: 'pip', label: t('Reproducción en segundo plano'), toggle: true, on: opt.bgPlay, fn: (v) => { opt.bgPlay = v; saveOpt(); applyWinState(); toast(v ? t('Sigue reproduciendo sin foco') : t('Se pausa al usar otra ventana')); } },
-      { ic: 'headphones', label: t('Audio de fondo'), toggle: true, on: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } },
+      { ic: 'headphones', label: t('Silenciar sin foco'), toggle: true, on: !state.bgAudio, fn: (v) => { setBgAudio(!v); applyWinState(); } },
     ], [
       { ic: 'gear', label: t('Configuración'), fn: () => openSettings() },
     ],
@@ -1281,9 +1281,10 @@ async function pictureInPicture() {
   } catch (err) { log('PiP: ' + err.message); toast(t('Imagen en imagen no disponible')); }
 }
 
+// Se muestra como «Silenciar al perder el foco»; se guarda al revés (bgAudio = se sigue escuchando)
 function setBgAudio(on) {
   state.bgAudio = on; pref.set('bgAudio', on);
-  toast(on ? t('Audio de fondo activado') : t('Audio de fondo desactivado'));
+  toast(on ? t('Se escucha aunque uses otra ventana') : t('Se silencia al usar otra ventana'));
 }
 
 // ---------- Compartir ----------

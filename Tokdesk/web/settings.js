@@ -133,7 +133,7 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Pasar automáticamente'), value: state.auto, fn: (v) => setAuto(v) }),
         row({ type: 'toggle', label: t('Subtítulos'), value: state.cc, fn: (v) => setCaptions(v) }),
         row({ type: 'toggle', label: t('Reproducción en segundo plano'), hint: t('Sigue reproduciendo cuando usas otra ventana'), value: opt.bgPlay, fn: (v) => { opt.bgPlay = v; applyWinState(); } }),
-        row({ type: 'toggle', label: t('Audio de fondo'), hint: t('Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja'), value: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } }),
+        row({ type: 'toggle', label: t('Silenciar al perder el foco'), hint: t('No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja'), value: !state.bgAudio, fn: (v) => { setBgAudio(!v); applyWinState(); } }),
         row({ type: 'link', ic: 'speed', noChev: !HEVC_OK, label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar gratis la extensión HEVC'),
           sub: hevcText || (HEVC_OK ? t('Extensión HEVC de Microsoft instalada') : t('Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.') + ' ' + t('La app se reinicia al terminar.')),
           fn: () => { if (hevcBusy) return; if (HEVC_OK) hevcOptions(); else hevcRun('hevcinstall'); } }),
@@ -160,7 +160,6 @@ function renderSettings() {
         row({ type: 'link', ic: 'globe', label: t('Abrir carpeta de descargas'), fn: () => send({ t: 'showfile', file: '' }) }),
       ]],
       [t('Ventana'), [
-        row({ type: 'toggle', label: t('Abrir los enlaces de TikTok en Tokdesk'), hint: t('Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.'), value: !!N.LinkHandler, fn: (v) => { send({ t: 'setsetting', k: 'LinkHandler', v }); if (v) notice(t('Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.'), null, null, true); else notice(t('Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.')); } }),
         row({ type: 'toggle', label: t('Acceso directo en el menú Inicio'), value: !!N.StartMenuShortcut, fn: (v) => send({ t: 'setsetting', k: 'StartMenuShortcut', v }) }),
         row({ type: 'toggle', label: t('Acceso directo en el escritorio'), value: !!N.DesktopShortcut, fn: (v) => send({ t: 'setsetting', k: 'DesktopShortcut', v }) }),
         row({ type: 'toggle', label: t('Iniciar con Windows'), value: !!N.StartWithWindows, fn: (v) => send({ t: 'setsetting', k: 'StartWithWindows', v }) }),

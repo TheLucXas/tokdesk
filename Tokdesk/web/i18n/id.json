@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tidak membiarkan aplikasi menjadikan dirinya default sendiri: di jendela yang terbuka, pilih Tokdesk untuk HTTP dan HTTPS.",
   "Escribe un mensaje…": "Tulis pesan…",
   "No se pudo enviar a {0}": "Tidak dapat mengirim ke {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Selesai. Jika Anda telah memilih Tokdesk untuk HTTPS, pilih ulang browser Anda di aplikasi default Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Selesai. Jika Anda telah memilih Tokdesk untuk HTTPS, pilih ulang browser Anda di aplikasi default Windows.",
+  "Se escucha aunque uses otra ventana": "Tetap terdengar meski Anda memakai jendela lain",
+  "Silenciar sin foco": "Bisukan saat tanpa fokus",
+  "Silenciar al perder el foco": "Bisukan saat kehilangan fokus",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Tidak terdengar saat Anda memakai jendela lain, dengan aplikasi diminimalkan atau di baki sistem",
+  "Se silencia al usar otra ventana": "Dibisukan saat memakai jendela lain"
 }

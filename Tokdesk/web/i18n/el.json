@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Τα Windows δεν επιτρέπουν σε μια εφαρμογή να οριστεί μόνη της ως προεπιλογή: στο παράθυρο που άνοιξε, διάλεξε Tokdesk για HTTP και HTTPS.",
   "Escribe un mensaje…": "Γράψε ένα μήνυμα…",
   "No se pudo enviar a {0}": "Δεν ήταν δυνατή η αποστολή στον/στην {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Έτοιμο. Αν είχες επιλέξει το Tokdesk για HTTPS, επίλεξε ξανά το πρόγραμμα περιήγησής σου στις προεπιλεγμένες εφαρμογές των Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Έτοιμο. Αν είχες επιλέξει το Tokdesk για HTTPS, επίλεξε ξανά το πρόγραμμα περιήγησής σου στις προεπιλεγμένες εφαρμογές των Windows.",
+  "Se escucha aunque uses otra ventana": "Ακούγεται ακόμα κι αν χρησιμοποιείς άλλο παράθυρο",
+  "Silenciar sin foco": "Σίγαση χωρίς εστίαση",
+  "Silenciar al perder el foco": "Σίγαση όταν χάνεται η εστίαση",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Δεν ακούγεται όσο χρησιμοποιείς άλλο παράθυρο, με την εφαρμογή ελαχιστοποιημένη ή στην περιοχή ειδοποιήσεων",
+  "Se silencia al usar otra ventana": "Σίγαση όταν χρησιμοποιείς άλλο παράθυρο"
 }

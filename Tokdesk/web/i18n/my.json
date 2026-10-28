@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows သည် အက်ပ်တစ်ခုကို ကိုယ်တိုင်မူရင်းဖြစ်အောင် ခွင့်မပြုပါ- ဖွင့်လိုက်သော ဝင်းဒိုးတွင် HTTP နှင့် HTTPS အတွက် Tokdesk ကို ရွေးပါ။",
   "Escribe un mensaje…": "မက်ဆေ့ဂျ် ရေးပါ…",
   "No se pudo enviar a {0}": "{0} ထံ ပို့၍မရပါ",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "ပြီးပါပြီ။ HTTPS အတွက် Tokdesk ကို ရွေးထားခဲ့လျှင် Windows ၏ မူလအက်ပ်များတွင် သင့်ဘရောက်ဇာကို ထပ်မံရွေးပါ။"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "ပြီးပါပြီ။ HTTPS အတွက် Tokdesk ကို ရွေးထားခဲ့လျှင် Windows ၏ မူလအက်ပ်များတွင် သင့်ဘရောက်ဇာကို ထပ်မံရွေးပါ။",
+  "Se escucha aunque uses otra ventana": "အခြားဝင်းဒိုး သုံးသော်လည်း အသံကြားရမည်",
+  "Silenciar sin foco": "အာရုံမစိုက်ချိန် အသံပိတ်",
+  "Silenciar al perder el foco": "အာရုံပျက်သွားလျှင် အသံပိတ်ပါ",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "အခြားဝင်းဒိုး သုံးနေစဉ်၊ အက်ပ်ကို အသေးချုံ့ထားလျှင် သို့မဟုတ် ထရေးထဲရှိလျှင် အသံမကြားရပါ",
+  "Se silencia al usar otra ventana": "အခြားဝင်းဒိုး သုံးချိန် အသံပိတ်ထားသည်"
 }

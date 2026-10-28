@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows는 앱이 스스로 기본값이 되는 것을 허용하지 않습니다. 열린 창에서 HTTP와 HTTPS에 대해 Tokdesk를 선택하세요.",
   "Escribe un mensaje…": "메시지 입력…",
   "No se pudo enviar a {0}": "{0}에게 보내지 못했습니다",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "완료되었습니다. HTTPS에 Tokdesk를 선택했다면 Windows 기본 앱에서 브라우저를 다시 선택하세요."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "완료되었습니다. HTTPS에 Tokdesk를 선택했다면 Windows 기본 앱에서 브라우저를 다시 선택하세요.",
+  "Se escucha aunque uses otra ventana": "다른 창을 사용해도 소리가 나요",
+  "Silenciar sin foco": "포커스 없을 때 음소거",
+  "Silenciar al perder el foco": "포커스를 잃으면 음소거",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "다른 창을 사용하거나 앱을 최소화했거나 트레이에 있을 때는 소리가 나지 않아요",
+  "Se silencia al usar otra ventana": "다른 창을 사용하면 음소거돼요"
 }

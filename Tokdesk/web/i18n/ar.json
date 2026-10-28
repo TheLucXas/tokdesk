@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "لا يسمح Windows لأي تطبيق بجعل نفسه الافتراضي تلقائيًا: في النافذة التي فُتحت، اختر Tokdesk لبروتوكولي HTTP وHTTPS.",
   "Escribe un mensaje…": "اكتب رسالة…",
   "No se pudo enviar a {0}": "تعذّر الإرسال إلى {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "تم. إذا كنت قد اخترت Tokdesk لبروتوكول HTTPS، فاختر متصفحك مرة أخرى في التطبيقات الافتراضية في Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "تم. إذا كنت قد اخترت Tokdesk لبروتوكول HTTPS، فاختر متصفحك مرة أخرى في التطبيقات الافتراضية في Windows.",
+  "Se escucha aunque uses otra ventana": "يُسمع الصوت حتى لو استخدمت نافذة أخرى",
+  "Silenciar sin foco": "كتم الصوت بدون تركيز",
+  "Silenciar al perder el foco": "كتم الصوت عند فقدان التركيز",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "لا يُسمع الصوت أثناء استخدام نافذة أخرى أو عند تصغير التطبيق أو وجوده في الشريط",
+  "Se silencia al usar otra ventana": "يُكتم الصوت عند استخدام نافذة أخرى"
 }

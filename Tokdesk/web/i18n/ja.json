@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows では、アプリが自動的に既定のアプリになることはできません。開いたウィンドウで、HTTP と HTTPS に Tokdesk を選んでください。",
   "Escribe un mensaje…": "メッセージを入力…",
   "No se pudo enviar a {0}": "{0} への送信に失敗しました",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "完了しました。HTTPS に Tokdesk を選んでいた場合は、Windows の既定のアプリで使用するブラウザーを選び直してください。"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "完了しました。HTTPS に Tokdesk を選んでいた場合は、Windows の既定のアプリで使用するブラウザーを選び直してください。",
+  "Se escucha aunque uses otra ventana": "他のウィンドウを使っていても音が出ます",
+  "Silenciar sin foco": "非アクティブ時にミュート",
+  "Silenciar al perder el foco": "フォーカスを失ったらミュート",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "他のウィンドウを使っているときや、アプリを最小化またはトレイに格納しているときは音が出ません",
+  "Se silencia al usar otra ventana": "他のウィンドウを使うとミュートされます"
 }

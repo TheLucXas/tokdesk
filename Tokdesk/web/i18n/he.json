@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows לא מאפשרת לאפליקציה להגדיר את עצמה כברירת מחדל באופן אוטומטי: בחלון שנפתח, בחר ב-Tokdesk עבור HTTP ו-HTTPS.",
   "Escribe un mensaje…": "כתוב הודעה…",
   "No se pudo enviar a {0}": "לא ניתן לשלוח ל-{0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "בוצע. אם בחרת ב-Tokdesk עבור HTTPS, בחר שוב את הדפדפן שלך באפליקציות ברירת המחדל של Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "בוצע. אם בחרת ב-Tokdesk עבור HTTPS, בחר שוב את הדפדפן שלך באפליקציות ברירת המחדל של Windows.",
+  "Se escucha aunque uses otra ventana": "השמע נשמע גם אם משתמשים בחלון אחר",
+  "Silenciar sin foco": "השתקה ללא מיקוד",
+  "Silenciar al perder el foco": "השתקה באובדן מיקוד",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "אין שמע בזמן שימוש בחלון אחר, כשהאפליקציה ממוזערת או במגש המערכת",
+  "Se silencia al usar otra ventana": "מושתק בזמן שימוש בחלון אחר"
 }

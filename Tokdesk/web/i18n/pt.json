@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "O Windows não permite que um app se defina sozinho como padrão: na janela que abriu, escolha Tokdesk para HTTP e HTTPS.",
   "Escribe un mensaje…": "Escreva uma mensagem…",
   "No se pudo enviar a {0}": "Não foi possível enviar para {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Pronto. Se você tinha escolhido o Tokdesk para HTTPS, escolha novamente seu navegador nos aplicativos padrão do Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Pronto. Se você tinha escolhido o Tokdesk para HTTPS, escolha novamente seu navegador nos aplicativos padrão do Windows.",
+  "Se escucha aunque uses otra ventana": "Continua tocando mesmo que você use outra janela",
+  "Silenciar sin foco": "Silenciar sem foco",
+  "Silenciar al perder el foco": "Silenciar ao perder o foco",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Não se ouve enquanto você usa outra janela, com o app minimizado ou na bandeja",
+  "Se silencia al usar otra ventana": "Fica sem som ao usar outra janela"
 }

@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows 不允许应用自行设为默认：在打开的窗口中，为 HTTP 和 HTTPS 选择 Tokdesk。",
   "Escribe un mensaje…": "写消息…",
   "No se pudo enviar a {0}": "无法发送给 {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "已完成。如果你之前为 HTTPS 选择了 Tokdesk，请在 Windows 默认应用中重新选择你的浏览器。"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "已完成。如果你之前为 HTTPS 选择了 Tokdesk，请在 Windows 默认应用中重新选择你的浏览器。",
+  "Se escucha aunque uses otra ventana": "即使使用其他窗口也会播放声音",
+  "Silenciar sin foco": "失去焦点时静音",
+  "Silenciar al perder el foco": "失去焦点时静音",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "使用其他窗口、应用最小化或在托盘中时不会播放声音",
+  "Se silencia al usar otra ventana": "使用其他窗口时会静音"
 }

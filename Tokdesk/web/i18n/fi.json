@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ei anna sovelluksen asettaa itseään oletukseksi itsestään: valitse avautuneessa ikkunassa Tokdesk HTTP- ja HTTPS-protokollille.",
   "Escribe un mensaje…": "Kirjoita viesti…",
   "No se pudo enviar a {0}": "Lähettäminen henkilölle {0} epäonnistui",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Valmis. Jos olit valinnut Tokdeskin HTTPS:lle, valitse selaimesi uudelleen Windowsin oletussovelluksissa."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Valmis. Jos olit valinnut Tokdeskin HTTPS:lle, valitse selaimesi uudelleen Windowsin oletussovelluksissa.",
+  "Se escucha aunque uses otra ventana": "Ääni kuuluu, vaikka käyttäisit toista ikkunaa",
+  "Silenciar sin foco": "Mykistä ilman kohdistusta",
+  "Silenciar al perder el foco": "Mykistä kohdistuksen menetyksessä",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Ääntä ei kuulu, kun käytät toista ikkunaa, sovellus on pienennettynä tai ilmaisinalueella",
+  "Se silencia al usar otra ventana": "Mykistetty, kun käytät toista ikkunaa"
 }

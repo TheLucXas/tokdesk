@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows не дозволяє застосунку самостійно призначити себе типовим: у вікні, що відкрилося, виберіть Tokdesk для HTTP і HTTPS.",
   "Escribe un mensaje…": "Напишіть повідомлення…",
   "No se pudo enviar a {0}": "Не вдалося надіслати {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Готово. Якщо ви вибрали Tokdesk для HTTPS, оберіть браузер знову в стандартних програмах Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Готово. Якщо ви вибрали Tokdesk для HTTPS, оберіть браузер знову в стандартних програмах Windows.",
+  "Se escucha aunque uses otra ventana": "Звук чути, навіть якщо ви працюєте в іншому вікні",
+  "Silenciar sin foco": "Без звуку без фокуса",
+  "Silenciar al perder el foco": "Вимикати звук при втраті фокуса",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Звуку немає, поки ви працюєте в іншому вікні, а застосунок згорнуто або в треї",
+  "Se silencia al usar otra ventana": "Звук вимикається під час роботи в іншому вікні"
 }

@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows មិនអនុញ្ញាតឱ្យកម្មវិធីកំណត់ខ្លួនឯងជាលំនាំដើមដោយស្វ័យប្រវត្តិទេ៖ នៅក្នុងវិនដូដែលបានបើក សូមជ្រើសរើស Tokdesk សម្រាប់ HTTP និង HTTPS។",
   "Escribe un mensaje…": "សរសេរសារ…",
   "No se pudo enviar a {0}": "មិនអាចផ្ញើទៅ {0} បានទេ",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "រួចរាល់។ បើអ្នកបានជ្រើស Tokdesk សម្រាប់ HTTPS សូមជ្រើសកម្មវិធីរុករករបស់អ្នកម្ដងទៀតនៅក្នុងកម្មវិធីលំនាំដើមរបស់ Windows។"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "រួចរាល់។ បើអ្នកបានជ្រើស Tokdesk សម្រាប់ HTTPS សូមជ្រើសកម្មវិធីរុករករបស់អ្នកម្ដងទៀតនៅក្នុងកម្មវិធីលំនាំដើមរបស់ Windows។",
+  "Se escucha aunque uses otra ventana": "នៅតែឮសំឡេង ទោះអ្នកប្រើបង្អួចផ្សេងក៏ដោយ",
+  "Silenciar sin foco": "បិទសំឡេងពេលគ្មានផ្តោត",
+  "Silenciar al perder el foco": "បិទសំឡេងពេលបាត់ការផ្តោត",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "មិនឮសំឡេងពេលអ្នកប្រើបង្អួចផ្សេង ពេលកម្មវិធីបង្រួម ឬនៅក្នុងថាស",
+  "Se silencia al usar otra ventana": "បិទសំឡេងពេលប្រើបង្អួចផ្សេង"
 }

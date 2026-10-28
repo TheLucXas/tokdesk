@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tillåter inte att en app gör sig själv till standard: välj Tokdesk för HTTP och HTTPS i fönstret som öppnades.",
   "Escribe un mensaje…": "Skriv ett meddelande…",
   "No se pudo enviar a {0}": "Det gick inte att skicka till {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Klart. Om du hade valt Tokdesk för HTTPS, välj din webbläsare igen bland standardappar i Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Klart. Om du hade valt Tokdesk för HTTPS, välj din webbläsare igen bland standardappar i Windows.",
+  "Se escucha aunque uses otra ventana": "Ljudet hörs även om du använder ett annat fönster",
+  "Silenciar sin foco": "Ljud av utan fokus",
+  "Silenciar al perder el foco": "Stäng av ljudet när fokus förloras",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Inget ljud medan du använder ett annat fönster, med appen minimerad eller i systemfältet",
+  "Se silencia al usar otra ventana": "Ljudet är av när du använder ett annat fönster"
 }

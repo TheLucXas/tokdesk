@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Dili tugotan sa Windows ang app nga mag-default sa kaugalingon: sa bintana nga nabuksan, pilia ang Tokdesk para sa HTTP ug HTTPS.",
   "Escribe un mensaje…": "Isulat ang mensahe…",
   "No se pudo enviar a {0}": "Wala makapadala kang {0}",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Nahuman na. Kung napili nimo ang Tokdesk para sa HTTPS, pilia usab ang imong browser sa default nga mga app sa Windows."
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Nahuman na. Kung napili nimo ang Tokdesk para sa HTTPS, pilia usab ang imong browser sa default nga mga app sa Windows.",
+  "Se escucha aunque uses otra ventana": "Madungog gihapon bisan mogamit ka ug lain nga bintana",
+  "Silenciar sin foco": "I-mute kung walay focus",
+  "Silenciar al perder el foco": "I-mute kung mawala ang focus",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "Dili madungog samtang naggamit ka ug lain nga bintana, kung na-minimize ang app o naa sa tray",
+  "Se silencia al usar otra ventana": "Na-mute kung mogamit ug lain nga bintana"
 }

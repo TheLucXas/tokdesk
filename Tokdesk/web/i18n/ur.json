@@ -427,5 +427,10 @@
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows کسی ایپ کو خود بخود ڈیفالٹ نہیں بننے دیتا: جو ونڈو کھلی ہے اس میں HTTP اور HTTPS کے لیے Tokdesk منتخب کریں۔",
   "Escribe un mensaje…": "پیغام لکھیں…",
   "No se pudo enviar a {0}": "{0} کو بھیجنے میں ناکام",
-  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "ہو گیا۔ اگر آپ نے HTTPS کے لیے Tokdesk منتخب کیا تھا، تو Windows کی ڈیفالٹ ایپس میں اپنا براؤزر دوبارہ منتخب کریں۔"
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "ہو گیا۔ اگر آپ نے HTTPS کے لیے Tokdesk منتخب کیا تھا، تو Windows کی ڈیفالٹ ایپس میں اپنا براؤزر دوبارہ منتخب کریں۔",
+  "Se escucha aunque uses otra ventana": "دوسری ونڈو استعمال کرنے پر بھی آواز آتی رہے گی",
+  "Silenciar sin foco": "فوکس کے بغیر خاموش",
+  "Silenciar al perder el foco": "فوکس ختم ہونے پر خاموش کریں",
+  "No se escucha mientras usas otra ventana, con la app minimizada o en la bandeja": "دوسری ونڈو استعمال کرتے وقت، ایپ مِنی مائز ہونے پر یا ٹرے میں ہونے پر آواز نہیں آتی",
+  "Se silencia al usar otra ventana": "دوسری ونڈو استعمال کرتے وقت خاموش ہو جاتا ہے"
 }
