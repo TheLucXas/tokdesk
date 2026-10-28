@@ -459,6 +459,13 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
+                case "sharevideo":
+                    {
+                        var people = m.GetProperty("people").EnumerateArray().Select(x => x.GetString()).ToArray();
+                        var ok = await _side.ShareVideo(S("url"), people, S("msg"));
+                        PostToUi(new { t = "shared", ok, rid = m.GetProperty("rid").GetInt32() });
+                        break;
+                    }
                 case "hevcuninstall":
                     {
                         var err = await Hevc.Uninstall();

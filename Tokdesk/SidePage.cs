@@ -186,6 +186,63 @@ sealed class SidePage
         return opened;
     }
 
+    /// <summary>
+    /// Comparte un video con amigos desde el menú «Enviar a» de la web oficial (llega como video, no como enlace).
+    /// <paramref name="people"/>: usuario (uniqueId) o, si no se sabe, el nombre que muestra el menú.
+    /// </summary>
+    public async Task<bool> ShareVideo(string url, string[] people, string message)
+    {
+        var list = JsonSerializer.Serialize(people);
+        // El menú carga los amigos un rato después del primer clic en compartir; se insiste pasando el mouse
+        var openJs = $$"""
+            (() => {
+              const want = {{list}};
+              const s = document.querySelector('[data-e2e="share-icon"]');
+              if (!s) return null;
+              const b = s.closest('button') || s.parentElement;
+              if (!window.__tdShareAt) { window.__tdShareAt = Date.now(); b.click(); }
+              ['pointerover', 'pointerenter', 'mouseover', 'mouseenter', 'mousemove'].forEach(t => b.dispatchEvent(new MouseEvent(t, { bubbles: true })));
+              const items = [...document.querySelectorAll('[data-e2e^="share-"]')].filter(e => e.querySelector('[data-e2e="share-avatar"]'));
+              return items.length ? 'ok' : null;
+            })()
+            """;
+        if (await OpenLocked(url, openJs, "Compartir") == null) return false;
+        try
+        {
+            var picked = await Eval($$"""
+                (() => {
+                  const want = {{list}};
+                  const items = [...document.querySelectorAll('[data-e2e^="share-"]')].filter(e => e.querySelector('[data-e2e="share-avatar"]'));
+                  let n = 0;
+                  for (const w of want) {
+                    const it = items.find(e => e.dataset.e2e === 'share-' + w) || items.find(e => ((e.querySelector('p') || {}).textContent || '').trim() === w);
+                    if (it) { (it.querySelector('[tabindex]') || it).click(); n++; }
+                  }
+                  return String(n);
+                })()
+                """);
+            if (picked == null || picked == "0") { Log.Write("Compartir: no se encontró a nadie en el menú"); return false; }
+            await Task.Delay(500);
+            if (!string.IsNullOrWhiteSpace(message))
+                await Eval($$"""
+                    (() => {
+                      const i = [...document.querySelectorAll('input, textarea')].find(x => /mensaje|message/i.test(x.getAttribute('placeholder') || ''));
+                      if (!i) return null;
+                      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(i), 'value').set.call(i, {{JsonSerializer.Serialize(message)}});
+                      i.dispatchEvent(new Event('input', { bubbles: true }));
+                      return 'ok';
+                    })()
+                    """);
+            await Task.Delay(300);
+            await Eval("(() => { const b = [...document.querySelectorAll('button')].find(x => /^(Enviar|Send)$/i.test(x.textContent.trim())); if (b) b.click(); return null; })()");
+            // Éxito: aparece «Enviado a …» o se cierra el menú
+            var ok = await Poll("(() => [...document.querySelectorAll('body *')].some(e => e.children.length < 2 && /Enviado a|Sent to/i.test(e.textContent || '') && e.textContent.length < 80) ? 'ok' : null)()", 6000);
+            Log.Write($"Compartir: {(ok != null ? "enviado" : "sin confirmación")} a {picked}");
+            return ok != null;
+        }
+        finally { _locked = false; await Eval("(() => { window.__tdShareAt = 0; return null; })()"); }
+    }
+
     public async Task Warm()
     {
         await Ensure();

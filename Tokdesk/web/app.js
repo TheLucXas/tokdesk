@@ -1380,6 +1380,9 @@ function renderFriends() {
 
 // ---------- «Enviar a»: amigos marcados, mensaje opcional y un solo «Enviar» ----------
 const shareSel = new Map();
+const shareWait = new Map();
+let shareRid = 0;
+function onShared(m) { const f = shareWait.get(m.rid); shareWait.delete(m.rid); if (f) f(m.ok); }
 function updateShareCompose() {
   const on = shareSel.size > 0;
   $('#share').classList.toggle('composing', on);
@@ -1403,12 +1406,17 @@ $('#shareSend').addEventListener('click', () => {
   // Como en la app: el aviso sale al instante; si después algún envío falla, se avisa aparte
   const who = to.length === 1 ? to[0].name : t('{0} personas', to.length);
   notice('✓ ' + t('Enviado a {0}', who), to.length === 1 ? '›' : null, to.length === 1 ? () => openChat(to[0]) : null);
-  for (const c of to) {
-    const finish = (good) => { if (!good) toast(t('No se pudo enviar a {0}', c.name)); };
-    sendDm(c.id, linkOf(it), (good) => {
-      if (good && msg) sendDm(c.id, msg, finish); else finish(good);
-    });
-  }
+  // Se comparte desde el menú «Enviar a» de la web oficial (llega como video); si falla, como enlace
+  const rid = ++shareRid;
+  shareWait.set(rid, (ok) => {
+    if (ok) return;
+    log('Compartir: el menú oficial no confirmó, se envía como enlace');
+    for (const c of to) {
+      const finish = (good) => { if (!good) toast(t('No se pudo enviar a {0}', c.name)); };
+      sendDm(c.id, linkOf(it), (good) => { if (good && msg) sendDm(c.id, msg, finish); else finish(good); });
+    }
+  });
+  send({ t: 'sharevideo', rid, url: linkOf(it), people: to.map((c) => c.uid || c.name), msg });
 });
 // Envío de mensajes: uno a la vez, porque los hace la misma página oficial oculta
 const dmQueue = [];
@@ -1587,7 +1595,7 @@ function onConv(m) {
   try { d = m.data ? JSON.parse(m.data) : null; } catch { }
   const list = $('#chatList');
   if (!d) { if (chatCount < 0) list.innerHTML = `<div class="sheet-msg">${t('No se pudo abrir la conversación.')}</div>`; return; }
-  if (d.uid) $('#chatUid').textContent = d.uid;
+  if (d.uid) { $('#chatUid').textContent = d.uid; chatConv.uid = String(d.uid).replace(/^@/, ''); }
   if (d.avatar) $('#chatAvatar').src = d.avatar;
   if (m.older) {
     olderLoading = false;
@@ -2567,6 +2575,7 @@ host && host.addEventListener('message', (e) => {
     case 'editstate': onEditState(m); break;
     case 'openlink': closePanels(); openTikTokLink(m.url); break;
     case 'audiofixed': onAudioFixed(m); break;
+    case 'shared': onShared(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
