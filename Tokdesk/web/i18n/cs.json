@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "Odinstalovat rozšíření HEVC",
   "Reinstalar o reparar la extensión HEVC": "Znovu nainstalovat nebo opravit rozšíření HEVC",
   "Desinstalando la extensión HEVC…": "Odinstalování rozšíření HEVC…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "Rozšíření HEVC odinstalováno. Restartuji aplikaci…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "Rozšíření HEVC odinstalováno. Restartuji aplikaci…",
+  "Visto ahora": "Právě zhlédnuto",
+  "Abrir los enlaces de TikTok en Tokdesk": "Otevírat odkazy TikToku v Tokdesku",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Po zapnutí vyber Tokdesk pro HTTPS ve výchozích aplikacích Windows. Ostatní odkazy se otevřou ve vašem obvyklém prohlížeči."
 }

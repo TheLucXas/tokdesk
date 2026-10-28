@@ -36,6 +36,9 @@ sealed class AppSettings
     public bool NotifyOther { get; set; } = true;
     public int NotifyInterval { get; set; } = 2;
 
+    // Abrir los enlaces de TikTok del navegador en Tokdesk (gestor de enlaces web de Windows)
+    public bool LinkHandler { get; set; }
+
     public double? Left { get; set; }
     public double? Top { get; set; }
     public double? Width { get; set; }

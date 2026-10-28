@@ -42,6 +42,8 @@ sealed class Offline
         try
         {
             await Fetch(url, tmp);
+            // Algunas respuestas llegan sin pista de audio: se descartan y ese video se reproduce por la red
+            if (!HasAudio(tmp)) { Log.Write("Búfer: " + id + " llegó sin audio, se descarta"); File.Delete(tmp); return null; }
             File.Move(tmp, mp4, true);
             if (!string.IsNullOrEmpty(cover))
                 try { await Fetch(cover, Path.Combine(dir, id + ".jpg")); } catch { }
@@ -63,11 +65,36 @@ sealed class Offline
         req.Headers.Referrer = new Uri("https://www.tiktok.com/");
         req.Headers.TryAddWithoutValidation("User-Agent", _ua());
         req.Headers.TryAddWithoutValidation("Cookie", await _cookies());
+        // Igual que el reproductor del navegador: pedido por rango y sin recompresión
+        req.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, null);
+        req.Headers.TryAddWithoutValidation("Accept", "*/*");
+        req.Headers.TryAddWithoutValidation("Accept-Encoding", "identity;q=1, *;q=0");
         using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
         resp.EnsureSuccessStatusCode();
         await using var src = await resp.Content.ReadAsStreamAsync();
         await using var fs = File.Create(file);
         await src.CopyToAsync(fs);
+    }
+
+    // Un MP4 con audio declara una pista "soun" (hdlr) en su índice moov, al principio o al final del archivo
+    static bool HasAudio(string file)
+    {
+        try
+        {
+            var b = File.ReadAllBytes(file);
+            for (var i = 0; i + 3 < b.Length; i++)
+                if (b[i] == (byte)'s' && b[i + 1] == (byte)'o' && b[i + 2] == (byte)'u' && b[i + 3] == (byte)'n') return true;
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>Borra del búfer los videos guardados sin audio (de versiones anteriores).</summary>
+    public void CleanSilent()
+    {
+        foreach (var kind in new[] { "buffer", "saved" })
+            foreach (var f in new DirectoryInfo(Folder(kind)).GetFiles("*.mp4"))
+                if (!HasAudio(f.FullName)) { Delete(Folder(kind), Path.GetFileNameWithoutExtension(f.Name)); Log.Write("Búfer: " + f.Name + " sin audio, borrado"); }
     }
 
     // Deja solo los N videos más recientes del búfer

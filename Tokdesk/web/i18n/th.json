@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "ถอนการติดตั้งส่วนขยาย HEVC",
   "Reinstalar o reparar la extensión HEVC": "ติดตั้งใหม่หรือซ่อมแซมส่วนขยาย HEVC",
   "Desinstalando la extensión HEVC…": "กำลังถอนการติดตั้งส่วนขยาย HEVC…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "ถอนการติดตั้งส่วนขยาย HEVC แล้ว กำลังรีสตาร์ทแอป…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "ถอนการติดตั้งส่วนขยาย HEVC แล้ว กำลังรีสตาร์ทแอป…",
+  "Visto ahora": "ดูเมื่อสักครู่",
+  "Abrir los enlaces de TikTok en Tokdesk": "เปิดลิงก์ TikTok ใน Tokdesk",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "เมื่อเปิดใช้งาน ให้เลือก Tokdesk สำหรับ HTTPS ในแอปเริ่มต้นของ Windows ลิงก์อื่นจะเปิดในเบราว์เซอร์ที่คุณใช้ประจำ"
 }

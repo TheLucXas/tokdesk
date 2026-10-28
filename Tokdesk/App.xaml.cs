@@ -15,19 +15,23 @@ public partial class App : Application
         // Una sola instancia: si ya está abierta, se le pide que se muestre y esta se cierra
         _single = new Mutex(true, "Tokdesk.SingleInstance", out var first);
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, "Tokdesk.Show");
+        // Un enlace de TikTok recibido (argumento o tokdesk://) se abre en la ventana, sea esta u otra instancia
+        var link = Links.FromArgs(e.Args);
         if (!first && !e.Args.Contains("--updated"))
         {
+            if (link != null) Links.SetPending(link);
             _showSignal.Set();
             Shutdown();
             return;
         }
+        if (link != null) Links.SetPending(link);
         // Tras actualizar, espera a que se cierre la versión vieja
         if (!first) { try { _single.WaitOne(TimeSpan.FromSeconds(10)); } catch (AbandonedMutexException) { } }
 
         new Thread(() =>
         {
             while (_showSignal.WaitOne())
-                Dispatcher.BeginInvoke(() => (MainWindow as MainWindow)?.ShowFromTray());
+                Dispatcher.BeginInvoke(() => { (MainWindow as MainWindow)?.ShowFromTray(); (MainWindow as MainWindow)?.OpenPendingLink(); });
         }) { IsBackground = true }.Start();
 
         base.OnStartup(e);

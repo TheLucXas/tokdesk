@@ -27,6 +27,11 @@ static class Program
         Application.SetCompatibleTextRenderingDefault(false);
         // Notificaciones en segundo plano: proceso liviano, no abre la app
         if (args.Contains("--notify")) return Notifier.Run();
+        // Como gestor de enlaces web: lo que no es de TikTok va directo al navegador de siempre, sin abrir la app
+        var bi = Array.IndexOf(args, "--browser");
+        if (bi >= 0 && bi + 1 < args.Length) { Forward(args[bi + 1]); return 0; } // la app pide la web a propósito
+        var web = args.FirstOrDefault(a => a.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || a.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+        if (web != null && !IsTikTok(web)) { Forward(web); return 0; }
         try
         {
             if (!HasRuntime() && !InstallRuntime()) return 1;
@@ -44,6 +49,35 @@ static class Program
     }
 
     static string Quote(string a) => "\"" + a.Replace("\"", "\\\"") + "\"";
+
+    static readonly string[] TikTokHosts = { "tiktok.com", "www.tiktok.com", "m.tiktok.com", "vm.tiktok.com", "vt.tiktok.com", "t.tiktok.com", "us.tiktok.com" };
+    static bool IsTikTok(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var u) && TikTokHosts.Contains(u.Host.ToLowerInvariant()) && !u.AbsolutePath.Contains("/live");
+
+    // Abre el enlace con el navegador que era el predeterminado antes de elegir Tokdesk
+    static void Forward(string url)
+    {
+        try
+        {
+            using var t = Registry.CurrentUser.OpenSubKey(@"Software\Tokdesk");
+            var progId = t?.GetValue("ForwardProgId") as string;
+            using var cmdKey = progId == null ? null : Registry.ClassesRoot.OpenSubKey(progId + @"\shell\open\command");
+            var cmd = cmdKey?.GetValue("") as string;
+            if (!string.IsNullOrEmpty(cmd))
+            {
+                cmd = Environment.ExpandEnvironmentVariables(cmd);
+                string exe, rest;
+                if (cmd.StartsWith("\"")) { var end = cmd.IndexOf('"', 1); exe = cmd.Substring(1, end - 1); rest = cmd.Substring(end + 1); }
+                else { var sp = cmd.IndexOf(' '); exe = sp < 0 ? cmd : cmd.Substring(0, sp); rest = sp < 0 ? "" : cmd.Substring(sp); }
+                rest = rest.Contains("%1") ? rest.Replace("%1", url) : rest + " \"" + url + "\"";
+                Process.Start(new ProcessStartInfo(exe, rest.Trim()) { UseShellExecute = false });
+                return;
+            }
+        }
+        catch { }
+        // Sin navegador anterior conocido: Edge, que viene con Windows
+        try { Process.Start(new ProcessStartInfo("microsoft-edge:" + url) { UseShellExecute = true }); } catch { }
+    }
 
     // ---------- .NET 8 Desktop Runtime ----------
 

@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "HEVC एक्सटेंशन अनइंस्टॉल करें",
   "Reinstalar o reparar la extensión HEVC": "HEVC एक्सटेंशन दोबारा इंस्टॉल करें या ठीक करें",
   "Desinstalando la extensión HEVC…": "HEVC एक्सटेंशन अनइंस्टॉल किया जा रहा है…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC एक्सटेंशन अनइंस्टॉल हुआ। ऐप फिर से शुरू हो रहा है…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC एक्सटेंशन अनइंस्टॉल हुआ। ऐप फिर से शुरू हो रहा है…",
+  "Visto ahora": "अभी देखा",
+  "Abrir los enlaces de TikTok en Tokdesk": "TikTok लिंक Tokdesk में खोलें",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "चालू करने पर, Windows की डिफ़ॉल्ट ऐप्स में HTTPS के लिए Tokdesk चुनें। बाकी लिंक आपके सामान्य ब्राउज़र में खुलेंगे।"
 }

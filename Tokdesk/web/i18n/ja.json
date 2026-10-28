@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "HEVC拡張機能をアンインストール",
   "Reinstalar o reparar la extensión HEVC": "HEVC拡張機能を再インストールまたは修復",
   "Desinstalando la extensión HEVC…": "HEVC拡張機能をアンインストール中…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC拡張機能をアンインストールしました。アプリを再起動しています…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC拡張機能をアンインストールしました。アプリを再起動しています…",
+  "Visto ahora": "今見た",
+  "Abrir los enlaces de TikTok en Tokdesk": "TikTok のリンクを Tokdesk で開く",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "有効にすると、Windows の既定のアプリで HTTPS に Tokdesk を選択します。その他のリンクは通常のブラウザで開きます。"
 }

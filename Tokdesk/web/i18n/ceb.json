@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "I-uninstall ang HEVC extension",
   "Reinstalar o reparar la extensión HEVC": "I-reinstall o ayuha ang HEVC extension",
   "Desinstalando la extensión HEVC…": "Gi-uninstall ang HEVC extension…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "Na-uninstall ang HEVC extension. Nagre-restart ang app…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "Na-uninstall ang HEVC extension. Nagre-restart ang app…",
+  "Visto ahora": "Bag-o lang nakita",
+  "Abrir los enlaces de TikTok en Tokdesk": "Ablihi ang TikTok nga mga link sa Tokdesk",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kung i-enable, pilia ang Tokdesk para sa HTTPS sa default nga apps sa Windows. Ang uban nga mga link mabuksan sa imong kasagarang browser."
 }

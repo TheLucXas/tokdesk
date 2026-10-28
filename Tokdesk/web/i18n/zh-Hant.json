@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "解除安裝 HEVC 擴充功能",
   "Reinstalar o reparar la extensión HEVC": "重新安裝或修復 HEVC 擴充功能",
   "Desinstalando la extensión HEVC…": "正在解除安裝 HEVC 擴充功能…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC 擴充功能已解除安裝，正在重新啟動應用程式…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC 擴充功能已解除安裝，正在重新啟動應用程式…",
+  "Visto ahora": "剛剛觀看",
+  "Abrir los enlaces de TikTok en Tokdesk": "在 Tokdesk 中開啟 TikTok 連結",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "啟用後，請在 Windows 預設應用程式中為 HTTPS 選擇 Tokdesk。其他連結仍會在你慣用的瀏覽器中開啟。"
 }

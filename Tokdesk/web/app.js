@@ -347,6 +347,9 @@ function setFeed(f, idx) {
   document.body.classList.toggle('sub', sub);
   $('#backTitle').textContent = f.title;
   $$('.tab').forEach((t) => t.classList.toggle('active', !sub && t.dataset.feed === f.key));
+  // Las pestañas de arriba (Explorar / Siguiendo / Para ti) son de Inicio; Amigos tiene la suya abajo
+  const nav = f.key === 'friends' ? 'friends' : ['foryou', 'following', 'explore'].includes(f.key) ? 'home' : null;
+  if (!sub && nav) $$('.nav').forEach((x) => { if (x.dataset.nav === 'home' || x.dataset.nav === 'friends') x.classList.toggle('active', x.dataset.nav === nav); });
   closePanels();
   updateEmpty();
   if (!f.items.length) requestMore();
@@ -419,6 +422,14 @@ function buildSlide(it) {
     if (!media.getAttribute('src')) return;
     const err = media.error;
     log(`media ${it.id} error ${err && err.code}`);
+    // La copia del búfer pudo borrarse o estar dañada: se vuelve a la de internet en vez de quedar trabado
+    const net = it.netSrc || (it.src && !it.src.includes('offline.tokdesk') ? it.src : null);
+    if (media.currentSrc.includes('offline.tokdesk') && net) {
+      offline.buffer.delete(it.id); offline.saved.delete(it.id);
+      media.src = net;
+      if (el === current()) media.play().catch(() => { });
+      return;
+    }
     if (!it.photos.length && el === current()) setTimeout(() => go(1), 300);
   });
   const fill = $('.fill', el);
@@ -805,7 +816,7 @@ $('#pager').addEventListener('click', (e) => {
   if (!lb) return;
   e.stopPropagation();
   const it = currentItem();
-  if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author + '/live' });
+  if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author + '/live', browser: true });
 }, true);
 $('#viewer').addEventListener('click', closeViewer);
 $('#chatList').addEventListener('click', (e) => { const p = e.target.closest('img.pic'); if (p) openViewer(p.src); });
@@ -1547,15 +1558,30 @@ async function openChatVideos(startId) {
   openSubFeed(f, idx);
 }
 // Abre en la app un video a partir de su enlace (p. ej. compartido en un chat)
+// Enlaces de TikTok (desde la app, otra ventana o el navegador) se abren aquí, como en la app de Android
+function openTikTokLink(url) {
+  let u;
+  try { u = new URL(url); } catch { return; }
+  const p = decodeURIComponent(u.pathname);
+  let m;
+  if ((m = /\/(?:video|photo)\/(\d+)/.exec(p))) return openVideoLink('https://www.tiktok.com/video/' + m[1]);
+  if ((m = /^\/@([^/]+)\/live/.exec(p))) return send({ t: 'open', url, browser: true }); // los directos no se reproducen aquí
+  if ((m = /^\/@([^/?#]+)/.exec(p))) return openUserByName(m[1]);
+  if ((m = /^\/tag\/([^/?#]+)/.exec(p))) return openTag(m[1]);
+  if ((m = /^\/music\/.*?-?(\d{6,})$/.exec(p))) return openSoundPage({ musicId: m[1] });
+  if (u.searchParams.get('q') && /search/.test(p)) { openSearch(); $('#searchInput').value = u.searchParams.get('q'); $('#searchForm').requestSubmit(); return; }
+  send({ t: 'open', url, browser: true });
+}
+
 async function openVideoLink(url) {
-  const m = /\/video\/(\d+)/.exec(url || '');
-  if (!m) { send({ t: 'open', url }); return; }
+  const m = /\/(?:video|photo)\/(\d+)/.exec(url || '');
+  if (!m) { send({ t: 'open', url, browser: true }); return; }
   toast(t('Abriendo video…'));
   const r = await api('GET', '/api/item/detail/', { itemId: m[1] });
   const raw = r.data && r.data.itemInfo && r.data.itemInfo.itemStruct;
   const f = feedFor('single:' + m[1]);
   if (!f.items.length && raw) addItems(f, [raw]);
-  if (!f.items.length) { send({ t: 'open', url }); return; }
+  if (!f.items.length) { send({ t: 'open', url, browser: true }); return; }
   closeChat();
   openSubFeed(f, 0);
 }
@@ -1577,6 +1603,9 @@ function updateProfileFollow(it) {
 async function openProfile(it) {
   if (!it.secUid) return;
   if (state.profileFor !== it) { state.pfSort = 0; updateSortMenu(); }
+  // «Visto ahora»: el video de esta persona que estabas mirando se marca en su perfil (como en la app)
+  const cur = currentItem();
+  state.seenNow = cur && cur.authorId === it.authorId ? cur.id : null;
   state.profileFor = it;
   const f = feedFor('user:' + it.secUid);
   f.title = '@' + it.author;
@@ -1833,7 +1862,7 @@ function editSend(msg) {
 new MutationObserver(() => {
   if (editOpen && !$('#opts').classList.contains('open')) { editOpen = false; send({ t: 'editclose' }); }
 }).observe($('#opts'), { attributes: true, attributeFilter: ['class'] });
-$('#pfOpen').addEventListener('click', () => { const it = state.profileFor; if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author }); });
+$('#pfOpen').addEventListener('click', () => { const it = state.profileFor; if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author, browser: true }); });
 $('#pfBody').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
   const f = state.profileKey && feeds.get(state.profileKey);
@@ -1860,7 +1889,47 @@ function renderGrid(grid, more, f) {
     : f.error ? t('No se pudieron cargar los videos (puede ser una lista privada).') + `<br><br><button class="pill" data-retry>${esc(t('Reintentar'))}</button>` : !f.items.length ? t('Sin videos.') : '';
   const rb = more.querySelector('[data-retry]');
   if (rb) rb.onclick = () => { f.error = false; f.hasMore = true; f.cursor = 0; renderGrid(grid, more, f); f.load(f); };
+  if (grid.id === 'pfGrid') markSeenNow();
 }
+
+// ---------- «Visto ahora» en el perfil ----------
+function seenNowTile() {
+  const f = state.profileKey && feeds.get(state.profileKey);
+  if (!f || !state.seenNow || !state.profileKey.startsWith('user:')) return { f, tile: null };
+  const i = f.items.findIndex((x) => x.id === state.seenNow);
+  return { f, tile: i >= 0 ? $('#pfGrid').children[i] : null };
+}
+function markSeenNow() {
+  const { f } = seenNowTile();
+  [...$('#pfGrid').children].forEach((tile, i) => {
+    const on = !!(f && state.profileKey.startsWith('user:') && f.items[i] && f.items[i].id === state.seenNow);
+    tile.classList.toggle('seen-now', on);
+    if (on && !$('.seen-label', tile)) tile.insertAdjacentHTML('beforeend', `<div class="seen-label">${ICON.play}<span>${esc(t('Visto ahora'))}</span></div>`);
+  });
+  updateSeenPill();
+}
+function updateSeenPill() {
+  const pill = $('#pfSeen');
+  const { f, tile } = seenNowTile();
+  let dir = null;
+  if (tile) {
+    const r = tile.getBoundingClientRect(), b = $('#pfBody').getBoundingClientRect();
+    if (r.bottom < b.top + 40) dir = 'up'; else if (r.top > b.bottom - 40) dir = 'down';
+  } else if (f && state.seenNow && f.hasMore && f.items.length) dir = 'down';
+  pill.classList.toggle('show', !!dir);
+  if (dir) pill.innerHTML = `<span>${esc(t('Visto ahora'))}</span><svg viewBox="0 0 24 24" class="${dir}"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 7l5 5 5-5M7 13l5 5 5-5"/></svg>`;
+}
+async function goSeenNow() {
+  for (let n = 0; n < 10; n++) {
+    const { f, tile } = seenNowTile();
+    if (tile) { tile.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    if (!f || !f.hasMore) return;
+    await f.load(f);
+    await new Promise((r) => setTimeout(r, 300));
+  }
+}
+$('#pfBody').addEventListener('scroll', () => updateSeenPill(), { passive: true });
+$('#pfSeen').addEventListener('click', goSeenNow);
 
 // ---------- Búsqueda ----------
 function openSearch() {
@@ -2300,6 +2369,7 @@ host && host.addEventListener('message', (e) => {
     case 'dm': onDm(m); break;
     case 'reportstate': onReportState(m); break;
     case 'editstate': onEditState(m); break;
+    case 'openlink': closePanels(); openTikTokLink(m.url); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;

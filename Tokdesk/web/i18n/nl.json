@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "HEVC-extensie verwijderen",
   "Reinstalar o reparar la extensión HEVC": "HEVC-extensie opnieuw installeren of repareren",
   "Desinstalando la extensión HEVC…": "HEVC-extensie verwijderen…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-extensie verwijderd. App wordt opnieuw gestart…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-extensie verwijderd. App wordt opnieuw gestart…",
+  "Visto ahora": "Zojuist bekeken",
+  "Abrir los enlaces de TikTok en Tokdesk": "TikTok-links openen in Tokdesk",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kies bij activeren Tokdesk voor HTTPS in de standaard-apps van Windows. Andere links openen in je gewone browser."
 }

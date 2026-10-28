@@ -404,5 +404,8 @@
   "Desinstalar la extensión HEVC": "Poista HEVC-laajennus",
   "Reinstalar o reparar la extensión HEVC": "Asenna HEVC-laajennus uudelleen tai korjaa se",
   "Desinstalando la extensión HEVC…": "Poistetaan HEVC-laajennusta…",
-  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-laajennus poistettu. Käynnistetään sovellus uudelleen…"
+  "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-laajennus poistettu. Käynnistetään sovellus uudelleen…",
+  "Visto ahora": "Juuri katsottu",
+  "Abrir los enlaces de TikTok en Tokdesk": "Avaa TikTok-linkit Tokdeskissä",
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kun tämä on päällä, valitse Tokdesk HTTPS-protokollalle Windowsin oletussovelluksissa. Muut linkit avautuvat tavalliseen selaimeesi."
 }

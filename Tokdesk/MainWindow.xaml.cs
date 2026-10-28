@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     readonly AppSettings _settings = AppSettings.Load();
     static readonly HttpClient Http = new();
     Offline _off;
+    Task _offClean = Task.CompletedTask;
 
     public MainWindow()
     {
@@ -163,6 +164,10 @@ public partial class MainWindow : Window
                 typeof(AppSettings).GetProperty(key)!.SetValue(_settings, v.GetBoolean());
                 _ = NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
                 break;
+            case "LinkHandler":
+                _settings.LinkHandler = v.GetBoolean();
+                Links.ApplyHandler(_settings.LinkHandler);
+                break;
             case "NotifyInterval":
                 _settings.NotifyInterval = Math.Clamp(v.GetInt32(), 1, 60);
                 _ = NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
@@ -278,6 +283,7 @@ public partial class MainWindow : Window
             CoreWebView2HostResourceAccessKind.Allow);
         // Videos guardados en disco (búfer y sin conexión)
         _off = new Offline(Http, () => _engine.CookieHeader(), () => _engine.UserAgent);
+        _offClean = Task.Run(_off.CleanSilent);
         ui.SetVirtualHostNameToFolderMapping(Offline.Host, Offline.Dir, CoreWebView2HostResourceAccessKind.Allow);
 
         // Los CDN de video e imagen exigen el Referer de la web oficial
@@ -296,6 +302,7 @@ public partial class MainWindow : Window
 
         // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
         _settings.ApplyShortcuts();
+        Links.RegisterProtocol();
 
         // Nombre e ícono propios en el mezclador de volumen (las sesiones aparecen al empezar a sonar)
         var mixer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -338,6 +345,8 @@ public partial class MainWindow : Window
                     _engine?.ReplayFeed();
                     PostToUi(SettingsDto());
                     if (_settings.AutoCheckUpdates && Updater.Configured && !_checkedOnce) { _checkedOnce = true; _ = CheckUpdates(false); }
+                    _uiReady = true;
+                    OpenPendingLink();
                     // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
                     _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });
                     break;
@@ -356,7 +365,7 @@ public partial class MainWindow : Window
                         PostToUi(new { t = "offsaved", kind, id, url, size = _off.Size(kind) });
                         break;
                     }
-                case "offlist": PostToUi(_off.List(S("kind"))); break;
+                case "offlist": await _offClean; PostToUi(_off.List(S("kind"))); break;
                 case "offclear": _off.Clear(S("kind")); PostToUi(_off.List(S("kind"))); break;
                 case "download": await Download(S("url"), S("name"), S("ext") ?? "mp4", m.TryGetProperty("rid", out var dr) ? dr.GetInt32() : 0); break;
                 case "showfile":
@@ -384,7 +393,14 @@ public partial class MainWindow : Window
                     Process.Start(new ProcessStartInfo(AppInfo.StartPath) { UseShellExecute = false });
                     Application.Current.Shutdown();
                     break;
-                case "open": Process.Start(new ProcessStartInfo(S("url")) { UseShellExecute = true }); break;
+                case "open":
+                    // Los enlaces de TikTok se quedan en la app, salvo que se pida la web a propósito (LIVE, «abrir en el navegador»)
+                    if (!m.TryGetProperty("browser", out _) && Links.IsTikTok(S("url"))) { Links.SetPending(S("url")); OpenPendingLink(); }
+                    // Con Tokdesk como gestor de enlaces, la web se abre por el lanzador para no volver a la app
+                    else if (_settings.LinkHandler && AppInfo.HasLauncher && S("url").StartsWith("http"))
+                        Process.Start(new ProcessStartInfo(AppInfo.StartPath, $"--browser \"{S("url")}\"") { UseShellExecute = false });
+                    else Process.Start(new ProcessStartInfo(S("url")) { UseShellExecute = true });
+                    break;
                 case "reportopen":
                     PostToUi(new { t = "reportstate", s = await _side.OpenReport(S("url"), S("comment")) });
                     break;
@@ -505,6 +521,19 @@ public partial class MainWindow : Window
             if (which == _engine) _engine.SetVisible(true, url);
             else _side.UpdateBounds();
         }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    bool _uiReady;
+
+    /// <summary>Abre en la interfaz el enlace de TikTok que llegó por argumento, tokdesk:// u otra instancia.</summary>
+    public async void OpenPendingLink()
+    {
+        if (!_uiReady) return; // se abre cuando la interfaz avise que está lista
+        var url = Links.TakePending();
+        if (url == null) return;
+        url = await Links.Resolve(Http, url);
+        Log.Write("Enlace: " + url);
+        PostToUi(new { t = "openlink", url });
     }
 
     // Al terminar de iniciar sesión (aparece una cookie de sesión nueva) se vuelve sola a la app
