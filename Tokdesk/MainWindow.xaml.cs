@@ -382,6 +382,8 @@ public partial class MainWindow : Window
                     PostToUi(SettingsDto());
                     if (_settings.AutoCheckUpdates && Updater.Configured && !_checkedOnce) { _checkedOnce = true; _ = CheckUpdates(false); }
                     _uiReady = true;
+                    // Si la ventana abrió sin foco, Activated/Deactivated nunca llegan: se avisa el estado real
+                    SendWinState();
                     OpenPendingLink();
                     // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
                     _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });

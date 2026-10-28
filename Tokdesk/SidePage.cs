@@ -176,14 +176,17 @@ sealed class SidePage
     /// </summary>
     async Task<string> OpenLocked(string url, string js, string what)
     {
-        _locked = false;
         var sw = System.Diagnostics.Stopwatch.StartNew();
         await Ensure();
+        // Si los chats están yendo a Mensajes, se espera; luego la página queda tomada desde el principio,
+        // para que la bandeja no la mueva mientras carga
+        for (var t = 0; t < 10000 && _toMessages; t += 200) await Task.Delay(200);
+        _locked = false;
+        _locked = true;
         string opened = null;
-        if (await GoFast(url)) { _locked = true; opened = await Poll(js, 8000); }
+        if (await GoFast(url)) opened = await Poll(js, 8000);
         if (opened == null)
         {
-            _locked = false;
             await Reload(url);
             // TikTok a veces responde 403 a la primera carga: se reintenta una vez
             if ((_wv.Source ?? "").StartsWith("chrome-error") || await Eval("location.protocol") == "chrome-error:")
@@ -191,7 +194,6 @@ sealed class SidePage
                 await Task.Delay(2000);
                 await Reload(url);
             }
-            _locked = true;
             opened = await Poll(js, 20000);
         }
         Log.Write($"{what}: listo en {sw.ElapsedMilliseconds} ms ({(opened == null ? "falló" : "ok")})");
@@ -212,7 +214,8 @@ sealed class SidePage
               const want = {{list}};
               const s = document.querySelector('[data-e2e="share-icon"]');
               if (!s) return null;
-              const b = s.closest('button') || s.parentElement;
+              // Antes era un <button>; ahora el propio ícono es el botón (aria-label «Compartir…»)
+              const b = s.closest('button') || s;
               if (!window.__tdShareAt) { window.__tdShareAt = Date.now(); b.click(); }
               ['pointerover', 'pointerenter', 'mouseover', 'mouseenter', 'mousemove'].forEach(t => b.dispatchEvent(new MouseEvent(t, { bubbles: true })));
               const items = [...document.querySelectorAll('[data-e2e^="share-"]')].filter(e => e.querySelector('[data-e2e="share-avatar"]'));
@@ -234,7 +237,12 @@ sealed class SidePage
                   return String(n);
                 })()
                 """);
-            if (picked == null || picked == "0") { Log.Write("Compartir: no se encontró a nadie en el menú"); return false; }
+            if (picked == null || picked == "0")
+            {
+                var seen = await Eval("(() => [...document.querySelectorAll('[data-e2e^=\"share-\"]')].map(e => e.dataset.e2e + '=' + ((e.querySelector('p') || {}).textContent || '')).join(' | ').slice(0, 600))()");
+                Log.Write($"Compartir: no se encontró a {string.Join(",", people)} en el menú: {seen}");
+                return false;
+            }
             await Task.Delay(500);
             if (!string.IsNullOrWhiteSpace(message))
                 await Eval($$"""
@@ -276,6 +284,7 @@ sealed class SidePage
         await Ensure();
         var was = _background;
         if (!was) await SetBackground(true);
+        _toMessages = true;
         try
         {
             var src = _wv.Source ?? "";
@@ -284,8 +293,9 @@ sealed class SidePage
             await Reload(Messages);
             return await Poll(InboxJs, 25000) != null;
         }
-        finally { if (!was && !_locked && !ChatOpen) await SetBackground(false); }
+        finally { _toMessages = false; if (!was && !_locked && !ChatOpen) await SetBackground(false); }
     }
+    bool _toMessages;
 
     async Task<bool> GoFast(string url)
     {

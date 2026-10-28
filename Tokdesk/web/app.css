@@ -836,3 +836,10 @@ body.light #friends .chip.friend .pick { border-color: #fff; }
 #shareMsg { border-bottom-color: rgba(255,255,255,.12); padding: 12px 2px; }
 .share-head .sbtn svg { width: 20px; height: 20px; }
 #friends .chip.friend .lbl { font-size: 12px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Barras de desplazamiento finas y oscuras en toda la app (Chromium muestra la blanca de Windows) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+::-webkit-scrollbar-button { display: none; }
+body.light ::-webkit-scrollbar-thumb { background: #ccc; }
