@@ -25,6 +25,17 @@ sealed class AppSettings
     public bool StartMenuShortcut { get; set; }
     public bool DesktopShortcut { get; set; }
 
+    // Notificaciones de Windows (actividad con el notificador liviano; mensajes con la app abierta)
+    public bool Notifications { get; set; } = true;
+    public bool NotifyBackground { get; set; } = true;
+    public bool NotifyMessages { get; set; } = true;
+    public bool NotifyLikes { get; set; } = true;
+    public bool NotifyComments { get; set; } = true;
+    public bool NotifyMentions { get; set; } = true;
+    public bool NotifyFollowers { get; set; } = true;
+    public bool NotifyOther { get; set; } = true;
+    public int NotifyInterval { get; set; } = 2;
+
     public double? Left { get; set; }
     public double? Top { get; set; }
     public double? Width { get; set; }

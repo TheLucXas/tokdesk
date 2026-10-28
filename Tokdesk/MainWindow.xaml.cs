@@ -124,7 +124,13 @@ public partial class MainWindow : Window
         }
         SaveWindow();
         _tray.Dispose();
+        // Sin segundo plano, el notificador vive solo mientras la app está abierta
+        if (!_settings.NotifyBackground) NotifyService.Stop();
     }
+
+    // Textos traducidos e idioma que manda la interfaz para el notificador
+    Dictionary<string, string> _notifyStrings;
+    string _notifyLang;
 
     object SettingsDto() => new
     {
@@ -152,6 +158,15 @@ public partial class MainWindow : Window
             case "StartMenuShortcut": _settings.StartMenuShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
             case "DesktopShortcut": _settings.DesktopShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
             case "AskDownloadFolder": _settings.AskDownloadFolder = v.GetBoolean(); break;
+            case "Notifications": case "NotifyBackground": case "NotifyMessages": case "NotifyLikes":
+            case "NotifyComments": case "NotifyMentions": case "NotifyFollowers": case "NotifyOther":
+                typeof(AppSettings).GetProperty(key)!.SetValue(_settings, v.GetBoolean());
+                _ = NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
+                break;
+            case "NotifyInterval":
+                _settings.NotifyInterval = Math.Clamp(v.GetInt32(), 1, 60);
+                _ = NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
+                break;
             case "Zoom":
                 _settings.Zoom = Math.Clamp(v.GetDouble(), 0.5, 2.0);
                 Ui.ZoomFactor = _settings.Zoom;
@@ -374,6 +389,14 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
+                case "notifystrings":
+                    _notifyStrings = m.GetProperty("s").EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetString());
+                    _notifyLang = S("lang");
+                    await NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
+                    break;
+                case "notify":
+                    if (_settings.Notifications && _settings.NotifyMessages && !IsActive) _tray.Notify(S("title"), S("text"));
+                    break;
                 case "editopen":
                     PostToUi(new { t = "editstate", s = await _side.OpenEditProfile(S("user")) });
                     break;
@@ -600,6 +623,7 @@ public partial class MainWindow : Window
                     await using var fs = File.Create(target);
                     await Ui.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, fs);
                 }
+                else if (line.StartsWith("http:")) { var r = await FetchText(line[5..]); Log.Write("TEST http " + (r == null ? "null" : r[..Math.Min(r.Length, 1500)])); }
                 else if (line.StartsWith("sidego:")) { await _side.Open(line[7..]); Log.Write("TEST side en " + line[7..]); }
                 else if (line.StartsWith("side:")) Log.Write("TEST " + await _side.Run(line[5..]));
                 else Log.Write("TEST " + await Ui.CoreWebView2.ExecuteScriptAsync(line));

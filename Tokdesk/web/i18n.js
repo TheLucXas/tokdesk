@@ -55,6 +55,7 @@ async function applyLang() {
   translateDom();
   if (typeof renderSettings === 'function') renderSettings();
   if (typeof renderInbox === 'function') renderInbox();
+  if (typeof sendNotifyStrings === 'function') sendNotifyStrings();
 }
 
 // Textos fijos del HTML: data-i18n (texto), data-i18n-ph (placeholder), data-i18n-title (tooltip)

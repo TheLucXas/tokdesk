@@ -1271,6 +1271,17 @@ function onInbox(m) {
   const badge = $('#inboxBadge');
   badge.textContent = unread > 99 ? '99+' : unread || '';
   badge.classList.toggle('show', unread > 0);
+  notifyNewMessages();
+}
+
+// Aviso de Windows por mensajes nuevos (solo con la app abierta; la app no lo muestra si está en primer plano)
+let lastUnread = null;
+function notifyNewMessages() {
+  const now = new Map(state.chats.map((c) => [c.id, c.unread || 0]));
+  if (lastUnread) for (const c of state.chats) {
+    if ((c.unread || 0) > (lastUnread.get(c.id) || 0) && !(chatConv && chatConv.id === c.id)) send({ t: 'notify', title: c.name, text: c.last || t('Mensaje nuevo') });
+  }
+  lastUnread = now;
 }
 
 // Revisa la bandeja cada minuto para mostrar los mensajes sin leer
@@ -2270,6 +2281,7 @@ host && host.addEventListener('message', (e) => {
     case 'me': {
       const was = !!state.me;
       try { state.me = m.user ? JSON.parse(m.user) : null; } catch { state.me = null; }
+      if (m.user && !state.notifySent) { state.notifySent = true; sendNotifyStrings(); }
       if (m.lang && m.lang !== tiktokLang) { tiktokLang = m.lang; if (opt.lang === 'auto' && resolveLang() !== uiLang) applyLang(); }
       if (!!state.me !== was && state.feed) updateEmpty();
       break;

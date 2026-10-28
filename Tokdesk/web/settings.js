@@ -179,6 +179,17 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Buscar actualizaciones al iniciar'), value: N.AutoCheckUpdates !== false, fn: (v) => send({ t: 'setsetting', k: 'AutoCheckUpdates', v }) }),
         row({ type: 'toggle', label: t('Instalar automáticamente'), value: !!N.AutoInstallUpdates, fn: (v) => send({ t: 'setsetting', k: 'AutoInstallUpdates', v }) }),
       ]],
+      [t('Notificaciones'), [
+        row({ type: 'toggle', label: t('Notificaciones de la app'), hint: t('Avisos de Windows con tu actividad de TikTok'), value: N.Notifications !== false, fn: (v) => send({ t: 'setsetting', k: 'Notifications', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Recibirlas con la app cerrada'), hint: t('Un proceso muy liviano (sin navegador) revisa la actividad y arranca con Windows'), value: N.NotifyBackground !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyBackground', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Mensajes'), hint: t('Solo con la app abierta o en la bandeja'), value: N.NotifyMessages !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyMessages', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Me gusta'), value: N.NotifyLikes !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyLikes', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Comentarios'), value: N.NotifyComments !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyComments', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Menciones y etiquetas'), value: N.NotifyMentions !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyMentions', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Nuevos seguidores'), value: N.NotifyFollowers !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyFollowers', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Otra actividad'), hint: t('Compartidos, republicaciones y similares'), value: N.NotifyOther !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyOther', v }) }),
+        N.Notifications !== false && row({ type: 'seg', label: t('Revisar cada'), value: N.NotifyInterval || 2, options: [[1, '1 min'], [2, '2 min'], [5, '5 min'], [15, '15 min']], fn: (v) => send({ t: 'setsetting', k: 'NotifyInterval', v }) }),
+      ]],
       [t('Privacidad y datos'), [
         row({ type: 'link', ic: 'search', label: t('Borrar historial de búsqueda'), fn: () => { pref.set('searchHistory', []); toast(t('Historial borrado')); } }),
         row({ type: 'link', ic: 'download', label: t('Borrar caché'), fn: () => send({ t: 'clearcache' }) }),
@@ -472,3 +483,11 @@ const TIKTOK_LANG = {
 };
 
 $('#setSearch').addEventListener('input', () => renderSettings());
+// Textos traducidos para el notificador liviano (corre fuera de la app y no tiene las traducciones)
+function sendNotifyStrings() {
+  send({ t: 'notifystrings', lang: TIKTOK_LANG[uiLang] || uiLang, s: {
+    comment: t('comentó: {0}'), reply: t('respondió a tu comentario: {0}'), mention: t('te mencionó: {0}'),
+    follow: t('comenzó a seguirte'), more: t('y {0} más'), andmore: t('y {0} más'),
+    open: t('Abrir Tokdesk'), pause: t('Pausar 1 hora'), quit: t('Salir'),
+  } });
+}

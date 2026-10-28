@@ -25,6 +25,8 @@ static class Program
     {
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        // Notificaciones en segundo plano: proceso liviano, no abre la app
+        if (args.Contains("--notify")) return Notifier.Run();
         try
         {
             if (!HasRuntime() && !InstallRuntime()) return 1;

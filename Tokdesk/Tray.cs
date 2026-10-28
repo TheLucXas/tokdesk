@@ -27,9 +27,16 @@ sealed class Tray : IDisposable
         _icon.MouseClick += (_, e) => { if (e.Button == WinForms.MouseButtons.Left) open(); };
     }
 
-    public bool Visible { get => _icon.Visible; set => _icon.Visible = value; }
+    bool _wanted;
+    public bool Visible { get => _wanted; set { _wanted = value; _icon.Visible = value; } }
 
-    public void Notify(string title, string text) => _icon.ShowBalloonTip(3000, title, text, WinForms.ToolTipIcon.None);
+    // El aviso necesita el ícono visible: si estaba oculto se muestra un momento
+    public void Notify(string title, string text)
+    {
+        _icon.Visible = true;
+        _icon.ShowBalloonTip(6000, title, text, WinForms.ToolTipIcon.None);
+        if (!_wanted) Task.Delay(10000).ContinueWith(_ => System.Windows.Application.Current?.Dispatcher.Invoke(() => _icon.Visible = _wanted));
+    }
 
     public void Dispose()
     {
