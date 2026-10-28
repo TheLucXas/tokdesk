@@ -31,7 +31,7 @@ sealed class Offline
     public static string UrlOf(string kind, string file) => $"https://{Host}/{(kind == "saved" ? "saved" : "buffer")}/{file}";
 
     /// <summary>Descarga el video (y su portada) y guarda los datos del item. Devuelve la dirección local o null.</summary>
-    public async Task<string> Save(string kind, string id, string url, string cover, string meta)
+    public async Task<string> Save(string kind, string id, string url, string cover, string meta, string alt = null)
     {
         id = Safe(id);
         if (id.Length == 0 || string.IsNullOrEmpty(url)) return null;
@@ -42,7 +42,12 @@ sealed class Offline
         try
         {
             await Fetch(url, tmp);
-            // Algunas respuestas llegan sin pista de audio: se descartan y ese video se reproduce por la red
+            // Algunas variantes (HEVC) no traen pista de audio: se prueba con la H.264 y, si tampoco, se descarta
+            if (!HasAudio(tmp) && !string.IsNullOrEmpty(alt))
+            {
+                Log.Write("Búfer: " + id + " llegó sin audio, se prueba la variante H.264");
+                await Fetch(alt, tmp);
+            }
             if (!HasAudio(tmp)) { Log.Write("Búfer: " + id + " llegó sin audio, se descarta"); File.Delete(tmp); return null; }
             File.Move(tmp, mp4, true);
             if (!string.IsNullOrEmpty(cover))

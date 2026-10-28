@@ -211,6 +211,12 @@ function bestSource(v) {
 // H.265 solo se reproduce si Windows tiene la extensión HEVC; TikTok suele dar el 1080p solo en ese formato
 const HEVC_OK = !!document.createElement('video').canPlayType('video/mp4; codecs="hvc1.1.6.L120.90"');
 
+// Mejor variante H.264 distinta de la actual (las H.264 de TikTok siempre traen audio)
+function h264Of(it, except) {
+  return (it.bitrates || []).filter((b) => !/265|hvc|bytevc/i.test(b.codec || '') && b.url !== except)
+    .sort((a, b) => (b.h || 0) - (a.h || 0))[0] || null;
+}
+
 function pickSource(v) {
   const list = (v.bitrateInfo || []).filter((b) => b.PlayAddr && b.PlayAddr.UrlList && b.PlayAddr.UrlList.length)
     .filter((b) => HEVC_OK || !/265|bytevc1|hvc/i.test(b.CodecType || ''));
@@ -244,6 +250,9 @@ function normalize(it) {
     // Para descargar: con marca de agua (la de TikTok) y la de mayor calidad (cualquier códec)
     watermarkSrc: v.downloadAddr || null,
     bestSrc: bestSource(v),
+    // Variantes (para depurar el audio y para caer a H.264 si la elegida falla)
+    bitrates: (v.bitrateInfo || []).filter((b) => b.PlayAddr && b.PlayAddr.UrlList && b.PlayAddr.UrlList.length)
+      .map((b) => ({ codec: b.CodecType, h: b.PlayAddr.Height, url: b.PlayAddr.UrlList[b.PlayAddr.UrlList.length - 1] })),
     subtitles: (v.subtitleInfos || []).filter((s) => s.Url && /vtt/i.test(s.Format || 'webvtt'))
       .map((s) => ({ url: s.Url, lang: (s.LanguageCodeName || '').toLowerCase() })),
     reposted: !!it.reposted, reposts: +st.repostCount || 0,
@@ -414,6 +423,39 @@ function buildSlide(it) {
   media.loop = !state.auto;
   media.addEventListener('waiting', () => el.classList.add('waiting'));
   media.addEventListener('playing', () => el.classList.remove('waiting', 'paused'));
+  // Algunas variantes HEVC de TikTok vienen sin pista de audio: si a poco de empezar no se decodifica sonido
+  // (pero sí imagen), se cambia una vez a la mejor variante H.264 en el mismo punto del video
+  media.addEventListener('playing', () => {
+    if (el.audioChecked || media.tagName !== 'VIDEO') return;
+    el.audioChecked = true;
+    // (el contador de video no sirve: con HEVC por hardware queda en 0; se mira que el video avance)
+    const a0 = media.webkitAudioDecodedByteCount, t0 = media.currentTime;
+    setTimeout(() => {
+      if (media.paused || media.webkitAudioDecodedByteCount > a0 || media.currentTime - t0 < 0.5) return;
+      const alt = h264Of(it, media.getAttribute('src'));
+      if (!alt) return;
+      log(`audio ${it.id}: la variante no trae sonido, se cambia a ${alt.codec} ${alt.h}p`);
+      const at = media.currentTime;
+      it.src = alt.url;
+      offline.buffer.delete(it.id);
+      media.addEventListener('loadedmetadata', () => { media.currentTime = at; }, { once: true });
+      media.src = alt.url;
+      media.play().catch(() => { });
+    }, 1200);
+  });
+  // Depuración del audio: 3 s después de empezar se anota de dónde salió el video y si se está decodificando sonido
+  media.addEventListener('playing', () => {
+    if (el.audioLogged || media.tagName !== 'VIDEO') return;
+    el.audioLogged = true;
+    const a0 = media.webkitAudioDecodedByteCount;
+    setTimeout(() => {
+      const src = media.currentSrc || '';
+      const from = src.includes('offline.tokdesk/buffer') ? 'búfer' : src.includes('offline.tokdesk/saved') ? 'sin conexión' : 'red';
+      const br = (it.bitrates || []).find((b) => b.url === media.getAttribute('src')) || {};
+      const dec = media.webkitAudioDecodedByteCount - a0;
+      log(`audio ${it.id} desde=${from} códec=${br.codec || '?'} ${br.h || ''}p audio=${dec > 0 ? 'sí' : 'NO'}(${dec}) muted=${media.muted} vol=${media.volume.toFixed(2)} auto=${el.dataset.autoMuted || ''} foco=${win.focused}`);
+    }, 3000);
+  });
   media.addEventListener('canplay', () => el.classList.remove('waiting'));
   media.addEventListener('pause', () => el.classList.add('paused'));
   media.addEventListener('loadedmetadata', () => { media.playbackRate = state.speed; });
@@ -2655,7 +2697,8 @@ const mb = (n) => n >= 1073741824 ? (n / 1073741824).toFixed(1) + ' GB' : Math.r
 function offSave(kind, it) {
   return new Promise((res) => {
     offline.wait.set(kind + it.id, res);
-    send({ t: 'offsave', kind, id: it.id, url: it.src, cover: it.cover, meta: JSON.stringify({ ...it, src: '' }) });
+    const alt = h264Of(it, it.src);
+    send({ t: 'offsave', kind, id: it.id, url: it.src, alt: alt ? alt.url : '', cover: it.cover, meta: JSON.stringify({ ...it, src: '' }) });
   });
 }
 

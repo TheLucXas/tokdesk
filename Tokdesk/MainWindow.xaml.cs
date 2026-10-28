@@ -361,7 +361,7 @@ public partial class MainWindow : Window
                 case "offsave":
                     {
                         var kind = S("kind"); var id = S("id");
-                        var url = await _off.Save(kind, id, S("url"), S("cover"), S("meta"));
+                        var url = await _off.Save(kind, id, S("url"), S("cover"), S("meta"), S("alt"));
                         PostToUi(new { t = "offsaved", kind, id, url, size = _off.Size(kind) });
                         break;
                     }

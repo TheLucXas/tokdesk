@@ -7,3 +7,5 @@ dist/
 # Tokens de GitHub: nunca al repositorio
 secrets/
 Tokdesk/update.token
+
+apk/

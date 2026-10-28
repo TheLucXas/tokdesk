@@ -13,8 +13,10 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (_, a) => Log.Write("ERROR: " + a.ExceptionObject);
 
         // Una sola instancia: si ya está abierta, se le pide que se muestre y esta se cierra
-        _single = new Mutex(true, "Tokdesk.SingleInstance", out var first);
-        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, "Tokdesk.Show");
+        // El modo de pruebas (TOKDESK_DUMP=1) usa su propia instancia para poder correr junto a la app normal
+        var dev = Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1" ? ".Dev" : "";
+        _single = new Mutex(true, "Tokdesk.SingleInstance" + dev, out var first);
+        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, "Tokdesk.Show" + dev);
         // Un enlace de TikTok recibido (argumento o tokdesk://) se abre en la ventana, sea esta u otra instancia
         var link = Links.FromArgs(e.Args);
         if (!first && !e.Args.Contains("--updated"))
