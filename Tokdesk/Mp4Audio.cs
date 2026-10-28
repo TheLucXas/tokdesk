@@ -94,9 +94,79 @@ static class Mp4Audio
         catch { return false; }
     }
 
-    /// <summary>Devuelve la ruta del .m4a (lo arma si no existe) o null si no se pudo.</summary>
-    public static async Task<string> Extract(HttpClient http, string id, string url, Action<HttpRequestMessage> headers)
+    /// <summary>
+    /// Lee solo el índice (moov) del MP4, sin bajar el video. Devuelve también la dirección del CDN,
+    /// porque la de TikTok redirige y los rangos siguientes conviene pedirlos directo.
+    /// </summary>
+    static async Task<(byte[] moov, string url)> ReadMoov(HttpClient http, string url, Action<HttpRequestMessage> headers)
     {
+        using (var probe = new HttpRequestMessage(HttpMethod.Get, url)) { headers(probe); probe.Headers.Range = new RangeHeaderValue(0, 0); using var cts0 = new CancellationTokenSource(TimeSpan.FromSeconds(15)); using var r0 = await http.SendAsync(probe, HttpCompletionOption.ResponseHeadersRead, cts0.Token); url = r0.RequestMessage?.RequestUri?.ToString() ?? url; }
+        // Casi siempre está al principio (faststart): se leen 32 KB y, si el índice es más largo, solo lo que falta.
+        // Si está después del video, se salta de caja en caja leyendo solo sus cabeceras
+        var head = await Range(http, url, 0, 32 * 1024 - 1, headers);
+        long pos = 0;
+        for (var guard = 0; guard < 20; guard++)
+        {
+            var hdr = pos + 16 <= head.Length ? head.AsSpan((int)pos, 16).ToArray() : await Range(http, url, pos, pos + 15, headers);
+            long size = BinaryPrimitives.ReadUInt32BigEndian(hdr);
+            var type = System.Text.Encoding.ASCII.GetString(hdr, 4, 4);
+            if (size == 1) size = (long)BinaryPrimitives.ReadUInt64BigEndian(hdr.AsSpan(8));
+            if (size < 8) break;
+            if (type == "moov")
+            {
+                if (pos + size <= head.Length) return (head.AsSpan((int)pos, (int)size).ToArray(), url);
+                var moov = new byte[size];
+                var have = Math.Max(0, head.Length - pos);
+                if (have > 0) head.AsSpan((int)pos, (int)have).CopyTo(moov);
+                (await Range(http, url, pos + have, pos + size - 1, headers)).CopyTo(moov.AsSpan((int)have));
+                return (moov, url);
+            }
+            pos += size;
+        }
+        return (null, url);
+    }
+
+    static Box SoundTrak(byte[] moov)
+    {
+        foreach (var trak in Boxes(moov, 8, moov.Length).Where(x => x.Type == "trak"))
+        {
+            var mdia = Child(moov, trak, "mdia");
+            var hdlr = mdia == null ? null : Child(moov, mdia, "hdlr");
+            if (hdlr != null && System.Text.Encoding.ASCII.GetString(moov, (int)hdlr.Start + 16, 4) == "soun") return trak;
+        }
+        return null;
+    }
+
+    /// <summary>¿El video trae pista de sonido? Mira solo el índice. null si no se pudo saber.</summary>
+    public static async Task<bool?> HasSound(HttpClient http, string url, Action<HttpRequestMessage> headers)
+    {
+        try
+        {
+            var (moov, _) = await ReadMoov(http, url, headers);
+            return moov == null ? null : SoundTrak(moov) != null;
+        }
+        catch { return null; }
+    }
+
+    // Si se pide el mismo video dos veces a la vez (revisión previa y medición), se comparte el trabajo
+    static readonly Dictionary<string, Task<string>> _running = new();
+
+    /// <summary>Devuelve la ruta del .m4a (lo arma si no existe) o null si no se pudo.</summary>
+    public static Task<string> Extract(HttpClient http, string id, string url, Action<HttpRequestMessage> headers)
+    {
+        lock (_running)
+        {
+            if (_running.TryGetValue(id ?? "", out var t)) return t;
+            t = ExtractOnce(http, id, url, headers);
+            _running[id ?? ""] = t;
+            _ = t.ContinueWith(_ => { lock (_running) _running.Remove(id ?? ""); });
+            return t;
+        }
+    }
+
+    static async Task<string> ExtractOnce(HttpClient http, string id, string url, Action<HttpRequestMessage> headers)
+    {
+        await Task.Yield();
         Directory.CreateDirectory(Dir);
         var safe = string.Concat((id ?? "").Where(char.IsLetterOrDigit));
         var file = Path.Combine(Dir, safe + ".m4a");
@@ -105,42 +175,13 @@ static class Mp4Audio
         {
             Log.Write("Audio aparte: buscando el sonido de " + safe);
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            // La dirección de TikTok redirige al CDN: se resuelve una vez y los rangos van directo
-            using (var probe = new HttpRequestMessage(HttpMethod.Get, url)) { headers(probe); probe.Headers.Range = new RangeHeaderValue(0, 0); using var cts0 = new CancellationTokenSource(TimeSpan.FromSeconds(15)); using var r0 = await http.SendAsync(probe, HttpCompletionOption.ResponseHeadersRead, cts0.Token); url = r0.RequestMessage?.RequestUri?.ToString() ?? url; }
-            Log.Write($"Audio aparte: CDN en {sw.ElapsedMilliseconds} ms");
-            // 1) Índice: casi siempre al principio (faststart); si no, se busca por su tamaño
-            var head = await Range(http, url, 0, 256 * 1024 - 1, headers);
-            var top = Boxes(head, 0, head.Length).ToList();
-            var moovBox = top.FirstOrDefault(x => x.Type == "moov");
-            byte[] moov;
-            if (moovBox != null && moovBox.Start + moovBox.Size <= head.Length) moov = head.AsSpan((int)moovBox.Start, (int)moovBox.Size).ToArray();
-            else
-            {
-                // moov después del mdat: se salta de caja en caja leyendo solo sus cabeceras
-                long pos = 0;
-                moov = null;
-                for (var guard = 0; guard < 20 && moov == null; guard++)
-                {
-                    var hdr = pos + 16 <= head.Length ? head.AsSpan((int)pos, 16).ToArray() : await Range(http, url, pos, pos + 15, headers);
-                    long size = BinaryPrimitives.ReadUInt32BigEndian(hdr);
-                    var type = System.Text.Encoding.ASCII.GetString(hdr, 4, 4);
-                    if (size == 1) size = (long)BinaryPrimitives.ReadUInt64BigEndian(hdr.AsSpan(8));
-                    if (size < 8) return null;
-                    if (type == "moov") moov = await Range(http, url, pos, pos + size - 1, headers);
-                    pos += size;
-                }
-                if (moov == null) return null;
-            }
+            var (moov, cdn) = await ReadMoov(http, url, headers);
+            if (moov == null) return null;
+            url = cdn;
             var root = new Box("moov", 0, moov.Length, 8);
 
             // 2) Pista de sonido: el trak cuyo hdlr dice "soun"
-            Box sound = null;
-            foreach (var trak in Boxes(moov, 8, moov.Length).Where(x => x.Type == "trak"))
-            {
-                var mdia = Child(moov, trak, "mdia");
-                var hdlr = mdia == null ? null : Child(moov, mdia, "hdlr");
-                if (hdlr != null && System.Text.Encoding.ASCII.GetString(moov, (int)hdlr.Start + 16, 4) == "soun") { sound = trak; break; }
-            }
+            var sound = SoundTrak(moov);
             if (sound == null) { Log.Write("Audio aparte: la variante H.264 tampoco trae sonido"); return null; }
             var stbl = Child(moov, Child(moov, Child(moov, sound, "mdia"), "minf"), "stbl");
             var stsz = Child(moov, stbl, "stsz");
@@ -214,9 +255,8 @@ static class Mp4Audio
             Log.Write($"Audio aparte: datos en {sw.ElapsedMilliseconds} ms ({(multi ? "rangos múltiples" : "de a uno")})");
 
             // 4) .m4a: ftyp + moov (mvhd + trak de sonido, con las posiciones nuevas) + mdat
-            var ftyp = top.FirstOrDefault(x => x.Type == "ftyp");
-            var ftypBytes = ftyp != null ? head.AsSpan((int)ftyp.Start, (int)ftyp.Size).ToArray()
-                : new byte[] { 0, 0, 0, 20, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'M', (byte)'4', (byte)'A', (byte)' ', 0, 0, 2, 0, (byte)'i', (byte)'s', (byte)'o', (byte)'m' };
+            // (ftyp propio de .m4a: el del video original dice que es un MP4 con imagen)
+            var ftypBytes = new byte[] { 0, 0, 0, 20, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'M', (byte)'4', (byte)'A', (byte)' ', 0, 0, 2, 0, (byte)'i', (byte)'s', (byte)'o', (byte)'m' };
             var mvhd = Child(moov, root, "mvhd");
             var mvhdBytes = moov.AsSpan((int)mvhd.Start, (int)mvhd.Size).ToArray();
             var trakBytes = moov.AsSpan((int)sound.Start, (int)sound.Size).ToArray();

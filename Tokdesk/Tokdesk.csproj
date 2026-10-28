@@ -11,7 +11,7 @@
     <RootNamespace>Tokdesk</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <!-- Versión de la app: el actualizador la compara con el tag de la release (vX.Y.Z) -->
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Product>Tokdesk</Product>
   </PropertyGroup>
 

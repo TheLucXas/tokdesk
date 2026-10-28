@@ -258,6 +258,42 @@ function attachSideAudio(el, media, url, onFail) {
   a.addEventListener('loadedmetadata', () => sync(true), { once: true });
 }
 
+// Si no se pudo sacar el audio aparte, se pasa a la variante H.264 completa en el mismo punto
+function fullH264(el, alt) {
+  const media = el.media, it = el.item;
+  log(`audio ${it.id}: sin audio aparte, se cambia a ${alt.codec}`);
+  const at = media.currentTime;
+  it.src = alt.url;
+  media.addEventListener('loadedmetadata', () => { media.currentTime = at; }, { once: true });
+  media.src = alt.url;
+  if (el === current()) media.play().catch(() => { });
+}
+
+// Al precargar un video HEVC se mira su índice (pocos KB): si viene sin sonido, el programa prepara ya
+// el audio de la variante H.264 y se engancha antes de verlo, así suena desde el primer instante
+const audioProbeWait = new Map();
+function probeAudio(el) {
+  const media = el.media, it = el.item;
+  if (el.audioProbe || media.tagName !== 'VIDEO') return;
+  const src = media.getAttribute('src') || '';
+  const br = (it.bitrates || []).find((b) => b.url === src);
+  if (!br || !/265|hvc|bytevc/i.test(br.codec || '')) return; // búfer, sin conexión o H.264: ya traen sonido
+  const alt = h264Of(it, src);
+  if (!alt) return;
+  el.audioProbe = 'pending';
+  audioProbeWait.set(it.id, (m) => {
+    if (media.getAttribute('src') !== src) { el.audioProbe = null; return; }
+    // No se pudo saber: queda la medición al reproducir
+    if (m.has === null) { el.audioProbe = null; if (!media.paused) el.checkAudio(); return; }
+    el.audioProbe = 'done';
+    if (m.has) return;
+    log(`audio ${it.id}: viene sin sonido, audio de ${alt.codec} ${alt.h}p listo antes de verlo`);
+    if (m.url) attachSideAudio(el, media, m.url, () => fullH264(el, alt)); else fullH264(el, alt);
+  });
+  send({ t: 'audioprobe', id: it.id, url: src, alt: alt.url });
+}
+function onAudioProbed(m) { const f = audioProbeWait.get(m.id); audioProbeWait.delete(m.id); if (f) f(m); }
+
 // Mejor variante H.264 distinta de la actual (las H.264 de TikTok siempre traen audio)
 function h264Of(it, except) {
   return (it.bitrates || []).filter((b) => !/265|hvc|bytevc/i.test(b.codec || '') && b.url !== except)
@@ -479,8 +515,9 @@ function buildSlide(it) {
   media.addEventListener('playing', () => el.classList.remove('waiting', 'paused'));
   // Algunas variantes HEVC de TikTok vienen sin pista de audio: si a poco de empezar no se decodifica sonido
   // (pero sí imagen), se cambia una vez a la mejor variante H.264 en el mismo punto del video
-  media.addEventListener('playing', () => {
-    if (el.audioChecked || media.tagName !== 'VIDEO') return;
+  // (respaldo: lo normal es que probeAudio ya lo haya resuelto al precargar)
+  el.checkAudio = () => {
+    if (el.audioChecked || el.audioProbe || media.tagName !== 'VIDEO') return;
     el.audioChecked = true;
     // (el contador de video no sirve: con HEVC por hardware queda en 0; se mira que el video avance)
     const a0 = media.webkitAudioDecodedByteCount, t0 = media.currentTime;
@@ -490,23 +527,17 @@ function buildSlide(it) {
       if (!alt) return;
       // Se conserva la imagen HEVC y se toma solo el sonido de la variante H.264, sincronizado
       log(`audio ${it.id}: la variante no trae sonido, se pide solo el audio de ${alt.codec} ${alt.h}p`);
-      const fullH264 = () => {
-        // Si no se pudo sacar el audio aparte, se pasa a la variante H.264 completa
-        log(`audio ${it.id}: sin audio aparte, se cambia a ${alt.codec}`);
-        const at = media.currentTime;
-        it.src = alt.url;
-        media.addEventListener('loadedmetadata', () => { media.currentTime = at; }, { once: true });
-        media.src = alt.url;
-        media.play().catch(() => { });
-      };
       const want = media.getAttribute('src');
       audioFixWait.set(it.id, (url) => {
         if (media.getAttribute('src') !== want) return; // el video ya cambió o se quitó
-        if (url) attachSideAudio(el, media, url, fullH264); else fullH264();
+        if (url) attachSideAudio(el, media, url, () => fullH264(el, alt)); else fullH264(el, alt);
       });
       send({ t: 'audiofix', id: it.id, url: alt.url });
     }, 1200);
-  });
+  };
+  media.addEventListener('playing', el.checkAudio);
+  // Si se le quita la fuente (se alejó en el feed), al volver se revisa de nuevo
+  media.addEventListener('emptied', () => { el.audioProbe = null; el.audioChecked = false; });
   // Depuración del audio: 3 s después de empezar se anota de dónde salió el video y si se está decodificando sonido
   media.addEventListener('playing', () => {
     if (el.audioLogged || media.tagName !== 'VIDEO') return;
@@ -517,7 +548,7 @@ function buildSlide(it) {
       const from = src.includes('offline.tokdesk/buffer') ? 'búfer' : src.includes('offline.tokdesk/saved') ? 'sin conexión' : 'red';
       const br = (it.bitrates || []).find((b) => b.url === media.getAttribute('src')) || {};
       const dec = media.webkitAudioDecodedByteCount - a0;
-      log(`audio ${it.id} desde=${from} códec=${br.codec || '?'} ${br.h || ''}p audio=${dec > 0 ? 'sí' : 'NO'}(${dec}) muted=${media.muted} vol=${media.volume.toFixed(2)} auto=${el.dataset.autoMuted || ''} foco=${win.focused}`);
+      log(`audio ${it.id} desde=${from} códec=${br.codec || '?'} ${br.h || ''}p audio=${dec > 0 ? 'sí' : 'NO'}(${dec}) aparte=${el.sideAudio ? (el.sideAudio.paused ? 'pausado' : 'suena') : 'no'} muted=${media.muted} vol=${media.volume.toFixed(2)} auto=${el.dataset.autoMuted || ''} foco=${win.focused}`);
     }, 3000);
   });
   media.addEventListener('canplay', () => el.classList.remove('waiting'));
@@ -734,6 +765,7 @@ function render() {
     // Precarga del actual y los siguientes; el resto queda sin fuente para no gastar decodificadores
     const src = it.photos.length ? it.musicUrl : it.src;
     if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
+    if (m.getAttribute('src')) probeAudio(el);
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
       if (typeof markSeen === 'function') { markSeen(it.id); recordHistory(it); }
@@ -2576,6 +2608,7 @@ host && host.addEventListener('message', (e) => {
     case 'editstate': onEditState(m); break;
     case 'openlink': closePanels(); openTikTokLink(m.url); break;
     case 'audiofixed': onAudioFixed(m); break;
+    case 'audioprobed': onAudioProbed(m); break;
     case 'shared': onShared(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;

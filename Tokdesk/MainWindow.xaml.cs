@@ -447,6 +447,29 @@ public partial class MainWindow : Window
                         PostToUi(new { t = "audiofixed", id, url = file == null ? null : $"https://audio.tokdesk/{Path.GetFileName(file)}" });
                         break;
                     }
+                case "audioprobe":
+                    {
+                        // Antes de reproducir: se mira el índice del video HEVC y, si no trae sonido,
+                        // se arma ya el .m4a de la variante H.264 para que suene desde el principio
+                        var id = S("id");
+                        var cookie = await _engine.CookieHeader();
+                        var ua = _engine.UserAgent;
+                        void H(HttpRequestMessage req)
+                        {
+                            req.Headers.Referrer = new Uri("https://www.tiktok.com/");
+                            req.Headers.TryAddWithoutValidation("User-Agent", ua);
+                            req.Headers.TryAddWithoutValidation("Cookie", cookie);
+                        }
+                        var has = await Mp4Audio.HasSound(Http, S("url"), H);
+                        string file = null;
+                        if (has == false)
+                        {
+                            Log.Write($"Audio aparte: {id} viene sin sonido, se prepara antes de verlo");
+                            file = await Mp4Audio.Extract(Http, id, S("alt"), H);
+                        }
+                        PostToUi(new { t = "audioprobed", id, has, url = file == null ? null : $"https://audio.tokdesk/{Path.GetFileName(file)}" });
+                        break;
+                    }
                 case "offlist": await _offClean; PostToUi(_off.List(S("kind"))); break;
                 case "offclear": _off.Clear(S("kind")); PostToUi(_off.List(S("kind"))); break;
                 case "download": await Download(S("url"), S("name"), S("ext") ?? "mp4", m.TryGetProperty("rid", out var dr) ? dr.GetInt32() : 0); break;
