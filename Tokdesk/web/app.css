@@ -746,3 +746,15 @@ body.light .pf-sortmenu button:hover { background: rgba(0,0,0,.05); }
 .ep-err { font-size: 13px; color: #ff4d67; padding: 10px 0 0; white-space: pre-line; }
 body.light .ep-sec, body.light .ep-v, body.light .ep-cnt, body.light .ep-link, body.light .ep-tip { color: rgba(22,24,35,.55); }
 body.light .ep-in { border-color: rgba(22,24,35,.15); }
+
+/* Barra: la línea sube un poco al arrastrar para que el punto no quede tapado */
+.progress .track { transition: height .12s, margin .12s; }
+.progress:hover .track, .slide.scrubbing .progress .track { margin-bottom: 7px; }
+
+/* Ordenar comentarios */
+.sortbtn { position: absolute; right: 46px; top: 8px; width: 30px; height: 30px; padding: 5px; color: #ddd; font-size: 16px; }
+.sortbtn svg { width: 20px; height: 20px; }
+.cmt-sortmenu { right: 40px; top: 40px; left: auto; transform: translateY(4px) scale(.96); }
+.cmt-sortmenu.show { transform: translateY(4px) scale(1); }
+body.light .sortbtn { color: #161823; }
+#sheet .sheet-head, #share .share-head, #opts .grab { touch-action: none; cursor: grab; }

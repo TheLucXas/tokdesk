@@ -46,6 +46,7 @@ const ICON = {
   thumbdownfill: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M15 4H7.2a2 2 0 00-1.9 1.4l-2 6.6A2 2 0 005.2 14.5H10l-.8 3.6a1.8 1.8 0 003.2 1.5L16 14V4zm1.5 0h2a1 1 0 011 1v8a1 1 0 01-1 1h-2z"/></svg>',
   pencil: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.2 4.2l4.6 4.6L9 19.6H4.4V15zm0 2.8L6.4 15.8v1.8h1.8L17 8.8z"/></svg>',
   usercheck: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 11a4 4 0 100-8 4 4 0 000 8zm-7.5 9c0-3.6 3.4-6 7.5-6 1.2 0 2.3.2 3.3.6A6 6 0 0012.4 20zM15.6 17.2l1.6 1.6 3.6-3.6 1.4 1.4-5 5-3-3z"/></svg>',
+  sort: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h12v2H3zm0 5h9v2H3zm0 5h6v2H3zm15-11h2v10.2l2.3-2.3 1.4 1.4L19 19l-4.7-4.7 1.4-1.4 2.3 2.3z"/></svg>',
   clock: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 110 20 10 10 0 010-20zm-1 5v6l5 3 1-1.6-4-2.4V7z"/></svg>',
   gear: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.7a7 7 0 010 1.8l2 1.7-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.7a7 7 0 010-1.8l-2-1.7 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9zM12 9a3 3 0 100 6 3 3 0 000-6z" transform="translate(0 1.5)"/></svg>',
   views: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 5.5v13c0 .8.9 1.3 1.5.8l10-6.5c.6-.4.6-1.2 0-1.6l-10-6.5C7.9 4.2 7 4.7 7 5.5z"/></svg>',

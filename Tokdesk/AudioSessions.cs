@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Tokdesk;
 
@@ -87,6 +87,8 @@ public static class AudioSessions
     static void Apply(IAudioSessionControl2 s, HashSet<uint> mine, string name, string iconPath)
     {
         if (s.GetProcessId(out var pid) != 0 || !mine.Contains(pid)) return;
+        // Grupo propio: si no, el mezclador de Windows junta la sesión con la de otras apps WebView2 (p. ej. WhatsApp)
+        Group(s);
         s.GetDisplayName(out var current);
         s.GetIconPath(out var icon);
         if (current == name && icon == iconPath) return;
@@ -161,6 +163,13 @@ public static class AudioSessions
     }
 
     static readonly Guid Ctx = Guid.Empty;
+    static readonly Guid GroupId = new("6f1c3b2e-7d1a-4c55-9a43-2b8e5f0d9a11");
+
+    static void Group(IAudioSessionControl2 s)
+    {
+        var g = GroupId; var ctx = Guid.Empty;
+        if (s.GetGroupingParam(out var cur) == 0 && cur != g) s.SetGroupingParam(ref g, ref ctx);
+    }
 
     /// <summary>Pone nombre e ícono a las sesiones de audio de la app en todos los dispositivos de salida.</summary>
     public static void Label(string name, string iconPath)
@@ -182,7 +191,14 @@ public static class AudioSessions
                 {
                     sessions.GetSession(i, out var s);
                     var hr = s.GetProcessId(out var pid);
+                    if (Environment.GetEnvironmentVariable("TOKDESK_MIXDEBUG") == "1")
+                    {
+                        s.GetDisplayName(out var dn); s.GetIconPath(out var ip);
+                        string pn; try { pn = System.Diagnostics.Process.GetProcessById((int)pid).ProcessName; } catch { pn = "?"; }
+                        Log.Write($"Mezclador debug: hr={hr} pid={pid} {pn} mío={mine.Contains(pid)} nombre='{dn}' ícono='{ip}'");
+                    }
                     if (hr != 0 || !mine.Contains(pid)) continue;
+                    Group(s);
                     s.GetDisplayName(out var current);
                     s.GetIconPath(out var icon);
                     if (current == name && icon == iconPath) continue;

@@ -290,9 +290,9 @@ public partial class MainWindow : Window
             src.CopyTo(dst);
         }
         catch (Exception ex) { Log.Write("Ícono para el mezclador: " + ex.Message); }
-        Task.Run(() => AudioSessions.Watch("Tokdesk", AppInfo.ExePath));
+        Task.Run(() => AudioSessions.Watch("Tokdesk", Environment.GetEnvironmentVariable("TOKDESK_ICON") ?? AppInfo.ExePath));
         // EarTrumpet no lee bien un .ico suelto (mostraba una "T"): se usa el ícono del propio .exe
-        ico = AppInfo.ExePath;
+        ico = Environment.GetEnvironmentVariable("TOKDESK_ICON") ?? AppInfo.ExePath;
         mixer.Tick += (_, _) => Task.Run(() => AudioSessions.Label("Tokdesk", ico));
         mixer.Start();
 
@@ -320,6 +320,8 @@ public partial class MainWindow : Window
                     _engine?.ReplayFeed();
                     PostToUi(SettingsDto());
                     if (_settings.AutoCheckUpdates && Updater.Configured && !_checkedOnce) { _checkedOnce = true; _ = CheckUpdates(false); }
+                    // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
+                    _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });
                     break;
                 case "more": await _engine.LoadMore(); break;
                 case "api":

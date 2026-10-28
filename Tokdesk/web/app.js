@@ -272,7 +272,35 @@ function markStale(prefix) {
     showProfileList(open.key.split(':')[0]);
 }
 
+// TikTok tarda en reflejar lo recién guardado: se agrega (o quita) localmente en tus listas por un rato
+const localLists = new Map();
+function listChange(kind, it, on) {
+  if (!state.me) return;
+  let m = localLists.get(kind);
+  if (!m) localLists.set(kind, m = new Map());
+  m.set(it.id, { it, on, at: Date.now() });
+  const f = feeds.get(kind + ':' + state.me.secUid);
+  if (f && applyLocal(f)) feedChanged(f);
+}
+function applyLocal(f) {
+  if (!state.me || f.key.slice(f.key.indexOf(':') + 1) !== state.me.secUid) return false;
+  const m = localLists.get(f.key.split(':')[0]);
+  if (!m) return false;
+  let changed = false;
+  for (const [id, x] of m) {
+    if (Date.now() - x.at > 30 * 60e3) { m.delete(id); continue; }
+    const has = f.ids.has(id);
+    if (x.on && !has) { f.items.unshift(x.it); f.ids.add(id); if (f === state.feed) f.idx++; changed = true; }
+    else if (!x.on && has) {
+      const i = f.items.findIndex((y) => y.id === id);
+      f.items.splice(i, 1); f.ids.delete(id); if (f === state.feed && i < f.idx) f.idx--; changed = true;
+    }
+  }
+  return changed;
+}
+
 function feedChanged(f) {
+  applyLocal(f);
   if (f === state.feed) { updateEmpty(); render(); }
   if (state.profileKey === f.key) renderGrid($('#pfGrid'), $('#pfMore'), f);
   if (state.pageKey === f.key) renderGrid($('#pgGrid'), $('#pgMore'), f);
@@ -422,9 +450,6 @@ function buildSlide(it) {
   $('.avatar img', el).addEventListener('click', (e) => { e.stopPropagation(); openProfile(it); });
   $('.follow', el).addEventListener('click', (e) => {
     e.stopPropagation();
-    const av = $('.avatar', el);
-    av.classList.add('follow-anim');
-    setTimeout(() => av.classList.remove('follow-anim'), 1100);
     follow(it, true);
   });
   $('.like', el).addEventListener('click', (e) => { e.stopPropagation(); like(it); });
@@ -443,11 +468,33 @@ function buildSlide(it) {
   if (ml) ml.addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
   $('.disc', el).addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
 
-  // Barra de progreso como en la app: al arrastrar se ve el tiempo y el cuadro de destino, y se salta al soltar
+  // Barra de progreso como en la app: al arrastrar se ve el tiempo y el cuadro de destino, y se salta al soltar.
+  // La vista previa usa un video oculto con la misma dirección (Chromium comparte lo ya descargado entre ambos)
+  // y guarda una miniatura por segundo, así volver a pasar por un punto no pide nada.
   const prog = $('.progress', el);
-  const scrub = $('.scrub', prog), cv = $('canvas', scrub), tm = $('.tm', scrub);
+  const scrub = $('.scrub', prog), cv = $('canvas', scrub), tm = $('.tm', scrub), ctx = cv.getContext('2d');
   const clock = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
-  let drag = null;
+  const thumbs = new Map();
+  let drag = null, pv = null, pvTimer = 0, pvBusy = false, pvWant = -1;
+  const draw = (src) => { ctx.drawImage(src, 0, 0, cv.width, cv.height); cv.classList.add('ok'); };
+  const preview = () => {
+    if (pv || media.tagName !== 'VIDEO' || !media.currentSrc) return;
+    pv = document.createElement('video');
+    pv.muted = true; pv.preload = 'metadata'; pv.src = media.currentSrc;
+    pv.addEventListener('seeked', () => {
+      pvBusy = false;
+      const sec = Math.round(pv.currentTime);
+      createImageBitmap(pv, { resizeWidth: cv.width, resizeHeight: cv.height }).then((bmp) => {
+        thumbs.set(sec, bmp);
+        if (drag && drag.sec === sec) draw(bmp);
+      }).catch(() => { });
+      if (pvWant >= 0 && pvWant !== sec) { const w = pvWant; pvWant = -1; seekPv(w); }
+    });
+  };
+  const seekPv = (sec) => { if (!pv) return; if (pvBusy) { pvWant = sec; return; } pvBusy = true; pv.currentTime = sec; };
+  const dropPv = () => { if (pv) { pv.removeAttribute('src'); pv.load(); pv = null; pvBusy = false; } };
+  prog.addEventListener('pointerenter', () => { clearTimeout(pvTimer); preview(); });
+  prog.addEventListener('pointerleave', () => { if (!drag) pvTimer = setTimeout(dropPv, 8000); });
   const move = (e) => {
     const r = prog.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
@@ -456,36 +503,32 @@ function buildSlide(it) {
     fill.style.width = p * 100 + '%';
     tm.innerHTML = `<b>${clock(p * d)}</b> / ${clock(d)}`;
     scrub.style.left = Math.min(r.width - 56, Math.max(56, p * r.width)) + 'px';
-    if (drag.pv && d) { drag.want = p * d; if (!drag.seeking) { drag.seeking = true; drag.pv.currentTime = drag.want; } }
+    const sec = Math.min(Math.floor(d), Math.round(p * d));
+    if (sec === drag.sec) return;
+    drag.sec = sec;
+    const bmp = thumbs.get(sec);
+    if (bmp) draw(bmp); else seekPv(sec);
   };
   prog.addEventListener('pointerdown', (e) => {
     if (e.button !== 0 || !media.duration) return;
     e.stopPropagation(); prog.setPointerCapture(e.pointerId);
-    const dr = drag = { p: 0 };
+    clearTimeout(pvTimer);
+    drag = { p: 0, sec: -1 };
     el.classList.add('scrubbing');
-    // Vista previa: un segundo video oculto que busca el cuadro y se dibuja en el lienzo
-    if (media.tagName === 'VIDEO' && media.currentSrc) {
-      const pv = document.createElement('video');
-      pv.muted = true; pv.preload = 'auto'; pv.src = media.currentSrc;
-      if (media.videoWidth) cv.height = Math.round(cv.width * media.videoHeight / media.videoWidth);
-      pv.addEventListener('seeked', () => {
-        if (drag !== dr) return;
-        cv.getContext('2d').drawImage(pv, 0, 0, cv.width, cv.height);
-        cv.classList.add('ok');
-        dr.seeking = false;
-        if (Math.abs(pv.currentTime - dr.want) > 0.25) { dr.seeking = true; pv.currentTime = dr.want; }
-      });
-      dr.pv = pv;
+    if (media.tagName === 'VIDEO' && media.videoWidth) {
+      cv.height = Math.round(cv.width * media.videoHeight / media.videoWidth);
+      draw(media); // al instante: el cuadro actual, hasta que llegue el de destino
+      preview();
     }
     move(e);
     prog.onpointermove = move;
     prog.onpointerup = prog.onpointercancel = () => {
       prog.onpointermove = prog.onpointerup = prog.onpointercancel = null;
-      if (media.duration) media.currentTime = dr.p * media.duration;
-      if (dr.pv) { dr.pv.removeAttribute('src'); dr.pv.load(); }
+      if (media.duration) media.currentTime = drag.p * media.duration;
       drag = null;
       el.classList.remove('scrubbing');
       cv.classList.remove('ok');
+      pvTimer = setTimeout(dropPv, 8000);
     };
   });
   return el;
@@ -594,7 +637,7 @@ async function like(it, force) {
   it.liked = on; it.likes += on ? 1 : -1; refreshSlide(it);
   const ok = await act('/api/commit/item/digg/', { aweme_id: it.id, type: on ? 1 : 0 });
   if (!ok) { it.liked = !on; it.likes += on ? -1 : 1; refreshSlide(it); }
-  else markStale('liked:');
+  else listChange('liked', it, on);
 }
 
 async function favorite(it) {
@@ -602,7 +645,7 @@ async function favorite(it) {
   const on = !it.saved;
   it.saved = on; it.saves += on ? 1 : -1; refreshSlide(it);
   const ok = await act('/api/item/collect/', { aid: 1988, itemId: it.id, action: on ? 1 : 2, secUid: it.secUid });
-  if (ok) markStale('favorites:');
+  if (ok) listChange('favorites', it, on);
   if (ok && on) notice('✓ ' + t('Guardado'), t('Colecciones') + ' ›', () => openCollectionPicker(it));
   else if (ok) toast(t('Quitado de Favoritos'));
   else { it.saved = !on; it.saves += on ? -1 : 1; refreshSlide(it); }
@@ -617,6 +660,12 @@ function setFollowed(authorId, on) {
 
 async function follow(it, on) {
   if (!state.me) return askLogin();
+  if (on) for (const s of state.slides.values()) {
+    if (s.item.authorId !== it.authorId) continue;
+    const av = $('.avatar', s);
+    av.classList.remove('follow-anim'); void av.offsetWidth; av.classList.add('follow-anim');
+    setTimeout(() => av.classList.remove('follow-anim'), 1100);
+  }
   setFollowed(it.authorId, on); refreshSlide(it); updateProfileFollow(it);
   const ok = await act('/api/commit/follow/user/', {
     type: on ? 1 : 0, action_type: on ? 1 : 0, user_id: it.authorId, sec_user_id: it.secUid,
@@ -833,7 +882,7 @@ async function repost(it) {
   notice(on ? t('Republicaste este video') : t('Se quitó la republicación'), on ? t('Deshacer') : null, on ? () => repost(it) : null);
   const ok = await act(on ? '/tiktok/v1/upvote/publish' : '/tiktok/v1/upvote/delete', { item_id: it.id });
   if (!ok) { it.reposted = !on; it.reposts += on ? -1 : 1; refreshSlide(it); }
-  else markStale('reposts:');
+  else listChange('reposts', it, on);
 }
 // ---------- Ayuda ----------
 function openHelp() {
@@ -1367,9 +1416,9 @@ function onConv(m) {
     if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
-    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
+    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" ${picRatio(x.image)} src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
     else if (x.video) inner += `<div class="vthumb" data-url="${esc(x.video)}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">Video</div></div>`;
-    else if (x.image) inner += `<img class="pic" alt="" src="${esc(x.image)}">`;
+    else if (x.image) inner += `<img class="pic" alt="" ${picRatio(x.image)} src="${esc(x.image)}">`;
     if (!inner && x.other) inner = esc(x.other);
     if (!inner) inner = `<i>${t('Mensaje no compatible')}</i>`;
     const bubble = (x.video || x.shared >= 0 || x.image) && !x.text ? inner : `<div class="bub">${inner}</div>`;
@@ -1407,6 +1456,13 @@ function onConv(m) {
     if (el) list.scrollTop += el.getBoundingClientRect().top - list.getBoundingClientRect().top - aOff;
   }
 }
+
+const picSizes = new Map();
+const picRatio = (src) => { const s = picSizes.get(src); return s ? `style="aspect-ratio:${s}"` : ''; };
+$('#chatList').addEventListener('load', (e) => {
+  const i = e.target;
+  if (i.tagName === 'IMG' && i.naturalWidth && !i.classList.contains('av')) picSizes.set(i.getAttribute('src'), i.naturalWidth + '/' + i.naturalHeight);
+}, true);
 
 // Al llegar arriba del chat se piden los mensajes anteriores
 let olderLoading = false, noOlder = false, olderMisses = 0;
@@ -1566,7 +1622,11 @@ function toggleSortMenu(force) {
   const m = $('#pfSort');
   const on = force ?? !m.classList.contains('show');
   m.classList.toggle('show', on);
-  if (on) { const b = $('#pfTabs [data-list="user"]'); m.style.left = (b.offsetLeft + b.offsetWidth / 2) + 'px'; m.style.top = (b.offsetTop + b.offsetHeight) + 'px'; }
+  if (on) {
+    const body = $('#pfBody'), br = $('#pfTabs [data-list="user"]').getBoundingClientRect(), pr = body.getBoundingClientRect();
+    m.style.left = (br.left - pr.left + br.width / 2) + 'px';
+    m.style.top = (br.bottom - pr.top + body.scrollTop) + 'px';
+  }
 }
 function updateSortMenu() { $$('#pfSort button').forEach((x) => x.classList.toggle('on', +x.dataset.sort === (state.pfSort || 0))); }
 $$('#pfSort button').forEach((b) => b.addEventListener('click', () => {
@@ -1991,7 +2051,8 @@ function renderComments() {
     return;
   }
   const keepScroll = list.scrollTop;
-  list.innerHTML = c.list.map((cm) => {
+  const shown = state.cmtSort === 'new' ? [...c.list].sort((a, b) => (b.create_time || 0) - (a.create_time || 0)) : c.list;
+  list.innerHTML = shown.map((cm) => {
     const r = c.replies.get(cm.cid);
     let html = cmtHtml(cm, false);
     if (r && r.list.length && !r.collapsed) html += `<div class="replies">${r.list.map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
@@ -2596,3 +2657,42 @@ offList('buffer'); offList('saved');
 function offerOffline() { if (offline.saved.size) notice(t('Sin conexión'), t('Ver videos sin conexión') + ' ›', openOffline); }
 window.addEventListener('offline', offerOffline);
 setTimeout(() => { if (!navigator.onLine) offerOffline(); }, 1500);
+// ---------- Ordenar comentarios ----------
+// La web no ordena por fecha: «Los más recientes» junta varias páginas y las ordena aquí
+$('#cmtSortBtn').innerHTML = ICON.sort || '⇅';
+$('#cmtSortBtn').addEventListener('click', (e) => { e.stopPropagation(); $('#cmtSortMenu').classList.toggle('show'); });
+$$('#cmtSortMenu button').forEach((b) => b.addEventListener('click', async () => {
+  $('#cmtSortMenu').classList.remove('show');
+  state.cmtSort = b.dataset.sort;
+  $$('#cmtSortMenu button').forEach((x) => x.classList.toggle('on', x === b));
+  renderComments();
+  $('#sheetList').scrollTop = 0;
+  if (state.cmtSort === 'new' && state.sheetFor) {
+    const id = state.sheetFor;
+    for (let i = 0; i < 5; i++) {
+      const c = state.comments.get(id);
+      if (!c || !c.hasMore || state.sheetFor !== id || state.cmtSort !== 'new') break;
+      await fetchComments(id, true);
+    }
+  }
+}));
+document.addEventListener('click', (e) => { if (!e.target.closest('#cmtSortMenu')) $('#cmtSortMenu').classList.remove('show'); }, true);
+
+// ---------- Hojas: se cierran arrastrando hacia abajo desde el encabezado (como en la app) ----------
+for (const [id, handle] of [['sheet', '.sheet-head'], ['opts', '.grab, .cp-title, .rp-head, .ep-head'], ['share', '.share-head']]) {
+  const p = $('#' + id);
+  if (!p) continue;
+  p.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || !e.target.closest(handle) || e.target.closest('button, input, a')) return;
+    const y0 = e.clientY;
+    let dy = 0;
+    p.setPointerCapture(e.pointerId);
+    p.style.transition = 'none';
+    p.onpointermove = (ev) => { dy = Math.max(0, ev.clientY - y0); p.style.transform = `translateY(${dy}px)`; };
+    p.onpointerup = p.onpointercancel = () => {
+      p.onpointermove = p.onpointerup = p.onpointercancel = null;
+      p.style.transition = ''; p.style.transform = '';
+      if (dy > Math.min(140, p.offsetHeight * 0.25)) closePanel(id);
+    };
+  });
+}

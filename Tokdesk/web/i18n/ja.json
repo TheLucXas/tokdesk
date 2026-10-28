@@ -365,5 +365,9 @@
   "Cambiar foto": "写真を変更",
   "Acerca de ti": "あなたについて",
   "Populares": "人気",
-  "Agrega una presentación": "自己紹介を追加"
+  "Agrega una presentación": "自己紹介を追加",
+  "Ordenar": "並べ替え",
+  "Si la gratuita no se instala: Extensiones de video HEVC": "無料版がインストールできない場合：HEVC ビデオ拡張機能",
+  "Los más recientes": "最新順",
+  "Versión de pago de Microsoft (0,99 US$). Sin ella se usa H.264, que TikTok suele dar hasta 720p.": "Microsoft の有料版（0.99 US$）。これがない場合は H.264 が使われ、TikTok は通常 720p までしか配信しません。"
 }

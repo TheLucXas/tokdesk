@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 
 namespace Tokdesk;
@@ -83,6 +83,8 @@ sealed class SidePage
             if (!_visible) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
         };
         _wv.NavigationCompleted += (_, e) => _nav?.TrySetResult(e.IsSuccess);
+        // No hace falta esperar a que termine de cargar toda la página: los scripts esperan sus elementos
+        _wv.DOMContentLoaded += (_, _) => _nav?.TrySetResult(true);
     }
 
     async Task Go(string url)
@@ -117,7 +119,20 @@ sealed class SidePage
     public bool Visible => _visible;
 
     // Mientras se ve una página oficial o se usa el formulario de denuncia, nada más la mueve
-    bool _locked;
+    // Mientras está bloqueada la página queda "visible" detrás de la ventana: oculta, Chromium frena sus
+    // temporizadores y el formulario tardaba ~15 s en aparecer
+    bool _lockedValue, _bgWas;
+    bool _locked
+    {
+        get => _lockedValue;
+        set
+        {
+            if (value == _lockedValue) return;
+            _lockedValue = value;
+            if (value) _bgWas = _background;
+            _ = SetBackground(value || _bgWas);
+        }
+    }
     bool Busy => _visible || _locked;
 
     // Estado del formulario oficial de denuncia, para mostrarlo en la interfaz propia
@@ -137,23 +152,68 @@ sealed class SidePage
     /// <summary>Abre (oculto) el formulario oficial de denuncia de un video o comentario.</summary>
     public async Task<string> OpenReport(string url, string comment)
     {
-        _locked = false;
-        await Go(url);
-        // TikTok a veces responde 403 a la primera carga: se reintenta una vez
-        if ((_wv.Source ?? "").StartsWith("chrome-error") || await Eval("location.protocol") == "chrome-error:")
-        {
-            await Task.Delay(2000);
-            _nav = new TaskCompletionSource<bool>();
-            _wv.Navigate(url);
-            await Task.WhenAny(_nav.Task, Task.Delay(20000));
-        }
-        _locked = true;
-        var opened = await Poll(string.IsNullOrEmpty(comment) ? ReportVideoJs : ReportCommentJs(comment), 20000);
-        if (opened == null) { _locked = false; return null; }
+        if (await OpenLocked(url, string.IsNullOrEmpty(comment) ? ReportVideoJs : ReportCommentJs(comment), "Denuncia") == null) return null;
         await Task.Delay(300);
         return await Eval(ReportStateJs);
     }
 
+    /// <summary>
+    /// Lleva la página a <paramref name="url"/> y la bloquea hasta que <paramref name="js"/> devuelva algo.
+    /// Primero prueba la navegación interna de la web (sin recargar, ~1 s); si no sirve, carga la página entera.
+    /// </summary>
+    async Task<string> OpenLocked(string url, string js, string what)
+    {
+        _locked = false;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        await Ensure();
+        string opened = null;
+        if (await GoFast(url)) { _locked = true; opened = await Poll(js, 8000); }
+        if (opened == null)
+        {
+            _locked = false;
+            await Reload(url);
+            // TikTok a veces responde 403 a la primera carga: se reintenta una vez
+            if ((_wv.Source ?? "").StartsWith("chrome-error") || await Eval("location.protocol") == "chrome-error:")
+            {
+                await Task.Delay(2000);
+                await Reload(url);
+            }
+            _locked = true;
+            opened = await Poll(js, 20000);
+        }
+        Log.Write($"{what}: listo en {sw.ElapsedMilliseconds} ms ({(opened == null ? "falló" : "ok")})");
+        if (opened == null) _locked = false;
+        return opened;
+    }
+
+    public async Task Warm()
+    {
+        await Ensure();
+        if (Busy || (_wv.Source ?? "").StartsWith("https://www.tiktok.com/")) return;
+        try { await Go(Messages); } catch { }
+    }
+
+    async Task<bool> GoFast(string url)
+    {
+        var src = _wv.Source ?? "";
+        if (!src.StartsWith("https://www.tiktok.com/")) return false;
+        if (src.StartsWith(url)) return true;
+        var path = new Uri(url).PathAndQuery;
+        return await Eval($$"""
+            (() => {
+              history.pushState({}, '', {{JsonSerializer.Serialize(path)}});
+              dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+              return 'ok';
+            })()
+            """) != null;
+    }
+
+    async Task Reload(string url)
+    {
+        _nav = new TaskCompletionSource<bool>();
+        _wv.Navigate(url);
+        await Task.WhenAny(_nav.Task, Task.Delay(20000));
+    }
     /// <summary>Hace clic en un motivo o en un botón del formulario y devuelve el estado nuevo.</summary>
     public async Task<string> ReportAct(string kind, int index)
     {
@@ -209,22 +269,18 @@ sealed class SidePage
     /// <summary>Abre (oculto) el formulario oficial de «Editar perfil» y devuelve sus datos.</summary>
     public async Task<string> OpenEditProfile(string user)
     {
-        _locked = false;
-        await Go("https://www.tiktok.com/@" + user);
-        _locked = true;
-        var opened = await Poll("""
+        const string js = """
             (() => {
               if (document.querySelector('[data-e2e="edit-profile-save"]')) return 'ok';
               const b = document.querySelector('[data-e2e="edit-profile-entrance"]');
               if (b) b.click();
               return null;
             })()
-            """, 20000);
-        if (opened == null) { _locked = false; return null; }
+            """;
+        if (await OpenLocked("https://www.tiktok.com/@" + user, js, "Editar perfil") == null) return null;
         await Task.Delay(300);
         return await Eval(EditStateJs);
     }
-
     /// <summary>Escribe los campos (como si se tipearan) y toca Guardar.</summary>
     public async Task<string> EditProfileSave(string username, string name, string bio)
     {
