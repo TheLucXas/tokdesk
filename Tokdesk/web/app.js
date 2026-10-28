@@ -1807,12 +1807,18 @@ function renderEdit() {
   const rows = Object.entries(EDIT_FIELDS).map(([k, [label]]) =>
     `<button class="ep-row" data-k="${k}"><span>${esc(label())}</span><span class="ep-v">${esc(editVals[k] || (k === 'bio' ? t('Agrega una presentación') : ''))}</span><span class="chev">›</span></button>`).join('');
   body.innerHTML = `<div class="ep-head"><button class="ep-back">${ICON.back}</button><span>${esc(t('Editar perfil'))}</span><span></span></div>
-    <div class="ep-photo"><button class="ep-av"><img alt="" src="${esc(s.avatar)}"><span class="ep-cam">${ICON.pencil}</span></button><div class="ep-chg">${esc(t('Cambiar foto'))}</div></div>
+    <div class="ep-photo"><button class="ep-av"><img alt="" src="${esc(editAvatar(s))}"><span class="ep-cam">${ICON.pencil}</span></button><div class="ep-chg">${esc(t('Cambiar foto'))}</div></div>
     <div class="ep-sec">${esc(t('Acerca de ti'))}</div>${rows}
     ${s.error ? `<div class="ep-err">${esc(s.error)}</div>` : ''}`;
   $('.ep-back', body).onclick = () => closePanel('opts');
   $$('.ep-av, .ep-chg', body).forEach((b) => b.onclick = () => editSend({ t: 'editavatar' }));
   $$('.ep-row', body).forEach((b) => b.onclick = () => { editField = b.dataset.k; renderEdit(); });
+}
+
+// La foto del formulario oficial no siempre se puede mostrar (blob o imagen bloqueada en la página oculta): se usa la del perfil
+function editAvatar(s) {
+  const p = state.profileFor && isMine(state.profileFor) ? state.profileFor.avatar : '';
+  return p || (state.me && state.me.avatar) || s.avatar || '';
 }
 
 function editSend(msg) {

@@ -758,3 +758,7 @@ body.light .ep-in { border-color: rgba(22,24,35,.15); }
 .cmt-sortmenu.show { transform: translateY(4px) scale(1); }
 body.light .sortbtn { color: #161823; }
 #sheet .sheet-head, #share .share-head, #opts .grab { touch-action: none; cursor: grab; }
+
+/* El menú de ordenar queda por encima de la lista de comentarios */
+#sheet .sheet-head { position: relative; z-index: 3; }
+.cmt-sortmenu { z-index: 60; }
