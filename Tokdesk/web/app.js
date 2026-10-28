@@ -2801,8 +2801,10 @@ function markSeen(id) {
 }
 function startFromBuffer(items) {
   const f = feeds.get('foryou');
+  const unseen = items.filter((x) => !seenIds().has(x.id) && offline.buffer.has(x.id));
+  log(`búfer al abrir: ${items.length} guardados, ${unseen.length} sin ver, feed ya cargado=${!!(f && f.items.length)}`);
   if (!f || f.items.length || state.feed !== f) return;
-  for (const x of items.filter((x) => !seenIds().has(x.id) && offline.buffer.has(x.id)).slice(0, 3)) {
+  for (const x of unseen.slice(0, 3)) {
     const it = { ...x, src: offline.buffer.get(x.id), cover: `https://offline.tokdesk/buffer/${x.id}.jpg`, photos: [], subtitles: [] };
     f.ids.add(it.id); f.items.push(it);
   }

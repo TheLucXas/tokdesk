@@ -82,24 +82,35 @@ sealed class Offline
     }
 
     // Un MP4 con audio declara una pista "soun" (hdlr) en su índice moov, al principio o al final del archivo
+    // Basta con mirar el principio y el final (ahí está el moov), sin leer todo el archivo
     static bool HasAudio(string file)
     {
         try
         {
-            var b = File.ReadAllBytes(file);
-            for (var i = 0; i + 3 < b.Length; i++)
-                if (b[i] == (byte)'s' && b[i + 1] == (byte)'o' && b[i + 2] == (byte)'u' && b[i + 3] == (byte)'n') return true;
+            using var fs = File.OpenRead(file);
+            const int Part = 2 * 1024 * 1024;
+            bool Scan(long from)
+            {
+                fs.Position = Math.Max(0, from);
+                var b = new byte[(int)Math.Min(Part, fs.Length - fs.Position)];
+                var n = fs.Read(b, 0, b.Length);
+                for (var i = 0; i + 3 < n; i++)
+                    if (b[i] == (byte)'s' && b[i + 1] == (byte)'o' && b[i + 2] == (byte)'u' && b[i + 3] == (byte)'n') return true;
+                return false;
+            }
+            return Scan(0) || (fs.Length > Part && Scan(fs.Length - Part));
         }
-        catch { }
-        return false;
+        catch { return false; }
     }
 
-    /// <summary>Borra del búfer los videos guardados sin audio (de versiones anteriores).</summary>
+    /// <summary>Borra del búfer los videos guardados sin audio por versiones anteriores (solo una vez).</summary>
     public void CleanSilent()
     {
-        foreach (var kind in new[] { "buffer", "saved" })
-            foreach (var f in new DirectoryInfo(Folder(kind)).GetFiles("*.mp4"))
-                if (!HasAudio(f.FullName)) { Delete(Folder(kind), Path.GetFileNameWithoutExtension(f.Name)); Log.Write("Búfer: " + f.Name + " sin audio, borrado"); }
+        var mark = Path.Combine(Dir, "limpieza-audio.ok");
+        if (File.Exists(mark)) return;
+        foreach (var f in new DirectoryInfo(Folder("buffer")).GetFiles("*.mp4"))
+            if (!HasAudio(f.FullName)) { Delete(Folder("buffer"), Path.GetFileNameWithoutExtension(f.Name)); Log.Write("Búfer: " + f.Name + " sin audio, borrado"); }
+        try { File.WriteAllText(mark, DateTime.Now.ToString("o")); } catch { }
     }
 
     // Deja solo los N videos más recientes del búfer
