@@ -32,17 +32,17 @@
 | 📱 | **App-style feed** | Watch **For You**, **Following**, **Explore**, and **Friends** in a vertical window with smooth scrolling, preloading, and GPU decoding. |
 | ❤️ | **Interact** | Like, save to Favorites and collections, repost, follow, mark "Not interested", and report videos or comments from a built-in menu. |
 | 💬 | **Comments** | Read comments and replies, sort by popular or newest, like, reply, post, and see image comments — in a panel that never covers the whole screen. |
-| ✉️ | **Messages** | Inbox with activity and new followers, chats with bubbles, quick reactions, older messages, and shared videos that open in the app. |
-| 👤 | **Profiles** | Videos (latest, popular, or oldest first), reposts, favorites (with collections) and liked tabs; edit your own profile; open hashtags, sounds, and @mentions. |
+| ✉️ | **Messages** | Inbox with activity and new followers, chats with bubbles, quick reactions, older messages, shared videos and TikTok links that open in the app, and sending videos to several friends at once with a message. |
+| 👤 | **Profiles** | Videos (latest, popular, or oldest first), playlists, followers and following, a "seen just now" marker, reposts, favorites (with collections) and liked tabs; edit your own profile; open hashtags, sounds, and @mentions. |
 | 🔎 | **Search** | Videos and users, search history, and live suggestions. |
 | ⬇️ | **Downloads** | MP4 without watermark, best quality, original with watermark, MP3 audio, and cover image — to a folder you choose. |
-| 🎛️ | **Playback** | Speed, captions, picture-in-picture, auto-scroll, background play, a seek bar with frame preview, and global media keys. |
+| 🎛️ | **Playback** | Speed, quality, captions, picture-in-picture, auto-scroll, background play, mute when unfocused, a seek bar with frame preview on hover, local history, and global media keys. |
 | 🎞️ | **1080p and offline** | One-click install of Microsoft's free HEVC extension for 1080p, a disk buffer so videos start instantly, and offline videos (100 MB–2 GB) for when you have no internet. |
 | 🔔 | **Notifications** | Windows notifications for likes, comments, mentions, followers, and messages, by category — even with the app closed, through a tiny helper (about 6 MB of RAM). |
 | 🎨 | **Make it yours** | Dark, light, or system theme, accent colors, interface zoom, custom CSS themes, and fully customizable keyboard shortcuts. |
 | 🪟 | **Desktop integration** | System tray, start with Windows, start minimized, close-to-tray, and remember window size. |
 | 🌍 | **37 languages** | Follows your TikTok account language automatically; falls back to English. |
-| 🔄 | **Auto-updates** | Checks GitHub Releases and installs new versions in one click. |
+| 🔄 | **Auto-updates** | Checks GitHub Releases, installs new versions in one click, reopens the app, and shows what's new. |
 
 ## 📥 Install
 
