@@ -70,10 +70,21 @@ static class Hevc
         var info = await Post(http, Endpoint + "/secured", Envelope("GetExtendedUpdateInfo2", Endpoint + "/secured",
             $"<GetExtendedUpdateInfo2 {Ns}><updateIDs><UpdateIdentity><UpdateID>{best.id}</UpdateID><RevisionNumber>{best.rev}</RevisionNumber></UpdateIdentity></updateIDs>" +
             $"<infoTypes><XmlUpdateFragmentType>FileUrl</XmlUpdateFragmentType><XmlUpdateFragmentType>FileDecryption</XmlUpdateFragmentType></infoTypes><deviceAttributes>{Attrs}</deviceAttributes></GetExtendedUpdateInfo2>"));
-        var url = Regex.Matches(info, "<Url>(.*?)</Url>").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value))
-            .FirstOrDefault(u => new Uri(u).Host.EndsWith("delivery.mp.microsoft.com", StringComparison.OrdinalIgnoreCase));
-        Log.Write($"HEVC: versión {best.ver}");
-        return url ?? throw new InvalidOperationException("Microsoft no devolvió la dirección de descarga");
+        // Vienen varios archivos (metadatos en .cab y el paquete): se elige el que empieza como ZIP ("PK"), que es el .appxbundle
+        foreach (var url in Regex.Matches(info, "<Url>(.*?)</Url>").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)))
+        {
+            if (!new Uri(url).Host.EndsWith("delivery.mp.microsoft.com", StringComparison.OrdinalIgnoreCase)) continue;
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 1);
+            using var resp = await http.SendAsync(req);
+            var head = await resp.Content.ReadAsByteArrayAsync();
+            if (head.Length >= 2 && head[0] == (byte)'P' && head[1] == (byte)'K')
+            {
+                Log.Write($"HEVC: versión {best.ver}");
+                return url;
+            }
+        }
+        throw new InvalidOperationException("Microsoft no devolvió la dirección de descarga");
     }
 
     /// <summary>Descarga e instala el paquete. <paramref name="progress"/> recibe (etapa, porcentaje).</summary>
@@ -104,8 +115,8 @@ static class Hevc
             progress("installing", 100);
             // Instalación por usuario (sin administrador); Windows verifica la firma del paquete
             var psi = new ProcessStartInfo("powershell.exe",
-                $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"Add-AppxPackage -Path '{file.Replace("'", "''")}'\"")
-            { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
+                $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [Text.Encoding]::UTF8; Add-AppxPackage -Path '{file.Replace("'", "''")}'\"")
+            { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, StandardErrorEncoding = Encoding.UTF8 };
             using var p = Process.Start(psi)!;
             var err = await p.StandardError.ReadToEndAsync();
             await p.WaitForExitAsync();
