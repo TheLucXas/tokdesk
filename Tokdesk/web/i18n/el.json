@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "Η επέκταση HEVC απεγκαταστάθηκε. Επανεκκίνηση της εφαρμογής…",
   "Visto ahora": "Μόλις είδες",
   "Abrir los enlaces de TikTok en Tokdesk": "Άνοιγμα συνδέσμων TikTok στο Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Όταν το ενεργοποιείς, επίλεξε Tokdesk για HTTPS στις προεπιλεγμένες εφαρμογές των Windows. Οι υπόλοιποι σύνδεσμοι ανοίγουν στο συνηθισμένο πρόγραμμα περιήγησης."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Όταν το ενεργοποιείς, επίλεξε Tokdesk για HTTPS στις προεπιλεγμένες εφαρμογές των Windows. Οι υπόλοιποι σύνδεσμοι ανοίγουν στο συνηθισμένο πρόγραμμα περιήγησης.",
+  "Los videos que miraste, guardados solo en este equipo": "Τα βίντεο που παρακολούθησες, αποθηκευμένα μόνο σε αυτή τη συσκευή",
+  "Calidad de video": "Ποιότητα βίντεο",
+  "Historial de reproducciones": "Ιστορικό παρακολούθησης",
+  "Lista de reproducción": "Λίστα αναπαραγωγής",
+  "Todavía no hay nadie aquí.": "Δεν υπάρχει κανείς εδώ ακόμα.",
+  "Borrar historial de reproducciones": "Διαγραφή ιστορικού παρακολούθησης",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "Το TikTok δεν επέστρεψε τη λίστα (μπορεί να είναι ιδιωτική ή να χρειάζεται λίγη αναμονή).",
+  "Automática usa la mejor disponible": "Η αυτόματη χρησιμοποιεί την καλύτερη διαθέσιμη",
+  "Ver el video original del dueto": "Προβολή του αρχικού βίντεο του duet",
+  "Automática": "Αυτόματη"
 }

@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-laajennus poistettu. Käynnistetään sovellus uudelleen…",
   "Visto ahora": "Juuri katsottu",
   "Abrir los enlaces de TikTok en Tokdesk": "Avaa TikTok-linkit Tokdeskissä",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kun tämä on päällä, valitse Tokdesk HTTPS-protokollalle Windowsin oletussovelluksissa. Muut linkit avautuvat tavalliseen selaimeesi."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kun tämä on päällä, valitse Tokdesk HTTPS-protokollalle Windowsin oletussovelluksissa. Muut linkit avautuvat tavalliseen selaimeesi.",
+  "Los videos que miraste, guardados solo en este equipo": "Katsomasi videot, tallennettu vain tälle laitteelle",
+  "Calidad de video": "Videon laatu",
+  "Historial de reproducciones": "Katseluhistoria",
+  "Lista de reproducción": "Soittolista",
+  "Todavía no hay nadie aquí.": "Täällä ei ole vielä ketään.",
+  "Borrar historial de reproducciones": "Tyhjennä katseluhistoria",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok ei palauttanut listaa (se voi olla yksityinen tai sinun pitää odottaa hetki).",
+  "Automática usa la mejor disponible": "Automaattinen käyttää parasta saatavilla olevaa",
+  "Ver el video original del dueto": "Katso duetin alkuperäinen video",
+  "Automática": "Automaattinen"
 }

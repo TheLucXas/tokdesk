@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "Na-uninstall ang HEVC extension. Nagre-restart ang app…",
   "Visto ahora": "Bag-o lang nakita",
   "Abrir los enlaces de TikTok en Tokdesk": "Ablihi ang TikTok nga mga link sa Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kung i-enable, pilia ang Tokdesk para sa HTTPS sa default nga apps sa Windows. Ang uban nga mga link mabuksan sa imong kasagarang browser."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Kung i-enable, pilia ang Tokdesk para sa HTTPS sa default nga apps sa Windows. Ang uban nga mga link mabuksan sa imong kasagarang browser.",
+  "Los videos que miraste, guardados solo en este equipo": "Mga video nga imong gitan-aw, naka-save lang sa kini nga device",
+  "Calidad de video": "Kalidad sa video",
+  "Historial de reproducciones": "Kasaysayan sa panan-aw",
+  "Lista de reproducción": "Playlist",
+  "Todavía no hay nadie aquí.": "Wala pa\u0027y tawo dinhi.",
+  "Borrar historial de reproducciones": "I-clear ang kasaysayan sa panan-aw",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "Wala mibalik ang TikTok sa lista (tingali private o kinahanglan maghulat og gamay).",
+  "Automática usa la mejor disponible": "Ang awtomatiko naggamit sa labing maayo nga magamit",
+  "Ver el video original del dueto": "Tan-awa ang original nga video sa duet",
+  "Automática": "Awtomatiko"
 }

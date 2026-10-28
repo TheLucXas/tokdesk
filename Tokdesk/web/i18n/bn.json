@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC এক্সটেনশন আনইনস্টল হয়েছে। অ্যাপ আবার চালু হচ্ছে…",
   "Visto ahora": "এইমাত্র দেখা",
   "Abrir los enlaces de TikTok en Tokdesk": "Tokdesk-এ TikTok লিংক খুলুন",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "চালু করলে, Windows-এর ডিফল্ট অ্যাপে HTTPS-এর জন্য Tokdesk বেছে নিন। অন্য লিংকগুলো আপনার পরিচিত ব্রাউজারে খুলবে।"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "চালু করলে, Windows-এর ডিফল্ট অ্যাপে HTTPS-এর জন্য Tokdesk বেছে নিন। অন্য লিংকগুলো আপনার পরিচিত ব্রাউজারে খুলবে।",
+  "Los videos que miraste, guardados solo en este equipo": "আপনার দেখা ভিডিও, শুধু এই ডিভাইসে সংরক্ষিত",
+  "Calidad de video": "ভিডিওর মান",
+  "Historial de reproducciones": "দেখার ইতিহাস",
+  "Lista de reproducción": "প্লেলিস্ট",
+  "Todavía no hay nadie aquí.": "এখানে এখনও কেউ নেই।",
+  "Borrar historial de reproducciones": "দেখার ইতিহাস মুছুন",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok তালিকাটি ফেরত দেয়নি (এটি ব্যক্তিগত হতে পারে বা কিছুক্ষণ অপেক্ষা করতে হবে)।",
+  "Automática usa la mejor disponible": "স্বয়ংক্রিয় সেরা উপলব্ধ মান ব্যবহার করে",
+  "Ver el video original del dueto": "ডুয়েটের আসল ভিডিও দেখুন",
+  "Automática": "স্বয়ংক্রিয়"
 }

@@ -137,6 +137,7 @@ function renderSettings() {
         row({ type: 'link', ic: 'speed', noChev: !HEVC_OK, label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar gratis la extensión HEVC'),
           sub: hevcText || (HEVC_OK ? t('Extensión HEVC de Microsoft instalada') : t('Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.') + ' ' + t('La app se reinicia al terminar.')),
           fn: () => { if (hevcBusy) return; if (HEVC_OK) hevcOptions(); else hevcRun('hevcinstall'); } }),
+        row({ type: 'seg', label: t('Calidad de video'), hint: t('Automática usa la mejor disponible'), value: opt.quality, options: [['auto', t('Automática')], ['1080', '1080p'], ['720', '720p'], ['540', '540p']], fn: (v) => { opt.quality = v; } }),
         row({ type: 'toggle', label: t('Ahorro de datos'), hint: t('Usa la versión más liviana de cada video'), value: opt.dataSaver, fn: (v) => { opt.dataSaver = v; } }),
         row({ type: 'seg', label: t('Videos precargados'), value: opt.preload, options: [[0, '0'], [1, '1'], [2, '2'], [3, '3']], fn: (v) => { opt.preload = v; } }),
         row({ type: 'seg', label: t('Búfer en disco'), hint: t('Descarga por adelantado los próximos videos para que arranquen al instante'), value: opt.buffer, options: [[0, '0'], [3, '3'], [5, '5'], [10, '10']], fn: (v) => { opt.buffer = v; } }),
@@ -191,6 +192,8 @@ function renderSettings() {
         N.Notifications !== false && row({ type: 'seg', label: t('Revisar cada'), value: N.NotifyInterval || 2, options: [[1, '1 min'], [2, '2 min'], [5, '5 min'], [15, '15 min']], fn: (v) => send({ t: 'setsetting', k: 'NotifyInterval', v }) }),
       ]],
       [t('Privacidad y datos'), [
+        row({ type: 'link', ic: 'clock', label: t('Historial de reproducciones'), sub: t('Los videos que miraste, guardados solo en este equipo'), fn: () => openHistory() }),
+        row({ type: 'link', ic: 'close', label: t('Borrar historial de reproducciones'), fn: () => clearHistory() }),
         row({ type: 'link', ic: 'search', label: t('Borrar historial de búsqueda'), fn: () => { pref.set('searchHistory', []); toast(t('Historial borrado')); } }),
         row({ type: 'link', ic: 'download', label: t('Borrar caché'), fn: () => send({ t: 'clearcache' }) }),
         row({ type: 'link', ic: 'thumbdown', label: t('Borrar «no me gusta» de comentarios'), fn: () => { state.cmtDislikes.clear(); pref.set('cmtDislikes', []); toast(t('Listo')); } }),

@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "تمت إزالة امتداد HEVC. جارٍ إعادة تشغيل التطبيق…",
   "Visto ahora": "شوهد للتو",
   "Abrir los enlaces de TikTok en Tokdesk": "فتح روابط TikTok في Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "عند التفعيل، اختر Tokdesk لبروتوكول HTTPS في التطبيقات الافتراضية في Windows. تُفتح الروابط الأخرى في متصفحك المعتاد."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "عند التفعيل، اختر Tokdesk لبروتوكول HTTPS في التطبيقات الافتراضية في Windows. تُفتح الروابط الأخرى في متصفحك المعتاد.",
+  "Los videos que miraste, guardados solo en este equipo": "الفيديوهات التي شاهدتها، محفوظة على هذا الجهاز فقط",
+  "Calidad de video": "جودة الفيديو",
+  "Historial de reproducciones": "سجل المشاهدة",
+  "Lista de reproducción": "قائمة التشغيل",
+  "Todavía no hay nadie aquí.": "لا أحد هنا بعد.",
+  "Borrar historial de reproducciones": "مسح سجل المشاهدة",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "لم يُرجع TikTok القائمة (قد تكون خاصة أو يجب الانتظار قليلًا).",
+  "Automática usa la mejor disponible": "التلقائي يستخدم الأفضل المتاح",
+  "Ver el video original del dueto": "شاهد فيديو الدويتو الأصلي",
+  "Automática": "تلقائي"
 }

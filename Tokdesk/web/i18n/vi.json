@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "Đã gỡ tiện ích HEVC. Đang khởi động lại ứng dụng…",
   "Visto ahora": "Vừa xem",
   "Abrir los enlaces de TikTok en Tokdesk": "Mở liên kết TikTok trong Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Khi bật, hãy chọn Tokdesk cho HTTPS trong ứng dụng mặc định của Windows. Các liên kết khác sẽ mở trong trình duyệt thường dùng của bạn."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Khi bật, hãy chọn Tokdesk cho HTTPS trong ứng dụng mặc định của Windows. Các liên kết khác sẽ mở trong trình duyệt thường dùng của bạn.",
+  "Los videos que miraste, guardados solo en este equipo": "Video bạn đã xem, chỉ lưu trên thiết bị này",
+  "Calidad de video": "Chất lượng video",
+  "Historial de reproducciones": "Lịch sử xem",
+  "Lista de reproducción": "Danh sách phát",
+  "Todavía no hay nadie aquí.": "Chưa có ai ở đây.",
+  "Borrar historial de reproducciones": "Xóa lịch sử xem",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok không trả về danh sách (có thể ở chế độ riêng tư hoặc bạn cần đợi một lát).",
+  "Automática usa la mejor disponible": "Tự động dùng chất lượng tốt nhất hiện có",
+  "Ver el video original del dueto": "Xem video gốc của duet",
+  "Automática": "Tự động"
 }

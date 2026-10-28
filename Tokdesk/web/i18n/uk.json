@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "Розширення HEVC видалено. Перезапуск застосунку…",
   "Visto ahora": "Щойно переглянуто",
   "Abrir los enlaces de TikTok en Tokdesk": "Відкривати посилання TikTok у Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Після увімкнення оберіть Tokdesk для HTTPS у програмах за замовчуванням Windows. Інші посилання відкриватимуться у вашому звичному браузері."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Після увімкнення оберіть Tokdesk для HTTPS у програмах за замовчуванням Windows. Інші посилання відкриватимуться у вашому звичному браузері.",
+  "Los videos que miraste, guardados solo en este equipo": "Відео, які ви дивились, зберігаються лише на цьому пристрої",
+  "Calidad de video": "Якість відео",
+  "Historial de reproducciones": "Історія переглядів",
+  "Lista de reproducción": "Плейлист",
+  "Todavía no hay nadie aquí.": "Тут поки що нікого немає.",
+  "Borrar historial de reproducciones": "Очистити історію переглядів",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok не повернув список (можливо, він приватний або потрібно трохи почекати).",
+  "Automática usa la mejor disponible": "Авто використовує найкраще доступне",
+  "Ver el video original del dueto": "Дивитися оригінальне відео дуету",
+  "Automática": "Авто"
 }

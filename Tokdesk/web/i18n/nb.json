@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-utvidelse avinstallert. Starter appen på nytt…",
   "Visto ahora": "Nettopp sett",
   "Abrir los enlaces de TikTok en Tokdesk": "Åpne TikTok-lenker i Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Når det er aktivert, velg Tokdesk for HTTPS i Windows\u0027 standardapper. Andre lenker åpnes i den vanlige nettleseren din."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Når det er aktivert, velg Tokdesk for HTTPS i Windows\u0027 standardapper. Andre lenker åpnes i den vanlige nettleseren din.",
+  "Los videos que miraste, guardados solo en este equipo": "Videoer du har sett, lagret kun på denne enheten",
+  "Calidad de video": "Videokvalitet",
+  "Historial de reproducciones": "Visningshistorikk",
+  "Lista de reproducción": "Spilleliste",
+  "Todavía no hay nadie aquí.": "Det er ingen her ennå.",
+  "Borrar historial de reproducciones": "Slett visningshistorikk",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok returnerte ikke listen (den kan være privat, eller du må vente en stund).",
+  "Automática usa la mejor disponible": "Automatisk bruker den beste tilgjengelige",
+  "Ver el video original del dueto": "Se den originale duett-videoen",
+  "Automática": "Automatisk"
 }

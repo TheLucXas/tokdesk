@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC एक्सटेंशन अनइंस्टॉल हुआ। ऐप फिर से शुरू हो रहा है…",
   "Visto ahora": "अभी देखा",
   "Abrir los enlaces de TikTok en Tokdesk": "TikTok लिंक Tokdesk में खोलें",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "चालू करने पर, Windows की डिफ़ॉल्ट ऐप्स में HTTPS के लिए Tokdesk चुनें। बाकी लिंक आपके सामान्य ब्राउज़र में खुलेंगे।"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "चालू करने पर, Windows की डिफ़ॉल्ट ऐप्स में HTTPS के लिए Tokdesk चुनें। बाकी लिंक आपके सामान्य ब्राउज़र में खुलेंगे।",
+  "Los videos que miraste, guardados solo en este equipo": "आपके देखे गए वीडियो, केवल इसी डिवाइस पर सहेजे गए",
+  "Calidad de video": "वीडियो गुणवत्ता",
+  "Historial de reproducciones": "वॉच हिस्ट्री",
+  "Lista de reproducción": "प्लेलिस्ट",
+  "Todavía no hay nadie aquí.": "यहाँ अभी कोई नहीं है।",
+  "Borrar historial de reproducciones": "वॉच हिस्ट्री हटाएँ",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok ने सूची वापस नहीं की (हो सकता है वह निजी हो या थोड़ी देर इंतज़ार करना पड़े)।",
+  "Automática usa la mejor disponible": "स्वचालित सबसे अच्छी उपलब्ध गुणवत्ता का उपयोग करता है",
+  "Ver el video original del dueto": "ड्यूएट का मूल वीडियो देखें",
+  "Automática": "स्वचालित"
 }

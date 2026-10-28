@@ -31,7 +31,7 @@ const pref = {
 
 // Preferencias de la interfaz (se editan desde Configuración, en settings.js)
 const opt = Object.assign({
-  theme: 'dark', accent: '#fe2c55', fit: 'contain', dataSaver: false, preload: 2, buffer: 3, offlineSize: 0, dblLike: true,
+  theme: 'dark', accent: '#fe2c55', fit: 'contain', dataSaver: false, preload: 2, quality: 'auto', buffer: 3, offlineSize: 0, dblLike: true,
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
@@ -180,6 +180,7 @@ function feedFor(key) {
     case 'favorites': return makeFeed(key, { title: t('Favoritos'), load: (f) => loadPaged(f, '/api/user/collect/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
     case 'liked': return makeFeed(key, { title: t('Me gusta'), load: (f) => loadPaged(f, '/api/favorite/item_list/', { secUid: arg, count: 16, coverFormat: 2 }) });
     case 'single': return makeFeed(key, { title: t('Video'), hasMore: false, load() { } });
+    case 'mix': return makeFeed(key, { title: t('Lista de reproducción'), load: (f) => loadPaged(f, '/api/mix/item_list/', { mixId: arg, count: 16 }) });
     case 'coll': return makeFeed(key, { title: t('Colección'), load: (f) => loadPaged(f, '/api/collection/item_list/', { collectionId: arg, count: 16, sourceType: 113 }) });
     case 'music': return makeFeed(key, { title: t('Sonido'), load: (f) => loadPaged(f, '/api/music/item_list/', { musicID: arg, count: 16, coverFormat: 2 }) });
     case 'tag': return makeFeed(key, {
@@ -223,6 +224,12 @@ function pickSource(v) {
   // Mayor resolución primero y, a igual resolución, mayor bitrate; con ahorro de datos, al revés
   list.sort((a, b) => ((b.PlayAddr.Height || 0) - (a.PlayAddr.Height || 0)) || ((b.Bitrate || 0) - (a.Bitrate || 0)));
   if (opt.dataSaver) list.reverse();
+  // Calidad elegida (como en la app): la mejor que no pase del límite; si ninguna entra, la más baja
+  else if (opt.quality !== 'auto') {
+    const short = (b) => Math.min(b.PlayAddr.Width || 9999, b.PlayAddr.Height || 9999);
+    const fit = list.filter((b) => short(b) <= +opt.quality + 20);
+    if (fit.length) list.splice(0, list.length, ...fit); else list.reverse();
+  }
   if (list.length) return list[0].PlayAddr.UrlList[list[0].PlayAddr.UrlList.length - 1];
   return v.playAddr || v.downloadAddr || null;
 }
@@ -255,6 +262,7 @@ function normalize(it) {
       .map((b) => ({ codec: b.CodecType, h: b.PlayAddr.Height, url: b.PlayAddr.UrlList[b.PlayAddr.UrlList.length - 1] })),
     subtitles: (v.subtitleInfos || []).filter((s) => s.Url && /vtt/i.test(s.Format || 'webvtt'))
       .map((s) => ({ url: s.Url, lang: (s.LanguageCodeName || '').toLowerCase() })),
+    duetFrom: it.duetInfo && it.duetInfo.duetFromId && it.duetInfo.duetFromId !== '0' ? it.duetInfo.duetFromId : null,
     reposted: !!it.reposted, reposts: +st.repostCount || 0,
     likes: +st.diggCount || 0, comments: +st.commentCount || 0, saves: +st.collectCount || 0, shares: +st.shareCount || 0,
     plays: +st.playCount || 0, pinned: !!it.isPinnedItem, created: +it.createTime || 0,
@@ -410,7 +418,7 @@ function buildSlide(it) {
     <div class="meta">
       <div class="user">${esc(it.nick || it.author)}${it.created ? `<span class="when"> · ${/\d-/.test(ago(it.created)) ? ago(it.created) : t('hace {0}', ago(it.created))}</span>` : ''}${it.ad ? '<span class="badge">Publicidad</span>' : ''}</div>
       <div class="desc">${richText(it.desc)}</div>
-      ${it.music ? `<div class="musicline">${ICON.music}<span>${esc(it.music)}</span></div>` : ''}
+      ${it.music ? `<div class="musicline">${ICON.music}<span>${esc(it.music)}</span></div>` : ''}${duetLine(it)}
     </div>
     <div class="cc"></div>
     <div class="progress"><div class="track"><div class="fill"></div></div><div class="scrub"><canvas width="96" height="170"></canvas><div class="tm"></div></div></div>`;
@@ -470,6 +478,17 @@ function buildSlide(it) {
       offline.buffer.delete(it.id); offline.saved.delete(it.id);
       media.src = net;
       if (el === current()) media.play().catch(() => { });
+      return;
+    }
+    if (!it.refreshed && !it.photos.length) {
+      it.refreshed = true;
+      api('GET', '/api/item/detail/', { itemId: it.id }).then((r) => {
+        const fresh = normalize(r.data && r.data.itemInfo && r.data.itemInfo.itemStruct);
+        if (!fresh || !fresh.src) { if (el === current()) go(1); return; }
+        Object.assign(it, { src: fresh.src, bitrates: fresh.bitrates, cover: fresh.cover });
+        media.src = fresh.src;
+        if (el === current()) media.play().catch(() => { });
+      });
       return;
     }
     if (!it.photos.length && el === current()) setTimeout(() => go(1), 300);
@@ -636,7 +655,7 @@ function render() {
     if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
-      if (typeof markSeen === 'function') markSeen(it.id);
+      if (typeof markSeen === 'function') { markSeen(it.id); recordHistory(it); }
       if (typeof applyWinState === 'function') { delete el.dataset.autoMuted; applyWinState(); }
       if (state.cc) loadCaptions(el);
       if (m.paused && !el.dataset.userPaused && m.getAttribute('src')) m.play().catch((e) => log('play: ' + e.message));
@@ -1648,7 +1667,9 @@ async function openProfile(it) {
   // «Visto ahora»: el video de esta persona que estabas mirando se marca en su perfil (como en la app)
   const cur = currentItem();
   state.seenNow = cur && cur.authorId === it.authorId ? cur.id : null;
+  const changed = state.profileFor !== it;
   state.profileFor = it;
+  if (changed) loadPlaylists(it);
   const f = feedFor('user:' + it.secUid);
   f.title = '@' + it.author;
   state.profileKey = f.key;
@@ -2849,3 +2870,100 @@ for (const [id, handle] of [['sheet', '.sheet-head'], ['opts', '.grab, .cp-title
     };
   });
 }
+// ---------- Dueto: «Dueto con…» lleva al video original ----------
+function duetLine(it) {
+  return it.duetFrom ? `<div class="duetline" data-duet="${esc(it.duetFrom)}">${ICON.repost}<span>${esc(t('Ver el video original del dueto'))}</span></div>` : '';
+}
+document.addEventListener('click', (e) => {
+  const d = e.target.closest('.duetline');
+  if (!d) return;
+  e.stopPropagation();
+  openVideoLink('https://www.tiktok.com/video/' + d.dataset.duet);
+}, true);
+
+// ---------- Historial de reproducciones (solo en este equipo, como «Historial de visualización» de la app) ----------
+let historyCache = null;
+function historyList() { return historyCache || (historyCache = pref.get('history', [])); }
+let historyTimer = 0;
+function recordHistory(it) {
+  if (!it || !it.id || it.ad || String(it.src || '').includes('offline.tokdesk')) return;
+  const list = historyList().filter((x) => x.id !== it.id);
+  list.unshift({ ...it, viewedAt: Date.now() });
+  historyCache = list.slice(0, 200);
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(() => pref.set('history', historyCache), 1500);
+}
+function openHistory() {
+  const items = historyList();
+  feeds.delete('history');
+  const f = makeFeed('history', { title: t('Historial de reproducciones'), hasMore: false, load() { } });
+  for (const x of items) { f.ids.add(x.id); f.items.push({ ...x, refreshed: false }); }
+  closePanels();
+  showPage(f, { title: t('Historial de reproducciones'), name: t('Historial de reproducciones'), sub: t('{0} videos', items.length), cover: '' });
+}
+function clearHistory() { historyCache = []; pref.set('history', []); toast(t('Historial borrado')); }
+
+// ---------- Playlists del creador en su perfil ----------
+async function loadPlaylists(it) {
+  const box = $('#pfLists');
+  box.innerHTML = ''; box.classList.remove('show');
+  const r = await api('GET', '/api/user/playlist/', { secUid: it.secUid, count: 20, cursor: 0 });
+  const list = (r.data && r.data.playList) || [];
+  if (state.profileFor !== it || !list.length) return;
+  box.innerHTML = list.map((p, i) => `<button class="pl-card" data-i="${i}"><img alt="" src="${esc(p.cover || '')}">
+    <div class="pl-tx"><div class="pl-nm">${esc(p.name || p.mixName || '')}</div><div class="pl-ct">${esc(t('{0} videos', fmt(+p.videoCount || 0)))}</div></div></button>`).join('');
+  box.classList.add('show');
+  $$('.pl-card', box).forEach((b) => b.onclick = () => {
+    const p = list[+b.dataset.i];
+    const f = feedFor('mix:' + (p.mixId || p.id));
+    f.title = p.name || p.mixName || t('Lista de reproducción');
+    showPage(f, { title: t('Lista de reproducción'), name: f.title, sub: t('{0} videos', fmt(+p.videoCount || 0)) + ' · @' + it.author, cover: p.cover });
+  });
+}
+
+// ---------- Seguidores y seguidos (tocando los contadores del perfil) ----------
+async function openFollowList(scene) {
+  const it = state.profileFor; if (!it) return;
+  const title = scene === 21 ? t('Siguiendo') : t('Seguidores');
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(title)} · @${esc(it.author)}</div><div class="fl-list"></div><div class="sheet-msg fl-more"><div class="spinner"></div></div>`;
+  openPanel('opts', true);
+  const st = { cursor: 0, more: true, busy: false };
+  const listEl = $('.fl-list', body), moreEl = $('.fl-more', body);
+  async function page() {
+    if (st.busy || !st.more) return;
+    st.busy = true;
+    const r = await api('GET', '/api/user/list/', { secUid: it.secUid, count: 30, maxCursor: 0, minCursor: st.cursor, scene });
+    st.busy = false;
+    const d = r.data || {};
+    const users = d.userList || [];
+    if (!users.length && !listEl.children.length) {
+      // Respuesta vacía: TikTok limita esta lista si se pide seguido (o la cuenta la ocultó)
+      if (!r.data || d.statusCode || d.status_code) {
+        moreEl.innerHTML = `${esc(t('TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).'))}<br><br><button class="pill">${esc(t('Reintentar'))}</button>`;
+        $('button', moreEl).onclick = () => { moreEl.innerHTML = '<div class="spinner"></div>'; st.more = true; page(); };
+      } else { moreEl.textContent = t('Todavía no hay nadie aquí.'); st.more = false; }
+      return;
+    }
+    listEl.insertAdjacentHTML('beforeend', users.map((x) => {
+      const u = x.user || {}, s = x.stats || {};
+      return `<button class="ib-item" data-u="${esc(JSON.stringify({ secUid: u.secUid, author: u.uniqueId, nick: u.nickname, avatar: u.avatarThumb, authorId: u.id, signature: u.signature }))}">
+        <img class="av" alt="" src="${esc(u.avatarThumb || '')}"><div class="tx"><div class="nm">${esc(u.nickname || u.uniqueId)}</div>
+        <div class="ls">@${esc(u.uniqueId)}${s.followerCount != null ? ' · ' + esc(t('{0} seguidores', fmt(s.followerCount))) : ''}</div></div></button>`;
+    }).join(''));
+    st.cursor = d.minCursor || 0;
+    st.more = !!d.hasMore && users.length > 0;
+    moreEl.innerHTML = st.more ? '<div class="spinner"></div>' : '';
+  }
+  listEl.addEventListener('click', (e) => {
+    const b = e.target.closest('.ib-item'); if (!b) return;
+    closePanel('opts');
+    openProfile(JSON.parse(b.dataset.u));
+  });
+  $('#opts').onscroll = () => { const o = $('#opts'); if (o.scrollTop + o.clientHeight > o.scrollHeight - 300) page(); };
+  await page();
+}
+$('#pfFollowing').parentElement.classList.add('pf-stat-link');
+$('#pfFollowers').parentElement.classList.add('pf-stat-link');
+$('#pfFollowing').parentElement.addEventListener('click', () => openFollowList(21));
+$('#pfFollowers').parentElement.addEventListener('click', () => openFollowList(67));

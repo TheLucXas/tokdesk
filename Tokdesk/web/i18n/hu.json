@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC-bővítmény eltávolítva. Az app újraindul…",
   "Visto ahora": "Most nézted",
   "Abrir los enlaces de TikTok en Tokdesk": "TikTok-linkek megnyitása a Tokdesk-ben",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Bekapcsoláskor válaszd a Tokdesket HTTPS-hez a Windows alapértelmezett alkalmazásai között. A többi hivatkozás a szokásos böngésződben nyílik meg."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Bekapcsoláskor válaszd a Tokdesket HTTPS-hez a Windows alapértelmezett alkalmazásai között. A többi hivatkozás a szokásos böngésződben nyílik meg.",
+  "Los videos que miraste, guardados solo en este equipo": "A megnézett videók, csak ezen az eszközön mentve",
+  "Calidad de video": "Videó minősége",
+  "Historial de reproducciones": "Megtekintési előzmények",
+  "Lista de reproducción": "Lejátszási lista",
+  "Todavía no hay nadie aquí.": "Még senki sincs itt.",
+  "Borrar historial de reproducciones": "Megtekintési előzmények törlése",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "A TikTok nem küldte vissza a listát (lehet, hogy privát, vagy várj egy kicsit).",
+  "Automática usa la mejor disponible": "Az automatikus a legjobbat használja, ami elérhető",
+  "Ver el video original del dueto": "A duett eredeti videójának megtekintése",
+  "Automática": "Automatikus"
 }

@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC extension uninstalled. Restarting the app…",
   "Visto ahora": "Just watched",
   "Abrir los enlaces de TikTok en Tokdesk": "Open TikTok links in Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "When enabled, choose Tokdesk for HTTPS in Windows default apps. Other links open in your usual browser."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "When enabled, choose Tokdesk for HTTPS in Windows default apps. Other links open in your usual browser.",
+  "Los videos que miraste, guardados solo en este equipo": "Videos you watched, saved only on this device",
+  "Calidad de video": "Video quality",
+  "Historial de reproducciones": "Watch history",
+  "Lista de reproducción": "Playlist",
+  "Todavía no hay nadie aquí.": "No one is here yet.",
+  "Borrar historial de reproducciones": "Clear watch history",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok didn\u0027t return the list (it may be private or you need to wait a while).",
+  "Automática usa la mejor disponible": "Auto uses the best available",
+  "Ver el video original del dueto": "Watch the original duet video",
+  "Automática": "Auto"
 }

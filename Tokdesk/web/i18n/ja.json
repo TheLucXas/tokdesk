@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC拡張機能をアンインストールしました。アプリを再起動しています…",
   "Visto ahora": "今見た",
   "Abrir los enlaces de TikTok en Tokdesk": "TikTok のリンクを Tokdesk で開く",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "有効にすると、Windows の既定のアプリで HTTPS に Tokdesk を選択します。その他のリンクは通常のブラウザで開きます。"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "有効にすると、Windows の既定のアプリで HTTPS に Tokdesk を選択します。その他のリンクは通常のブラウザで開きます。",
+  "Los videos que miraste, guardados solo en este equipo": "この端末にのみ保存される、視聴した動画",
+  "Calidad de video": "動画画質",
+  "Historial de reproducciones": "視聴履歴",
+  "Lista de reproducción": "再生リスト",
+  "Todavía no hay nadie aquí.": "まだ誰もいません。",
+  "Borrar historial de reproducciones": "視聴履歴を削除",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok がリストを返せませんでした（非公開の可能性があるか、しばらく待つ必要があります）。",
+  "Automática usa la mejor disponible": "自動は利用可能な最高画質を使用",
+  "Ver el video original del dueto": "デュエットの元の動画を見る",
+  "Automática": "自動"
 }

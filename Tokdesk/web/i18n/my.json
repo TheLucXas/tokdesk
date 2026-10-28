@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC extension ဖြုတ်ပြီးပါပြီ။ အက်ပ်ကို ပြန်စတင်နေသည်…",
   "Visto ahora": "ယခုကြည့်ပြီး",
   "Abrir los enlaces de TikTok en Tokdesk": "TikTok လင့်ခ်များကို Tokdesk တွင် ဖွင့်ပါ",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "ဖွင့်လိုက်လျှင် Windows ၏ မူလအက်ပ်များတွင် HTTPS အတွက် Tokdesk ကို ရွေးပါ။ အခြားလင့်ခ်များကို သင်ပုံမှန်သုံးသော ဘရောင်ဇာတွင် ဖွင့်ပါမည်။"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "ဖွင့်လိုက်လျှင် Windows ၏ မူလအက်ပ်များတွင် HTTPS အတွက် Tokdesk ကို ရွေးပါ။ အခြားလင့်ခ်များကို သင်ပုံမှန်သုံးသော ဘရောင်ဇာတွင် ဖွင့်ပါမည်။",
+  "Los videos que miraste, guardados solo en este equipo": "သင်ကြည့်ခဲ့သော ဗီဒီယိုများ၊ ဤစက်တွင်သာ သိမ်းထားသည်",
+  "Calidad de video": "ဗီဒီယိုအရည်အသွေး",
+  "Historial de reproducciones": "ကြည့်ရှုမှတ်တမ်း",
+  "Lista de reproducción": "ဖွင့်စာရင်း",
+  "Todavía no hay nadie aquí.": "ဒီမှာ ဘယ်သူမှ မရှိသေးပါ။",
+  "Borrar historial de reproducciones": "ကြည့်ရှုမှတ်တမ်းကို ရှင်းရန်",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok က စာရင်းကို ပြန်မပေးပါ (ကိုယ်ပိုင်ဖြစ်နိုင်သည် သို့မဟုတ် ခဏစောင့်ရန် လိုနိုင်သည်)။",
+  "Automática usa la mejor disponible": "အလိုအလျောက်က ရရှိနိုင်သော အကောင်းဆုံးကို သုံးသည်",
+  "Ver el video original del dueto": "duet ၏ မူရင်းဗီဒီယိုကို ကြည့်ရန်",
+  "Automática": "အလိုအလျောက်"
 }

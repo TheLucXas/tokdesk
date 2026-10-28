@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "HEVC 擴充功能已解除安裝，正在重新啟動應用程式…",
   "Visto ahora": "剛剛觀看",
   "Abrir los enlaces de TikTok en Tokdesk": "在 Tokdesk 中開啟 TikTok 連結",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "啟用後，請在 Windows 預設應用程式中為 HTTPS 選擇 Tokdesk。其他連結仍會在你慣用的瀏覽器中開啟。"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "啟用後，請在 Windows 預設應用程式中為 HTTPS 選擇 Tokdesk。其他連結仍會在你慣用的瀏覽器中開啟。",
+  "Los videos que miraste, guardados solo en este equipo": "你看過的影片，僅儲存在此裝置上",
+  "Calidad de video": "影片畫質",
+  "Historial de reproducciones": "觀看紀錄",
+  "Lista de reproducción": "播放清單",
+  "Todavía no hay nadie aquí.": "這裡還沒有人。",
+  "Borrar historial de reproducciones": "清除觀看紀錄",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok 未回傳清單（可能是私密的，或需要稍候一會兒）。",
+  "Automática usa la mejor disponible": "自動使用可用的最佳畫質",
+  "Ver el video original del dueto": "觀看合拍的原始影片",
+  "Automática": "自動"
 }

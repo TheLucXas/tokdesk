@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "Rozšíření HEVC odinstalováno. Restartuji aplikaci…",
   "Visto ahora": "Právě zhlédnuto",
   "Abrir los enlaces de TikTok en Tokdesk": "Otevírat odkazy TikToku v Tokdesku",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Po zapnutí vyber Tokdesk pro HTTPS ve výchozích aplikacích Windows. Ostatní odkazy se otevřou ve vašem obvyklém prohlížeči."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "Po zapnutí vyber Tokdesk pro HTTPS ve výchozích aplikacích Windows. Ostatní odkazy se otevřou ve vašem obvyklém prohlížeči.",
+  "Los videos que miraste, guardados solo en este equipo": "Videa, která jsi sledoval, uložená pouze v tomto zařízení",
+  "Calidad de video": "Kvalita videa",
+  "Historial de reproducciones": "Historie sledování",
+  "Lista de reproducción": "Playlist",
+  "Todavía no hay nadie aquí.": "Zatím tu nikdo není.",
+  "Borrar historial de reproducciones": "Smazat historii sledování",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok seznam nevrátil (může být soukromý nebo je potřeba chvíli počkat).",
+  "Automática usa la mejor disponible": "Automaticky použije nejlepší dostupnou",
+  "Ver el video original del dueto": "Zobrazit původní video duetu",
+  "Automática": "Automaticky"
 }

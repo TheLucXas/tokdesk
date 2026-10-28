@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "תוסף HEVC הוסר. מפעיל מחדש את האפליקציה…",
   "Visto ahora": "נצפה כרגע",
   "Abrir los enlaces de TikTok en Tokdesk": "פתיחת קישורי TikTok ב-Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "בעת ההפעלה, בחר ב-Tokdesk עבור HTTPS באפליקציות ברירת המחדל של Windows. שאר הקישורים ייפתחו בדפדפן הרגיל שלך."
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "בעת ההפעלה, בחר ב-Tokdesk עבור HTTPS באפליקציות ברירת המחדל של Windows. שאר הקישורים ייפתחו בדפדפן הרגיל שלך.",
+  "Los videos que miraste, guardados solo en este equipo": "הסרטונים שצפית בהם, שמורים רק במכשיר הזה",
+  "Calidad de video": "איכות וידאו",
+  "Historial de reproducciones": "היסטוריית צפייה",
+  "Lista de reproducción": "רשימת השמעה",
+  "Todavía no hay nadie aquí.": "אין כאן אף אחד עדיין.",
+  "Borrar historial de reproducciones": "מחק היסטוריית צפייה",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok לא החזיר את הרשימה (ייתכן שהיא פרטית או שצריך להמתין קצת).",
+  "Automática usa la mejor disponible": "אוטומטי משתמש באיכות הטובה ביותר הזמינה",
+  "Ver el video original del dueto": "צפה בסרטון הדואט המקורי",
+  "Automática": "אוטומטי"
 }

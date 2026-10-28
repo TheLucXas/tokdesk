@@ -407,5 +407,15 @@
   "Extensión HEVC desinstalada. Reiniciando la app…": "ถอนการติดตั้งส่วนขยาย HEVC แล้ว กำลังรีสตาร์ทแอป…",
   "Visto ahora": "ดูเมื่อสักครู่",
   "Abrir los enlaces de TikTok en Tokdesk": "เปิดลิงก์ TikTok ใน Tokdesk",
-  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "เมื่อเปิดใช้งาน ให้เลือก Tokdesk สำหรับ HTTPS ในแอปเริ่มต้นของ Windows ลิงก์อื่นจะเปิดในเบราว์เซอร์ที่คุณใช้ประจำ"
+  "Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.": "เมื่อเปิดใช้งาน ให้เลือก Tokdesk สำหรับ HTTPS ในแอปเริ่มต้นของ Windows ลิงก์อื่นจะเปิดในเบราว์เซอร์ที่คุณใช้ประจำ",
+  "Los videos que miraste, guardados solo en este equipo": "วิดีโอที่คุณดู บันทึกไว้เฉพาะในอุปกรณ์นี้",
+  "Calidad de video": "คุณภาพวิดีโอ",
+  "Historial de reproducciones": "ประวัติการดู",
+  "Lista de reproducción": "เพลย์ลิสต์",
+  "Todavía no hay nadie aquí.": "ยังไม่มีใครอยู่ที่นี่",
+  "Borrar historial de reproducciones": "ล้างประวัติการดู",
+  "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok ไม่ส่งรายการกลับมา (อาจเป็นแบบส่วนตัวหรือต้องรอสักครู่)",
+  "Automática usa la mejor disponible": "อัตโนมัติจะใช้คุณภาพที่ดีที่สุดที่มี",
+  "Ver el video original del dueto": "ดูวิดีโอต้นฉบับของดูเอต",
+  "Automática": "อัตโนมัติ"
 }
