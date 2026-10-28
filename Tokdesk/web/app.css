@@ -799,3 +799,15 @@ body.light .pl-card { background: rgba(0,0,0,.05); } body.light .pl-ct { color: 
 /* Dueto */
 .duetline { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .duetline svg { width: 14px; height: 14px; }
+
+/* Novedades */
+.cl-rel { padding: 10px 4px 14px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13.5px; line-height: 1.45; }
+.cl-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 15px; }
+.cl-date { margin-left: auto; font-size: 12px; color: rgba(255,255,255,.5); }
+.cl-cur { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: var(--accent, #fe2c55); color: #fff; }
+.cl-h { font-weight: 700; margin: 8px 0 4px; }
+.cl-li { position: relative; padding-left: 14px; margin: 2px 0; }
+.cl-li::before { content: '•'; position: absolute; left: 2px; }
+.cl-rel p { margin: 4px 0; }
+.cl-rel code { background: rgba(255,255,255,.1); padding: 0 4px; border-radius: 3px; }
+body.light .cl-rel { border-color: rgba(0,0,0,.08); } body.light .cl-date { color: rgba(22,24,35,.5); }

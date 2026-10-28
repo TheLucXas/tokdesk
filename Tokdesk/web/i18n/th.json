@@ -417,5 +417,9 @@
   "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok ไม่ส่งรายการกลับมา (อาจเป็นแบบส่วนตัวหรือต้องรอสักครู่)",
   "Automática usa la mejor disponible": "อัตโนมัติจะใช้คุณภาพที่ดีที่สุดที่มี",
   "Ver el video original del dueto": "ดูวิดีโอต้นฉบับของดูเอต",
-  "Automática": "อัตโนมัติ"
+  "Automática": "อัตโนมัติ",
+  "Tu versión": "เวอร์ชันของคุณ",
+  "Qué cambió en cada versión": "สิ่งที่เปลี่ยนในแต่ละเวอร์ชัน",
+  "No se pudieron cargar las novedades.": "ไม่สามารถโหลดสิ่งใหม่ได้",
+  "Novedades": "มีอะไรใหม่"
 }

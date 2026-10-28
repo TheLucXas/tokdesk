@@ -89,7 +89,9 @@ static class Updater
         if (File.Exists(old)) File.Delete(old);
         File.Move(exe, old);
         File.Move(tmp, exe);
-        Process.Start(new ProcessStartInfo(exe, "--updated") { UseShellExecute = false });
+        // El lanzador nuevo espera a que este proceso termine antes de extraer y abrir la versión nueva
+        Process.Start(new ProcessStartInfo(exe, $"--updated --wait {Environment.ProcessId}") { UseShellExecute = false });
+        (System.Windows.Application.Current.MainWindow as MainWindow)?.ExitNow();
         System.Windows.Application.Current.Shutdown();
     }
 

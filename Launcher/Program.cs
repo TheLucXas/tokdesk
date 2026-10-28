@@ -34,6 +34,18 @@ static class Program
         if (web != null && !IsTikTok(web)) { Forward(web); return 0; }
         try
         {
+            // Tras una actualización: se espera a que la versión vieja termine de cerrarse
+            var wi = Array.IndexOf(args, "--wait");
+            if (wi >= 0 && wi + 1 < args.Length && int.TryParse(args[wi + 1], out var pid))
+            {
+                try { using var old = Process.GetProcessById(pid); old.WaitForExit(30000); } catch { }
+                args = args.Where((_, i) => i != wi && i != wi + 1).ToArray();
+            }
+            else if (args.Contains("--updated"))
+            {
+                // Versiones viejas no mandan el proceso: se espera a que no quede ninguna app abierta
+                for (var i = 0; i < 60 && Process.GetProcessesByName("Tokdesk.App").Length > 0; i++) Thread.Sleep(500);
+            }
             if (!HasRuntime() && !InstallRuntime()) return 1;
             var app = ExtractApp();
             var self = Assembly.GetExecutingAssembly().Location;
@@ -178,8 +190,8 @@ static class Program
                 File.Move(tmp, exe);
                 break;
             }
-            catch (IOException) when (i < 40) { Thread.Sleep(250); }
-            catch (UnauthorizedAccessException) when (i < 40) { Thread.Sleep(250); }
+            catch (IOException) when (i < 120) { Thread.Sleep(250); }
+            catch (UnauthorizedAccessException) when (i < 120) { Thread.Sleep(250); }
         }
         File.WriteAllText(stamp, version);
         return exe;

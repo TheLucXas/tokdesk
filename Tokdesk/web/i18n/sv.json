@@ -417,5 +417,9 @@
   "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok returnerade inte listan (den kan vara privat eller så får du vänta en stund).",
   "Automática usa la mejor disponible": "Automatisk använder den bästa tillgängliga",
   "Ver el video original del dueto": "Visa originalvideon för duetten",
-  "Automática": "Automatisk"
+  "Automática": "Automatisk",
+  "Tu versión": "Din version",
+  "Qué cambió en cada versión": "Vad som ändrats i varje version",
+  "No se pudieron cargar las novedades.": "Det gick inte att läsa in nyheterna.",
+  "Novedades": "Nyheter"
 }

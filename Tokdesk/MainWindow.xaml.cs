@@ -114,6 +114,9 @@ public partial class MainWindow : Window
         Close();
     }
 
+    /// <summary>Cierre forzado (actualización): no se va a la bandeja aunque esté activado.</summary>
+    public void ExitNow() => ExitApp();
+
     void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         if (!_exiting && _settings.CloseToTray)
@@ -289,8 +292,11 @@ public partial class MainWindow : Window
         // Los CDN de video e imagen exigen el Referer de la web oficial
         ui.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.Media);
         ui.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.Image);
+        // Audio aparte (.m4a): lo sirve la propia app desde su carpeta, con rangos (el reproductor los pide así)
+        ui.AddWebResourceRequestedFilter("https://audio.tokdesk/*", CoreWebView2WebResourceContext.All);
         ui.WebResourceRequested += (_, e) =>
         {
+            if (e.Request.Uri.StartsWith("https://audio.tokdesk/")) { e.Response = ServeAudio(ui, e.Request); return; }
             if (!e.Request.Uri.Contains(UiHost))
                 e.Request.Headers.SetHeader("Referer", "https://www.tiktok.com/");
         };
@@ -363,6 +369,21 @@ public partial class MainWindow : Window
                         var kind = S("kind"); var id = S("id");
                         var url = await _off.Save(kind, id, S("url"), S("cover"), S("meta"), S("alt"));
                         PostToUi(new { t = "offsaved", kind, id, url, size = _off.Size(kind) });
+                        break;
+                    }
+                case "audiofix":
+                    {
+                        // Video HEVC sin sonido: se arma un .m4a con solo el audio de la variante H.264
+                        var id = S("id");
+                        var cookie = await _engine.CookieHeader();
+                        var ua = _engine.UserAgent;
+                        var file = await Mp4Audio.Extract(Http, id, S("url"), req =>
+                        {
+                            req.Headers.Referrer = new Uri("https://www.tiktok.com/");
+                            req.Headers.TryAddWithoutValidation("User-Agent", ua);
+                            req.Headers.TryAddWithoutValidation("Cookie", cookie);
+                        });
+                        PostToUi(new { t = "audiofixed", id, url = file == null ? null : $"https://audio.tokdesk/{Path.GetFileName(file)}" });
                         break;
                     }
                 case "offlist": await _offClean; PostToUi(_off.List(S("kind"))); break;
@@ -521,6 +542,31 @@ public partial class MainWindow : Window
             if (which == _engine) _engine.SetVisible(true, url);
             else _side.UpdateBounds();
         }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    CoreWebView2WebResourceResponse ServeAudio(CoreWebView2 ui, CoreWebView2WebResourceRequest req)
+    {
+        try
+        {
+            var name = Path.GetFileName(new Uri(req.Uri).AbsolutePath);
+            var file = Path.Combine(Mp4Audio.Dir, name);
+            if (!name.EndsWith(".m4a") || !File.Exists(file)) return _env.CreateWebResourceResponse(null, 404, "Not Found", "");
+            var all = File.ReadAllBytes(file);
+            long a = 0, b = all.Length - 1;
+            var range = req.Headers.Contains("Range") ? req.Headers.GetHeader("Range") : null;
+            var m = range == null ? null : System.Text.RegularExpressions.Regex.Match(range, @"bytes=(\d*)-(\d*)");
+            if (m != null && m.Success)
+            {
+                if (m.Groups[1].Value.Length > 0) a = long.Parse(m.Groups[1].Value);
+                if (m.Groups[2].Value.Length > 0) b = Math.Min(b, long.Parse(m.Groups[2].Value));
+            }
+            var part = new MemoryStream(all, (int)a, (int)(b - a + 1), false);
+            var headers = $"Content-Type: audio/mp4\r\nAccept-Ranges: bytes\r\nContent-Length: {b - a + 1}\r\nAccess-Control-Allow-Origin: *";
+            return m != null && m.Success
+                ? _env.CreateWebResourceResponse(part, 206, "Partial Content", headers + $"\r\nContent-Range: bytes {a}-{b}/{all.Length}")
+                : _env.CreateWebResourceResponse(part, 200, "OK", headers);
+        }
+        catch (Exception ex) { Log.Write("Audio aparte (servir): " + ex.Message); return _env.CreateWebResourceResponse(null, 500, "Error", ""); }
     }
 
     bool _uiReady;

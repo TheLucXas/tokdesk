@@ -177,6 +177,7 @@ function renderSettings() {
       ]],
       [t('Actualizaciones'), [
         row({ type: 'update' }),
+        row({ type: 'link', ic: 'star', label: t('Novedades'), sub: t('Qué cambió en cada versión'), fn: () => openChangelog() }),
         row({ type: 'toggle', label: t('Buscar actualizaciones al iniciar'), value: N.AutoCheckUpdates !== false, fn: (v) => send({ t: 'setsetting', k: 'AutoCheckUpdates', v }) }),
         row({ type: 'toggle', label: t('Instalar automáticamente'), value: !!N.AutoInstallUpdates, fn: (v) => send({ t: 'setsetting', k: 'AutoInstallUpdates', v }) }),
       ]],
@@ -451,7 +452,16 @@ function applyWinState() {
 // ---------- Mensajes del programa que no maneja app.js ----------
 function onHostMessage(m) {
   switch (m.t) {
-    case 'settings': native = m; renderSettings(); break;
+    case 'settings':
+      native = m; renderSettings();
+      // Primera vez con una versión nueva: aviso con acceso a las novedades
+      if (m.version) {
+        const last = pref.get('lastVersion', null);
+        // Tras actualizar (la app ya se reinició en la versión nueva) se abren solas las novedades
+        if (last && last !== m.version) setTimeout(openChangelog, 1500);
+        if (last !== m.version) pref.set('lastVersion', m.version);
+      }
+      break;
     case 'update':
       updateState = m;
       if (m.status === 'available' && !m.manual) notice(t('Nueva versión {0} disponible', m.version), t('Actualizar'), () => { updateState = { status: 'installing', p: 0 }; send({ t: 'installupdate' }); notice(t('Descargando actualización…'), null, null, true); });
@@ -521,4 +531,35 @@ function hevcOptions() {
     { ic: 'download', label: t('Reinstalar o reparar la extensión HEVC'), fn: () => { closePanel('opts'); hevcRun('hevcreinstall'); } },
     { ic: 'close', label: t('Desinstalar la extensión HEVC'), danger: true, fn: () => { closePanel('opts'); hevcRun('hevcuninstall'); } },
   ]], true);
+}
+// ---------- Novedades: notas de cada versión, tomadas de las releases de GitHub ----------
+function mdLite(md) {
+  // Markdown mínimo de las notas: títulos, negritas, listas y párrafos
+  return esc(md || '').split(/\r?\n/).map((l) => {
+    const b = l.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>');
+    if (/^#{1,6}\s/.test(l)) return `<div class="cl-h">${b.replace(/^#+\s*/, '')}</div>`;
+    if (/^\s*[-*]\s/.test(l)) return `<div class="cl-li">${b.replace(/^\s*[-*]\s/, '')}</div>`;
+    return l.trim() ? `<p>${b}</p>` : '';
+  }).join('');
+}
+async function openChangelog() {
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(t('Novedades'))}</div><div class="sheet-msg"><div class="spinner"></div></div>`;
+  openPanel('opts', true);
+  let list = null;
+  try {
+    const r = await fetch('https://api.github.com/repos/TheLucXas/tokdesk/releases?per_page=20', { headers: { Accept: 'application/vnd.github+json' } });
+    if (r.ok) list = await r.json();
+  } catch { }
+  if (!$('#opts').classList.contains('open')) return;
+  if (!Array.isArray(list) || !list.length) {
+    body.innerHTML = `<div class="cp-title">${esc(t('Novedades'))}</div><div class="sheet-msg">${esc(t('No se pudieron cargar las novedades.'))}</div>`;
+    return;
+  }
+  const cur = native && native.version;
+  body.innerHTML = `<div class="cp-title">${esc(t('Novedades'))}</div>` + list.map((rel) => {
+    const v = (rel.tag_name || '').replace(/^v/, '');
+    const date = rel.published_at ? new Date(rel.published_at).toLocaleDateString(uiLang) : '';
+    return `<div class="cl-rel"><div class="cl-top"><b>${esc(rel.name || rel.tag_name)}</b>${v === cur ? `<span class="cl-cur">${esc(t('Tu versión'))}</span>` : ''}<span class="cl-date">${esc(date)}</span></div>${mdLite(rel.body)}</div>`;
+  }).join('');
 }

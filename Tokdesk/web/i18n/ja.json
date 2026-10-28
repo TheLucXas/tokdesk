@@ -417,5 +417,9 @@
   "TikTok no devolvió la lista (puede ser privada o hay que esperar un rato).": "TikTok がリストを返せませんでした（非公開の可能性があるか、しばらく待つ必要があります）。",
   "Automática usa la mejor disponible": "自動は利用可能な最高画質を使用",
   "Ver el video original del dueto": "デュエットの元の動画を見る",
-  "Automática": "自動"
+  "Automática": "自動",
+  "Tu versión": "お使いのバージョン",
+  "Qué cambió en cada versión": "各バージョンの変更点",
+  "No se pudieron cargar las novedades.": "新機能の情報を読み込めませんでした。",
+  "Novedades": "新機能"
 }

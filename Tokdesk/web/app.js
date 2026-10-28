@@ -212,6 +212,42 @@ function bestSource(v) {
 // H.265 solo se reproduce si Windows tiene la extensión HEVC; TikTok suele dar el 1080p solo en ese formato
 const HEVC_OK = !!document.createElement('video').canPlayType('video/mp4; codecs="hvc1.1.6.L120.90"');
 
+// Respuestas del programa con el .m4a de solo audio (id → qué hacer cuando llegue)
+const audioFixWait = new Map();
+function onAudioFixed(m) {
+  const f = audioFixWait.get(m.id);
+  audioFixWait.delete(m.id);
+  if (f) f(m.url);
+}
+
+// Audio aparte para un video sin sonido: copia pausa, posición, velocidad, volumen y silencio del video
+function attachSideAudio(el, media, url, onFail) {
+  if (el.sideAudio) return;
+  const a = new Audio();
+  a.preload = 'auto';
+  a.src = url;
+  el.sideAudio = a;
+  const sync = (force) => {
+    if (!el.sideAudio) return;
+    a.muted = media.muted; a.volume = media.volume; a.playbackRate = media.playbackRate;
+    if (force || Math.abs(a.currentTime - media.currentTime) > 0.25) a.currentTime = media.currentTime;
+    if (media.paused) { if (!a.paused) a.pause(); }
+    else if (a.paused) a.play().catch(() => { });
+  };
+  const evs = { play: () => sync(true), pause: () => sync(), seeked: () => sync(true), ratechange: () => sync(), volumechange: () => sync(), timeupdate: () => sync() };
+  for (const [k, f] of Object.entries(evs)) media.addEventListener(k, f);
+  // El video se quitó o cambió de fuente: el audio aparte se descarta
+  const stop = () => {
+    for (const [k, f] of Object.entries(evs)) media.removeEventListener(k, f);
+    media.removeEventListener('emptied', stop);
+    a.pause(); a.removeAttribute('src'); a.load();
+    el.sideAudio = null;
+  };
+  media.addEventListener('emptied', stop);
+  a.addEventListener('error', () => { stop(); if (onFail) onFail(); }, { once: true });
+  a.addEventListener('loadedmetadata', () => sync(true), { once: true });
+}
+
 // Mejor variante H.264 distinta de la actual (las H.264 de TikTok siempre traen audio)
 function h264Of(it, except) {
   return (it.bitrates || []).filter((b) => !/265|hvc|bytevc/i.test(b.codec || '') && b.url !== except)
@@ -442,13 +478,23 @@ function buildSlide(it) {
       if (media.paused || media.webkitAudioDecodedByteCount > a0 || media.currentTime - t0 < 0.5) return;
       const alt = h264Of(it, media.getAttribute('src'));
       if (!alt) return;
-      log(`audio ${it.id}: la variante no trae sonido, se cambia a ${alt.codec} ${alt.h}p`);
-      const at = media.currentTime;
-      it.src = alt.url;
-      offline.buffer.delete(it.id);
-      media.addEventListener('loadedmetadata', () => { media.currentTime = at; }, { once: true });
-      media.src = alt.url;
-      media.play().catch(() => { });
+      // Se conserva la imagen HEVC y se toma solo el sonido de la variante H.264, sincronizado
+      log(`audio ${it.id}: la variante no trae sonido, se pide solo el audio de ${alt.codec} ${alt.h}p`);
+      const fullH264 = () => {
+        // Si no se pudo sacar el audio aparte, se pasa a la variante H.264 completa
+        log(`audio ${it.id}: sin audio aparte, se cambia a ${alt.codec}`);
+        const at = media.currentTime;
+        it.src = alt.url;
+        media.addEventListener('loadedmetadata', () => { media.currentTime = at; }, { once: true });
+        media.src = alt.url;
+        media.play().catch(() => { });
+      };
+      const want = media.getAttribute('src');
+      audioFixWait.set(it.id, (url) => {
+        if (media.getAttribute('src') !== want) return; // el video ya cambió o se quitó
+        if (url) attachSideAudio(el, media, url, fullH264); else fullH264();
+      });
+      send({ t: 'audiofix', id: it.id, url: alt.url });
     }, 1200);
   });
   // Depuración del audio: 3 s después de empezar se anota de dónde salió el video y si se está decodificando sonido
@@ -2433,6 +2479,7 @@ host && host.addEventListener('message', (e) => {
     case 'reportstate': onReportState(m); break;
     case 'editstate': onEditState(m); break;
     case 'openlink': closePanels(); openTikTokLink(m.url); break;
+    case 'audiofixed': onAudioFixed(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
