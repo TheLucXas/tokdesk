@@ -426,5 +426,6 @@
   "Enviado a {0}": "Odesláno uživateli {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows nedovolí aplikaci nastavit se samo jako výchozí: v okně, které se otevřelo, vyber Tokdesk pro HTTP a HTTPS.",
   "Escribe un mensaje…": "Napiš zprávu…",
-  "No se pudo enviar a {0}": "Nepodařilo se odeslat uživateli {0}"
+  "No se pudo enviar a {0}": "Nepodařilo se odeslat uživateli {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Hotovo. Pokud jsi pro HTTPS vybral Tokdesk, znovu vyber svůj prohlížeč ve výchozích aplikacích systému Windows."
 }

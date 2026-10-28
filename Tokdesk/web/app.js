@@ -1333,6 +1333,7 @@ function openShare(it) {
   if (state.me && (state.chats == null || !state.chats.length)) loadInbox();
   openPanel('share');
 }
+$('#friendSearch').innerHTML = ICON.search;
 $('#friendSearch').addEventListener('click', () => {
   const f = $('#friendFilter');
   f.classList.toggle('show');
@@ -2782,6 +2783,15 @@ document.addEventListener('pointerdown', (e) => {
   if (opts.classList.contains('open') && !opts.contains(e.target)) {
     e.preventDefault(); e.stopPropagation();
     closePanel('opts');
+    return;
+  }
+  // Lo mismo para las hojas que no ocupan toda la pantalla (como en la app: tocar el video las cierra)
+  if (e.target.closest('#notice, #toast, #top, #viewer, .winbtns')) return;
+  const chat = $('#chat');
+  if (chat.classList.contains('open') && !chat.contains(e.target)) { e.preventDefault(); e.stopPropagation(); closeChat(); return; }
+  for (const id of ['share', 'sheet']) {
+    const p = $('#' + id);
+    if (p.classList.contains('open') && p === topPanel() && !p.contains(e.target)) { e.preventDefault(); e.stopPropagation(); closePanel(id); return; }
   }
 }, true);
 

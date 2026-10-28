@@ -426,5 +426,6 @@
   "Enviado a {0}": "Envoyé à {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows n\u0027autorise pas une application à se définir seule par défaut : dans la fenêtre qui s\u0027est ouverte, choisis Tokdesk pour HTTP et HTTPS.",
   "Escribe un mensaje…": "Écris un message…",
-  "No se pudo enviar a {0}": "Impossible d\u0027envoyer à {0}"
+  "No se pudo enviar a {0}": "Impossible d\u0027envoyer à {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Terminé. Si tu avais choisi Tokdesk pour HTTPS, choisis à nouveau ton navigateur dans les applications par défaut de Windows."
 }

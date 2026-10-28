@@ -426,5 +426,6 @@
   "Enviado a {0}": "Elküldve neki: {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "A Windows nem engedi, hogy egy alkalmazás magától alapértelmezetté tegye magát: a megnyílt ablakban válaszd a Tokdesket a HTTP-hez és a HTTPS-hez.",
   "Escribe un mensaje…": "Írj üzenetet…",
-  "No se pudo enviar a {0}": "Nem sikerült elküldeni neki: {0}"
+  "No se pudo enviar a {0}": "Nem sikerült elküldeni neki: {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Kész. Ha a HTTPS-hez a Tokdesket választottad, válaszd ki újra a böngésződet a Windows alapértelmezett alkalmazásai között."
 }

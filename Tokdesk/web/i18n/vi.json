@@ -426,5 +426,6 @@
   "Enviado a {0}": "Đã gửi tới {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows không cho phép ứng dụng tự đặt làm mặc định: trong cửa sổ vừa mở, hãy chọn Tokdesk cho HTTP và HTTPS.",
   "Escribe un mensaje…": "Viết tin nhắn…",
-  "No se pudo enviar a {0}": "Không thể gửi tới {0}"
+  "No se pudo enviar a {0}": "Không thể gửi tới {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Xong. Nếu bạn đã chọn Tokdesk cho HTTPS, hãy chọn lại trình duyệt của bạn trong ứng dụng mặc định của Windows."
 }

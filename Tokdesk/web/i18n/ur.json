@@ -426,5 +426,6 @@
   "Enviado a {0}": "{0} کو بھیجا گیا",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows کسی ایپ کو خود بخود ڈیفالٹ نہیں بننے دیتا: جو ونڈو کھلی ہے اس میں HTTP اور HTTPS کے لیے Tokdesk منتخب کریں۔",
   "Escribe un mensaje…": "پیغام لکھیں…",
-  "No se pudo enviar a {0}": "{0} کو بھیجنے میں ناکام"
+  "No se pudo enviar a {0}": "{0} کو بھیجنے میں ناکام",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "ہو گیا۔ اگر آپ نے HTTPS کے لیے Tokdesk منتخب کیا تھا، تو Windows کی ڈیفالٹ ایپس میں اپنا براؤزر دوبارہ منتخب کریں۔"
 }

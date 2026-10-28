@@ -426,5 +426,6 @@
   "Enviado a {0}": "Naipadala kay {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Hindi pinapayagan ng Windows na kusang maging default ang isang app: sa bintanang bumukas, piliin ang Tokdesk para sa HTTP at HTTPS.",
   "Escribe un mensaje…": "Magsulat ng mensahe…",
-  "No se pudo enviar a {0}": "Hindi naipadala kay {0}"
+  "No se pudo enviar a {0}": "Hindi naipadala kay {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Tapos na. Kung napili mo ang Tokdesk para sa HTTPS, piliin ulit ang iyong browser sa mga default na app ng Windows."
 }

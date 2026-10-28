@@ -426,5 +426,6 @@
   "Enviado a {0}": "Terkirim ke {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tidak membiarkan aplikasi menjadikan dirinya default sendiri: di jendela yang terbuka, pilih Tokdesk untuk HTTP dan HTTPS.",
   "Escribe un mensaje…": "Tulis pesan…",
-  "No se pudo enviar a {0}": "Tidak dapat mengirim ke {0}"
+  "No se pudo enviar a {0}": "Tidak dapat mengirim ke {0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Selesai. Jika Anda telah memilih Tokdesk untuk HTTPS, pilih ulang browser Anda di aplikasi default Windows."
 }

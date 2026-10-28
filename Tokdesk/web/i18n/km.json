@@ -426,5 +426,6 @@
   "Enviado a {0}": "បានផ្ញើទៅ {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows មិនអនុញ្ញាតឱ្យកម្មវិធីកំណត់ខ្លួនឯងជាលំនាំដើមដោយស្វ័យប្រវត្តិទេ៖ នៅក្នុងវិនដូដែលបានបើក សូមជ្រើសរើស Tokdesk សម្រាប់ HTTP និង HTTPS។",
   "Escribe un mensaje…": "សរសេរសារ…",
-  "No se pudo enviar a {0}": "មិនអាចផ្ញើទៅ {0} បានទេ"
+  "No se pudo enviar a {0}": "មិនអាចផ្ញើទៅ {0} បានទេ",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "រួចរាល់។ បើអ្នកបានជ្រើស Tokdesk សម្រាប់ HTTPS សូមជ្រើសកម្មវិធីរុករករបស់អ្នកម្ដងទៀតនៅក្នុងកម្មវិធីលំនាំដើមរបស់ Windows។"
 }

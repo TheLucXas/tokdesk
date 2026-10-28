@@ -426,5 +426,6 @@
   "Enviado a {0}": "נשלח אל {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows לא מאפשרת לאפליקציה להגדיר את עצמה כברירת מחדל באופן אוטומטי: בחלון שנפתח, בחר ב-Tokdesk עבור HTTP ו-HTTPS.",
   "Escribe un mensaje…": "כתוב הודעה…",
-  "No se pudo enviar a {0}": "לא ניתן לשלוח ל-{0}"
+  "No se pudo enviar a {0}": "לא ניתן לשלוח ל-{0}",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "בוצע. אם בחרת ב-Tokdesk עבור HTTPS, בחר שוב את הדפדפן שלך באפליקציות ברירת המחדל של Windows."
 }

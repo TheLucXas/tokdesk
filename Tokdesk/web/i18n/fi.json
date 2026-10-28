@@ -426,5 +426,6 @@
   "Enviado a {0}": "Lähetetty käyttäjälle {0}",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ei anna sovelluksen asettaa itseään oletukseksi itsestään: valitse avautuneessa ikkunassa Tokdesk HTTP- ja HTTPS-protokollille.",
   "Escribe un mensaje…": "Kirjoita viesti…",
-  "No se pudo enviar a {0}": "Lähettäminen henkilölle {0} epäonnistui"
+  "No se pudo enviar a {0}": "Lähettäminen henkilölle {0} epäonnistui",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "Valmis. Jos olit valinnut Tokdeskin HTTPS:lle, valitse selaimesi uudelleen Windowsin oletussovelluksissa."
 }

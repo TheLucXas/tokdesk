@@ -132,7 +132,8 @@ static class Links
                 using (var reg = Registry.CurrentUser.CreateSubKey(@"Software\RegisteredApplications")) reg.SetValue("Tokdesk", @"Software\Tokdesk\Capabilities");
                 // Página de valores predeterminados de Tokdesk (la que Windows muestra para una app concreta);
                 // si no se puede, la lista general de apps predeterminadas
-                if (!OpenAppDefaults("Tokdesk")) Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
+                // (En Windows 10 la API de la página por app solo muestra un cartel: se va directo a la lista)
+                Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
             }
             else
             {
@@ -140,7 +141,6 @@ static class Links
                 // sigue reenviando los enlaces al navegador hasta que el usuario elija otro en Configuración
                 using (var reg = Registry.CurrentUser.OpenSubKey(@"Software\RegisteredApplications", true)) reg?.DeleteValue("Tokdesk", false);
                 Registry.CurrentUser.DeleteSubKeyTree(@"Software\Tokdesk\Capabilities", false);
-                Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
             }
         }
         catch (Exception ex) { Log.Write("Gestor de enlaces: " + ex.Message); }

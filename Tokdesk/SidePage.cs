@@ -715,16 +715,45 @@ sealed class SidePage
             })()
             """, 8000);
         if (found == null) return false;
+        const string editorText = """
+            (() => {
+              const ed = document.querySelector('[data-e2e="dm-new-input-editor"] [contenteditable="true"]')
+                || document.querySelector('[data-e2e="dm-new-input-editor"][contenteditable="true"]')
+                || document.querySelector('[data-e2e="message-input-area"] [contenteditable="true"]');
+              return ed ? (ed.innerText || '').trim() : '';
+            })()
+            """;
+        // Si quedó texto de un intento anterior, se borra (si no, se juntaba con el mensaje nuevo)
+        if ((await Eval(editorText) ?? "").Length > 0)
+        {
+            await Key("a", "KeyA", 65, 2 /* Ctrl */);
+            await Key("Backspace", "Backspace", 8, 0);
+            await Task.Delay(150);
+        }
         await _wv.CallDevToolsProtocolMethodAsync("Input.insertText", JsonSerializer.Serialize(new { text }));
         await Task.Delay(300);
+        // Se manda con Enter y se confirma que la caja quedó vacía (= se envió); si no, un Enter más
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            await Key("Enter", "Enter", 13, 0, "\r");
+            for (var t = 0; t < 3000; t += 300)
+            {
+                await Task.Delay(300);
+                if ((await Eval(editorText) ?? "").Length == 0) { await Task.Delay(400); return true; }
+            }
+        }
+        Log.Write("Mensaje: el texto quedó en la caja sin enviarse");
+        return false;
+    }
+
+    async Task Key(string key, string code, int vk, int modifiers, string text = null)
+    {
         await _wv.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent",
-            "{\"type\":\"rawKeyDown\",\"key\":\"Enter\",\"code\":\"Enter\",\"windowsVirtualKeyCode\":13}");
+            JsonSerializer.Serialize(new { type = "rawKeyDown", key, code, windowsVirtualKeyCode = vk, modifiers }));
+        if (text != null)
+            await _wv.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent", JsonSerializer.Serialize(new { type = "char", key, text, modifiers }));
         await _wv.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent",
-            "{\"type\":\"char\",\"key\":\"Enter\",\"text\":\"\\r\"}");
-        await _wv.CallDevToolsProtocolMethodAsync("Input.dispatchKeyEvent",
-            "{\"type\":\"keyUp\",\"key\":\"Enter\",\"code\":\"Enter\",\"windowsVirtualKeyCode\":13}");
-        await Task.Delay(900);
-        return true;
+            JsonSerializer.Serialize(new { type = "keyUp", key, code, windowsVirtualKeyCode = vk, modifiers }));
     }
 
 

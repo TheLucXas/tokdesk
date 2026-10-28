@@ -830,3 +830,9 @@ body.light #friends .chip.friend .pick { border-color: #fff; }
 /* Vista previa de la barra al pasar el mouse */
 .slide.hovering .progress .scrub { display: flex; }
 .slide.hovering .progress .fill::after { transform: translateY(-50%) scale(1); }
+
+/* «Enviar a»: medidas como en la app */
+#shareEmojis button { font-size: 28px; }
+#shareMsg { border-bottom-color: rgba(255,255,255,.12); padding: 12px 2px; }
+.share-head .sbtn svg { width: 20px; height: 20px; }
+#friends .chip.friend .lbl { font-size: 12px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

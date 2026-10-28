@@ -426,5 +426,6 @@
   "Enviado a {0}": "{0} に送信しました",
   "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows では、アプリが自動的に既定のアプリになることはできません。開いたウィンドウで、HTTP と HTTPS に Tokdesk を選んでください。",
   "Escribe un mensaje…": "メッセージを入力…",
-  "No se pudo enviar a {0}": "{0} への送信に失敗しました"
+  "No se pudo enviar a {0}": "{0} への送信に失敗しました",
+  "Listo. Si habías elegido Tokdesk para HTTPS, vuelve a elegir tu navegador en las apps predeterminadas de Windows.": "完了しました。HTTPS に Tokdesk を選んでいた場合は、Windows の既定のアプリで使用するブラウザーを選び直してください。"
 }
