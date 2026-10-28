@@ -421,5 +421,9 @@
   "Tu versión": "A te verziód",
   "Qué cambió en cada versión": "Mi változott az egyes verziókban",
   "No se pudieron cargar las novedades.": "Az újdonságokat nem sikerült betölteni.",
-  "Novedades": "Újdonságok"
+  "Novedades": "Újdonságok",
+  "{0} personas": "{0} személy",
+  "Enviado a {0}": "Elküldve neki: {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "A Windows nem engedi, hogy egy alkalmazás magától alapértelmezetté tegye magát: a megnyílt ablakban válaszd a Tokdesket a HTTP-hez és a HTTPS-hez.",
+  "Escribe un mensaje…": "Írj üzenetet…"
 }

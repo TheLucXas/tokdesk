@@ -421,5 +421,9 @@
   "Tu versión": "Ваша версія",
   "Qué cambió en cada versión": "Що змінилося в кожній версії",
   "No se pudieron cargar las novedades.": "Не вдалося завантажити новини.",
-  "Novedades": "Новинки"
+  "Novedades": "Новинки",
+  "{0} personas": "{0} осіб",
+  "Enviado a {0}": "Надіслано: {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows не дозволяє застосунку самостійно призначити себе типовим: у вікні, що відкрилося, виберіть Tokdesk для HTTP і HTTPS.",
+  "Escribe un mensaje…": "Напишіть повідомлення…"
 }

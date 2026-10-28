@@ -108,7 +108,9 @@ static class Links
                     url.SetValue("https", ProgId);
                 }
                 using (var reg = Registry.CurrentUser.CreateSubKey(@"Software\RegisteredApplications")) reg.SetValue("Tokdesk", @"Software\Tokdesk\Capabilities");
-                Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
+                // Página de valores predeterminados de Tokdesk (ahí se marcan HTTP y HTTPS); si no abre, la general
+                try { Process.Start(new ProcessStartInfo("control.exe", @"/name Microsoft.DefaultPrograms /page pageDefaultProgram\pageAdvancedSettings?pszAppName=Tokdesk") { UseShellExecute = true }); }
+                catch { Process.Start(new ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true }); }
             }
             else
             {

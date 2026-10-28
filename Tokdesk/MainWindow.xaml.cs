@@ -302,6 +302,14 @@ public partial class MainWindow : Window
         };
         ui.WebMessageReceived += OnUiMessage;
         Ui.ZoomFactor = _settings.Zoom;
+        // Respaldo de las preferencias de la interfaz: se entregan antes de que cargue la página
+        try
+        {
+            var prefs = File.Exists(PrefsFile) ? File.ReadAllText(PrefsFile) : "{}";
+            using (JsonDocument.Parse(prefs)) { }
+            await ui.AddScriptToExecuteOnDocumentCreatedAsync($"window.__hostPrefs = {prefs};");
+        }
+        catch (Exception ex) { Log.Write("Preferencias: " + ex.Message); }
         ui.Navigate($"https://{UiHost}/index.html");
 
         if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") StartTestHook();
@@ -444,6 +452,9 @@ public partial class MainWindow : Window
                         PostToUi(new { t = "hevc", state = err == null ? "done" : "error", msg = err });
                         break;
                     }
+                case "prefs":
+                    try { File.WriteAllText(PrefsFile, m.GetProperty("v").GetRawText()); } catch (Exception ex) { Log.Write("Preferencias: " + ex.Message); }
+                    break;
                 case "notifystrings":
                     _notifyStrings = m.GetProperty("s").EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetString());
                     _notifyLang = S("lang");
@@ -568,6 +579,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { Log.Write("Audio aparte (servir): " + ex.Message); return _env.CreateWebResourceResponse(null, 500, "Error", ""); }
     }
+
+    static readonly string PrefsFile = Path.Combine(AppInfo.DataDir, "prefs.json");
 
     bool _uiReady;
 

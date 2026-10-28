@@ -421,5 +421,9 @@
   "Tu versión": "Versiunea ta",
   "Qué cambió en cada versión": "Ce s-a schimbat în fiecare versiune",
   "No se pudieron cargar las novedades.": "Nu s-au putut încărca noutățile.",
-  "Novedades": "Noutăți"
+  "Novedades": "Noutăți",
+  "{0} personas": "{0} persoane",
+  "Enviado a {0}": "Trimis către {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows nu permite unei aplicații să se seteze singură ca implicită: în fereastra deschisă, alege Tokdesk pentru HTTP și HTTPS.",
+  "Escribe un mensaje…": "Scrie un mesaj…"
 }

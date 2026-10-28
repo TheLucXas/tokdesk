@@ -421,5 +421,9 @@
   "Tu versión": "Imong bersyon",
   "Qué cambió en cada versión": "Unsa ang nausab sa matag bersyon",
   "No se pudieron cargar las novedades.": "Wala makarga ang mga bag-ong butang.",
-  "Novedades": "Bag-ong mga butang"
+  "Novedades": "Bag-ong mga butang",
+  "{0} personas": "{0} ka tawo",
+  "Enviado a {0}": "Gipadala kay {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Dili tugotan sa Windows ang app nga mag-default sa kaugalingon: sa bintana nga nabuksan, pilia ang Tokdesk para sa HTTP ug HTTPS.",
+  "Escribe un mensaje…": "Isulat ang mensahe…"
 }

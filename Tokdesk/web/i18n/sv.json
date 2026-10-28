@@ -421,5 +421,9 @@
   "Tu versión": "Din version",
   "Qué cambió en cada versión": "Vad som ändrats i varje version",
   "No se pudieron cargar las novedades.": "Det gick inte att läsa in nyheterna.",
-  "Novedades": "Nyheter"
+  "Novedades": "Nyheter",
+  "{0} personas": "{0} personer",
+  "Enviado a {0}": "Skickat till {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tillåter inte att en app gör sig själv till standard: välj Tokdesk för HTTP och HTTPS i fönstret som öppnades.",
+  "Escribe un mensaje…": "Skriv ett meddelande…"
 }

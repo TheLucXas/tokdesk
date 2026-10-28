@@ -421,5 +421,9 @@
   "Tu versión": "Versi sampeyan",
   "Qué cambió en cada versión": "Apa sing owah ing saben versi",
   "No se pudieron cargar las novedades.": "Ora bisa mbukak kabar anyar.",
-  "Novedades": "Kabar anyar"
+  "Novedades": "Kabar anyar",
+  "{0} personas": "{0} wong",
+  "Enviado a {0}": "Dikirim menyang {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ora ngidini app dadi standar dhewe: ing jendela sing mbukak, pilih Tokdesk kanggo HTTP lan HTTPS.",
+  "Escribe un mensaje…": "Tulis pesen…"
 }

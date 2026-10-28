@@ -421,5 +421,9 @@
   "Tu versión": "Η έκδοσή σου",
   "Qué cambió en cada versión": "Τι άλλαξε σε κάθε έκδοση",
   "No se pudieron cargar las novedades.": "Δεν ήταν δυνατή η φόρτωση των νέων.",
-  "Novedades": "Νέα"
+  "Novedades": "Νέα",
+  "{0} personas": "{0} άτομα",
+  "Enviado a {0}": "Εστάλη στον/στην {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Τα Windows δεν επιτρέπουν σε μια εφαρμογή να οριστεί μόνη της ως προεπιλογή: στο παράθυρο που άνοιξε, διάλεξε Tokdesk για HTTP και HTTPS.",
+  "Escribe un mensaje…": "Γράψε ένα μήνυμα…"
 }

@@ -421,5 +421,9 @@
   "Tu versión": "Tvoje verze",
   "Qué cambió en cada versión": "Co se změnilo v jednotlivých verzích",
   "No se pudieron cargar las novedades.": "Novinky se nepodařilo načíst.",
-  "Novedades": "Novinky"
+  "Novedades": "Novinky",
+  "{0} personas": "{0} lidí",
+  "Enviado a {0}": "Odesláno uživateli {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows nedovolí aplikaci nastavit se samo jako výchozí: v okně, které se otevřelo, vyber Tokdesk pro HTTP a HTTPS.",
+  "Escribe un mensaje…": "Napiš zprávu…"
 }

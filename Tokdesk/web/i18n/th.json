@@ -421,5 +421,9 @@
   "Tu versión": "เวอร์ชันของคุณ",
   "Qué cambió en cada versión": "สิ่งที่เปลี่ยนในแต่ละเวอร์ชัน",
   "No se pudieron cargar las novedades.": "ไม่สามารถโหลดสิ่งใหม่ได้",
-  "Novedades": "มีอะไรใหม่"
+  "Novedades": "มีอะไรใหม่",
+  "{0} personas": "{0} คน",
+  "Enviado a {0}": "ส่งถึง {0} แล้ว",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ไม่อนุญาตให้แอปตั้งค่าตัวเองเป็นค่าเริ่มต้นเอง: ในหน้าต่างที่เปิดขึ้น ให้เลือก Tokdesk สำหรับ HTTP และ HTTPS",
+  "Escribe un mensaje…": "พิมพ์ข้อความ…"
 }

@@ -24,9 +24,19 @@ const KEEP_BEHIND = 1, KEEP_AHEAD = 3, MORE_WHEN_LEFT = 5;
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 // Preferencias locales (si el almacenamiento falla, se usan los valores por defecto)
+// Preferencias: en el almacenamiento de la página y, como respaldo, en un archivo de la app (prefs.json),
+// que el programa entrega antes de cargar la página. Así no se pierden si se borra o no se guardó lo último.
+const hostPrefs = window.__hostPrefs || {};
 const pref = {
-  get(k, d) { try { const v = localStorage.getItem('tp.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem('tp.' + k, JSON.stringify(v)); } catch { } },
+  get(k, d) {
+    try { const v = localStorage.getItem('tp.' + k); if (v != null) return JSON.parse(v); } catch { }
+    return k in hostPrefs ? hostPrefs[k] : d;
+  },
+  set(k, v) {
+    try { localStorage.setItem('tp.' + k, JSON.stringify(v)); } catch { }
+    // Historial y listas grandes quedan solo en la página
+    if (k !== 'history' && k !== 'seen') { hostPrefs[k] = v; clearTimeout(pref.t); pref.t = setTimeout(() => send({ t: 'prefs', v: hostPrefs }), 800); }
+  },
 };
 
 // Preferencias de la interfaz (se editan desde Configuración, en settings.js)
@@ -604,7 +614,8 @@ function buildSlide(it) {
       const sec = Math.round(pv.currentTime);
       createImageBitmap(pv, { resizeWidth: cv.width, resizeHeight: cv.height }).then((bmp) => {
         thumbs.set(sec, bmp);
-        if (drag && drag.sec === sec) draw(bmp);
+        const look = drag || hover;
+        if (look && look.sec === sec) draw(bmp);
       }).catch(() => { });
       if (pvWant >= 0 && pvWant !== sec) { const w = pvWant; pvWant = -1; seekPv(w); }
     });
@@ -612,7 +623,31 @@ function buildSlide(it) {
   const seekPv = (sec) => { if (!pv) return; if (pvBusy) { pvWant = sec; return; } pvBusy = true; pv.currentTime = sec; };
   const dropPv = () => { if (pv) { pv.removeAttribute('src'); pv.load(); pv = null; pvBusy = false; } };
   prog.addEventListener('pointerenter', () => { clearTimeout(pvTimer); preview(); });
-  prog.addEventListener('pointerleave', () => { if (!drag) pvTimer = setTimeout(dropPv, 8000); });
+  prog.addEventListener('pointerleave', () => { hover = null; el.classList.remove('hovering'); if (!drag) pvTimer = setTimeout(dropPv, 8000); });
+  // Vista previa también al pasar el mouse (sin hacer clic): tiempo y cuadro, sin mover el video
+  let hover = null;
+  prog.addEventListener('pointermove', (e) => {
+    if (drag || !media.duration || e.pointerType === 'touch') return;
+    if (!hover) {
+      hover = { sec: -1 };
+      el.classList.add('hovering');
+      if (media.tagName === 'VIDEO' && media.videoWidth) { cv.height = Math.round(cv.width * media.videoHeight / media.videoWidth); draw(media); preview(); }
+    }
+    look(e, hover);
+  });
+  const look = (e, st) => {
+    const r = prog.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const d = media.duration || 0;
+    tm.innerHTML = `<b>${clock(p * d)}</b> / ${clock(d)}`;
+    scrub.style.left = Math.min(r.width - 56, Math.max(56, p * r.width)) + 'px';
+    const sec = Math.min(Math.floor(d), Math.round(p * d));
+    if (sec === st.sec) return p;
+    st.sec = sec;
+    const bmp = thumbs.get(sec);
+    if (bmp) draw(bmp); else seekPv(sec);
+    return p;
+  };
   const move = (e) => {
     const r = prog.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
@@ -1293,6 +1328,7 @@ function openShare(it) {
   );
   $('#friendFilter').value = '';
   $('#friendFilter').classList.remove('show');
+  shareSel.clear(); updateShareCompose();
   renderFriends();
   if (state.me && (state.chats == null || !state.chats.length)) loadInbox();
   openPanel('share');
@@ -1322,22 +1358,61 @@ function renderFriends() {
   }
   box.innerHTML = '';
   const q = $('#friendFilter').value.trim().toLowerCase();
-  for (const c of state.chats.filter((x) => !q || x.name.toLowerCase().includes(q))) {
+  // Primero a quienes les enviaste algo hace poco (más reciente primero), después el resto en orden de la bandeja
+  const recent = pref.get('shareRecent', []);
+  const rank = (c) => { const i = recent.indexOf(c.id); return i < 0 ? 1e6 : i; };
+  const list = state.chats.filter((x) => !q || x.name.toLowerCase().includes(q))
+    .map((c, i) => [c, i]).sort((a, b) => (rank(a[0]) - rank(b[0])) || (a[1] - b[1])).map(([c]) => c);
+  for (const c of list) {
     const b = document.createElement('button');
-    b.className = 'chip';
-    b.innerHTML = `<img alt="" src="${esc(avatarOf(c))}"><span class="lbl">${esc(c.name)}</span>`;
+    b.className = 'chip friend' + (shareSel.has(c.id) ? ' picked' : '');
+    b.innerHTML = `<span class="fav"><img alt="" src="${esc(avatarOf(c))}"><i class="pick">${ICON.check}</i></span><span class="lbl">${esc(c.name)}</span>`;
+    // Como en la app: tocar marca (o desmarca) y abajo aparece el mensaje con «Enviar»
     b.onclick = () => {
-      if (b.classList.contains('sent') || !state.shareFor) return;
-      $('.lbl', b).textContent = t('Enviando…');
-      sendDm(c.id, linkOf(state.shareFor), (ok) => {
-        if (ok) { b.classList.add('sent'); $('.lbl', b).textContent = t('Enviado'); }
-        else { $('.lbl', b).textContent = c.name; toast(t('No se pudo enviar')); }
-      });
+      if (shareSel.has(c.id)) shareSel.delete(c.id); else shareSel.set(c.id, c);
+      b.classList.toggle('picked', shareSel.has(c.id));
+      updateShareCompose();
     };
     box.appendChild(b);
   }
 }
 
+// ---------- «Enviar a»: amigos marcados, mensaje opcional y un solo «Enviar» ----------
+const shareSel = new Map();
+function updateShareCompose() {
+  const on = shareSel.size > 0;
+  $('#share').classList.toggle('composing', on);
+  if (!on) $('#shareMsg').value = '';
+}
+$('#shareEmojis').innerHTML = ['🥰', '👍', '😂', '😎', '🥺', '🙏', '😁'].map((e) => `<button>${e}</button>`).join('');
+$('#shareEmojis').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const m = $('#shareMsg'); m.value += b.textContent; m.focus();
+});
+$('#shareSend').addEventListener('click', () => {
+  const it = state.shareFor;
+  if (!it || !shareSel.size) return;
+  const to = [...shareSel.values()];
+  const msg = $('#shareMsg').value.trim();
+  shareSel.clear(); updateShareCompose();
+  closePanel('share');
+  // El último que recibió algo pasa primero en la fila, como en la app (se recuerda entre sesiones)
+  const ids = to.map((c) => c.id);
+  pref.set('shareRecent', [...ids, ...pref.get('shareRecent', []).filter((x) => !ids.includes(x))].slice(0, 30));
+  let ok = 0, done = 0;
+  for (const c of to) {
+    const finish = (good) => {
+      done++; if (good) ok++;
+      if (done < to.length) return;
+      if (!ok) { toast(t('No se pudo enviar')); return; }
+      const who = to.length === 1 ? to[0].name : t('{0} personas', ok);
+      notice('✓ ' + t('Enviado a {0}', who), to.length === 1 ? '›' : null, to.length === 1 ? () => openChat(to[0]) : null);
+    };
+    sendDm(c.id, linkOf(it), (good) => {
+      if (good && msg) sendDm(c.id, msg, finish); else finish(good);
+    });
+  }
+});
 // Envío de mensajes: uno a la vez, porque los hace la misma página oficial oculta
 const dmQueue = [];
 function sendDm(id, text, cb, replyTo) {
@@ -2028,10 +2103,25 @@ function updateSeenPill() {
   pill.classList.toggle('show', !!dir);
   if (dir) pill.innerHTML = `<span>${esc(t('Visto ahora'))}</span><svg viewBox="0 0 24 24" class="${dir}"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 7l5 5 5-5M7 13l5 5 5-5"/></svg>`;
 }
+// Desplazamiento animado como en la app: suave en tramos cortos, rápido si el video está lejos
+function scrollToTile(tile) {
+  const body = $('#pfBody');
+  const target = Math.max(0, body.scrollTop + tile.getBoundingClientRect().top - body.getBoundingClientRect().top - (body.clientHeight - tile.offsetHeight) / 2);
+  const from = body.scrollTop, dist = target - from;
+  const dur = Math.min(700, 280 + Math.abs(dist) / 8);
+  const t0 = performance.now();
+  const ease = (x) => 1 - Math.pow(1 - x, 3);
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur);
+    body.scrollTop = from + dist * ease(k);
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 async function goSeenNow() {
   for (let n = 0; n < 10; n++) {
     const { f, tile } = seenNowTile();
-    if (tile) { tile.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    if (tile) { scrollToTile(tile); return; }
     if (!f || !f.hasMore) return;
     await f.load(f);
     await new Promise((r) => setTimeout(r, 300));
@@ -2982,7 +3072,13 @@ async function openFollowList(scene) {
   async function page() {
     if (st.busy || !st.more) return;
     st.busy = true;
-    const r = await api('GET', '/api/user/list/', { secUid: it.secUid, count: 30, maxCursor: 0, minCursor: st.cursor, scene });
+    // TikTok a veces responde vacío a esta lista (la limita si se pide seguido): se reintenta con espera creciente
+    let r;
+    for (let i = 0; i < 3; i++) {
+      r = await api('GET', '/api/user/list/', { secUid: it.secUid, count: 30, maxCursor: 0, minCursor: st.cursor, scene });
+      if (r.data && (r.data.userList || []).length) break;
+      if (i < 2) await new Promise((res) => setTimeout(res, 1500 * (i + 1)));
+    }
     st.busy = false;
     const d = r.data || {};
     const users = d.userList || [];
@@ -3016,3 +3112,14 @@ $('#pfFollowing').parentElement.classList.add('pf-stat-link');
 $('#pfFollowers').parentElement.classList.add('pf-stat-link');
 $('#pfFollowing').parentElement.addEventListener('click', () => openFollowList(21));
 $('#pfFollowers').parentElement.addEventListener('click', () => openFollowList(67));
+// Al abrir se copian al respaldo las preferencias que ya estaban guardadas en la página
+setTimeout(() => {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k.startsWith('tp.') || k === 'tp.history' || k === 'tp.seen') continue;
+      try { hostPrefs[k.slice(3)] = JSON.parse(localStorage.getItem(k)); } catch { }
+    }
+    send({ t: 'prefs', v: hostPrefs });
+  } catch { }
+}, 3000);

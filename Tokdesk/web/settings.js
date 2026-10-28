@@ -160,7 +160,7 @@ function renderSettings() {
         row({ type: 'link', ic: 'globe', label: t('Abrir carpeta de descargas'), fn: () => send({ t: 'showfile', file: '' }) }),
       ]],
       [t('Ventana'), [
-        row({ type: 'toggle', label: t('Abrir los enlaces de TikTok en Tokdesk'), hint: t('Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.'), value: !!N.LinkHandler, fn: (v) => send({ t: 'setsetting', k: 'LinkHandler', v }) }),
+        row({ type: 'toggle', label: t('Abrir los enlaces de TikTok en Tokdesk'), hint: t('Al activarlo, elige Tokdesk para HTTPS en las apps predeterminadas de Windows. Los demás enlaces se abren en tu navegador de siempre.'), value: !!N.LinkHandler, fn: (v) => { send({ t: 'setsetting', k: 'LinkHandler', v }); if (v) notice(t('Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.'), null, null, true); } }),
         row({ type: 'toggle', label: t('Acceso directo en el menú Inicio'), value: !!N.StartMenuShortcut, fn: (v) => send({ t: 'setsetting', k: 'StartMenuShortcut', v }) }),
         row({ type: 'toggle', label: t('Acceso directo en el escritorio'), value: !!N.DesktopShortcut, fn: (v) => send({ t: 'setsetting', k: 'DesktopShortcut', v }) }),
         row({ type: 'toggle', label: t('Iniciar con Windows'), value: !!N.StartWithWindows, fn: (v) => send({ t: 'setsetting', k: 'StartWithWindows', v }) }),

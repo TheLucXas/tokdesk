@@ -421,5 +421,9 @@
   "Tu versión": "Jouw versie",
   "Qué cambió en cada versión": "Wat er in elke versie is veranderd",
   "No se pudieron cargar las novedades.": "Kan de nieuwtjes niet laden.",
-  "Novedades": "Nieuw"
+  "Novedades": "Nieuw",
+  "{0} personas": "{0} personen",
+  "Enviado a {0}": "Verzonden naar {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows laat een app niet zelf de standaard worden: kies in het venster dat is geopend Tokdesk voor HTTP en HTTPS.",
+  "Escribe un mensaje…": "Schrijf een bericht…"
 }

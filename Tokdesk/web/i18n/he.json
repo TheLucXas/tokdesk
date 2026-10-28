@@ -421,5 +421,9 @@
   "Tu versión": "הגרסה שלך",
   "Qué cambió en cada versión": "מה השתנה בכל גרסה",
   "No se pudieron cargar las novedades.": "לא ניתן לטעון את החידושים.",
-  "Novedades": "חידושים"
+  "Novedades": "חידושים",
+  "{0} personas": "{0} אנשים",
+  "Enviado a {0}": "נשלח אל {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows לא מאפשרת לאפליקציה להגדיר את עצמה כברירת מחדל באופן אוטומטי: בחלון שנפתח, בחר ב-Tokdesk עבור HTTP ו-HTTPS.",
+  "Escribe un mensaje…": "כתוב הודעה…"
 }

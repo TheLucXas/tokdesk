@@ -421,5 +421,9 @@
   "Tu versión": "Sinun versiosi",
   "Qué cambió en cada versión": "Mitä kussakin versiossa muuttui",
   "No se pudieron cargar las novedades.": "Uutuuksia ei voitu ladata.",
-  "Novedades": "Uutuudet"
+  "Novedades": "Uutuudet",
+  "{0} personas": "{0} ihmistä",
+  "Enviado a {0}": "Lähetetty käyttäjälle {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows ei anna sovelluksen asettaa itseään oletukseksi itsestään: valitse avautuneessa ikkunassa Tokdesk HTTP- ja HTTPS-protokollille.",
+  "Escribe un mensaje…": "Kirjoita viesti…"
 }

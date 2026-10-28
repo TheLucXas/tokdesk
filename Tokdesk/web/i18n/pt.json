@@ -421,5 +421,9 @@
   "Tu versión": "Sua versão",
   "Qué cambió en cada versión": "O que mudou em cada versão",
   "No se pudieron cargar las novedades.": "Não foi possível carregar as novidades.",
-  "Novedades": "Novidades"
+  "Novedades": "Novidades",
+  "{0} personas": "{0} pessoas",
+  "Enviado a {0}": "Enviado para {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "O Windows não permite que um app se defina sozinho como padrão: na janela que abriu, escolha Tokdesk para HTTP e HTTPS.",
+  "Escribe un mensaje…": "Escreva uma mensagem…"
 }

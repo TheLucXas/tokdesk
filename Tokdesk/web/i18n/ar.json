@@ -421,5 +421,9 @@
   "Tu versión": "نسختك",
   "Qué cambió en cada versión": "ما الذي تغيّر في كل إصدار",
   "No se pudieron cargar las novedades.": "تعذّر تحميل ما الجديد.",
-  "Novedades": "ما الجديد"
+  "Novedades": "ما الجديد",
+  "{0} personas": "{0} شخص",
+  "Enviado a {0}": "تم الإرسال إلى {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "لا يسمح Windows لأي تطبيق بجعل نفسه الافتراضي تلقائيًا: في النافذة التي فُتحت، اختر Tokdesk لبروتوكولي HTTP وHTTPS.",
+  "Escribe un mensaje…": "اكتب رسالة…"
 }

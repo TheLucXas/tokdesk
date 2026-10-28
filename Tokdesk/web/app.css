@@ -811,3 +811,22 @@ body.light .pl-card { background: rgba(0,0,0,.05); } body.light .pl-ct { color: 
 .cl-rel p { margin: 4px 0; }
 .cl-rel code { background: rgba(255,255,255,.1); padding: 0 4px; border-radius: 3px; }
 body.light .cl-rel { border-color: rgba(0,0,0,.08); } body.light .cl-date { color: rgba(22,24,35,.5); }
+
+/* «Enviar a» como en la app: amigo marcado con tilde rojo y abajo mensaje + emojis + «Enviar» */
+#friends .chip.friend .fav { position: relative; display: block; }
+#friends .chip.friend .pick { position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--red, #fe2c55);
+  border: 2px solid #1e1e1e; display: grid; place-items: center; transform: scale(0); transition: transform .15s cubic-bezier(.3,1.6,.5,1); }
+#friends .chip.friend .pick svg { width: 11px; height: 11px; color: #fff; }
+#friends .chip.friend.picked .pick { transform: scale(1); }
+#share .share-compose { display: none; padding: 6px 14px 10px; }
+#share.composing .share-compose { display: block; }
+#share.composing #shareApps, #share.composing #shareActs, #share.composing .divider:not(:first-of-type) { display: none; }
+#shareMsg { width: 100%; background: none; border: 0; outline: 0; color: inherit; font: inherit; font-size: 14px; padding: 10px 2px; border-bottom: 1px solid rgba(255,255,255,.08); }
+#shareEmojis { display: flex; justify-content: space-between; padding: 12px 4px; }
+#shareEmojis button { font-size: 24px; padding: 2px 6px; }
+#shareSend { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; background: var(--red, #fe2c55); color: #fff; }
+body.light #friends .chip.friend .pick { border-color: #fff; }
+
+/* Vista previa de la barra al pasar el mouse */
+.slide.hovering .progress .scrub { display: flex; }
+.slide.hovering .progress .fill::after { transform: translateY(-50%) scale(1); }

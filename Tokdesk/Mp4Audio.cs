@@ -194,7 +194,13 @@ static class Mp4Audio
                     await Task.WhenAll(batches.Skip(1).Select(async b =>
                     {
                         await gate.WaitAsync();
-                        try { if (!await MultiRange(http, url, b, offsets, chunkSize, data, headers)) throw new InvalidOperationException("rangos múltiples incompletos"); }
+                        try
+                        {
+                            // Si una tanda llega incompleta, solo esa se vuelve a pedir de a un rango
+                            if (!await MultiRange(http, url, b, offsets, chunkSize, data, headers))
+                                foreach (var c in b.Where(c => data[c] == null || data[c].Length != chunkSize[c]))
+                                    data[c] = await Range(http, url, offsets[c], offsets[c] + chunkSize[c] - 1, headers);
+                        }
                         finally { gate.Release(); }
                     }));
                 else

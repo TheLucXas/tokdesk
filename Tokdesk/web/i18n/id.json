@@ -421,5 +421,9 @@
   "Tu versión": "Versi kamu",
   "Qué cambió en cada versión": "Yang berubah di setiap versi",
   "No se pudieron cargar las novedades.": "Tidak dapat memuat yang baru.",
-  "Novedades": "Yang baru"
+  "Novedades": "Yang baru",
+  "{0} personas": "{0} orang",
+  "Enviado a {0}": "Terkirim ke {0}",
+  "Windows no deja que una app se ponga sola como predeterminada: en la ventana que se abrió, elige Tokdesk para HTTP y HTTPS.": "Windows tidak membiarkan aplikasi menjadikan dirinya default sendiri: di jendela yang terbuka, pilih Tokdesk untuk HTTP dan HTTPS.",
+  "Escribe un mensaje…": "Tulis pesan…"
 }
