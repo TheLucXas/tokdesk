@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "सिर्फ़ ऐप खुला होने या ट्रे में होने पर",
   "te mencionó: {0}": "ने आपको मेंशन किया: {0}",
   "Revisar cada": "जाँच का अंतराल",
-  "Compartidos, republicaciones y similares": "शेयर, रीपोस्ट और ऐसी ही चीज़ें"
+  "Compartidos, republicaciones y similares": "शेयर, रीपोस्ट और ऐसी ही चीज़ें",
+  "Reiniciar": "रीस्टार्ट करें",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC एक्सटेंशन इंस्टॉल नहीं हो सका: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC एक्सटेंशन डाउनलोड हो रहा है… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "किसी दूसरी विंडो में काम करते समय, ऐप मिनिमाइज़ या सिस्टम ट्रे में होने पर भी चलता रहता है",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft पर HEVC एक्सटेंशन खोजा जा रहा है…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC एक्सटेंशन इंस्टॉल हो गया। 1080p में देखने के लिए ऐप रीस्टार्ट करें।",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p में वीडियो देखें: HEVC एक्सटेंशन मुफ़्त में इंस्टॉल करें",
+  "Instalando la extensión HEVC…": "HEVC एक्सटेंशन इंस्टॉल हो रहा है…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft का आधिकारिक, मुफ़्त पैकेज डाउनलोड करके इंस्टॉल करता है। इसके बिना TikTok आम तौर पर वीडियो 540–720p में भेजता है।"
 }

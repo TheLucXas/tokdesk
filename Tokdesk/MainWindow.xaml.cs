@@ -392,6 +392,12 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
+                case "hevcinstall":
+                    {
+                        var err = await Hevc.Install(Http, (st, p) => Dispatcher.Invoke(() => PostToUi(new { t = "hevc", state = st, p })));
+                        PostToUi(new { t = "hevc", state = err == null ? "done" : "error", msg = err });
+                        break;
+                    }
                 case "notifystrings":
                     _notifyStrings = m.GetProperty("s").EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetString());
                     _notifyLang = S("lang");
@@ -456,7 +462,7 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "dm", id = S("id"), ok });
                     break;
                 }
-                case "login": ShowPanel(_engine, "https://www.tiktok.com/login"); break;
+                case "login": ShowPanel(_engine, "https://www.tiktok.com/login"); WatchLogin(); break;
                 case "verify": ShowPanel(_engine); break;
                 case "log": Log.Write("UI: " + S("m")); break;
                 case "drag": DragWindow(); break;
@@ -490,6 +496,26 @@ public partial class MainWindow : Window
             if (which == _engine) _engine.SetVisible(true, url);
             else _side.UpdateBounds();
         }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    // Al terminar de iniciar sesión (aparece una cookie de sesión nueva) se vuelve sola a la app
+    async void WatchLogin()
+    {
+        static string Session(string cookies) =>
+            System.Text.RegularExpressions.Regex.Match(cookies ?? "", @"(?:^|;\s*)sessionid=([^;]*)").Groups[1].Value;
+        var before = Session(await _engine.CookieHeader());
+        while (_panel == _engine && LoginBar.Visibility == Visibility.Visible)
+        {
+            await Task.Delay(1500);
+            var now = Session(await _engine.CookieHeader());
+            if (now.Length > 0 && now != before && _panel == _engine)
+            {
+                Log.Write("Sesión iniciada: se vuelve a la app");
+                await Task.Delay(1500); // deja que la web termine de guardar la sesión
+                DoneButton_Click(null, null);
+                return;
+            }
+        }
     }
 
     void DoneButton_Click(object sender, RoutedEventArgs e)

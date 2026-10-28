@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Csak megnyitott alkalmazással vagy a tálcán",
   "te mencionó: {0}": "megemlített: {0}",
   "Revisar cada": "Ellenőrzés gyakorisága",
-  "Compartidos, republicaciones y similares": "Megosztások, újraposztolások és hasonlók"
+  "Compartidos, republicaciones y similares": "Megosztások, újraposztolások és hasonlók",
+  "Reiniciar": "Újraindítás",
+  "No se pudo instalar la extensión HEVC: {0}": "A HEVC-bővítményt nem sikerült telepíteni: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC-bővítmény letöltése… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Akkor is folytatódik a lejátszás, ha másik ablakot használsz, az alkalmazás minimalizálva van, vagy a tálcán fut",
+  "Buscando la extensión HEVC en Microsoft…": "HEVC-bővítmény keresése a Microsofton…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC-bővítmény telepítve. Indítsd újra az alkalmazást, hogy 1080p-ben nézhesd.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Videók nézése 1080p-ben: a HEVC-bővítmény ingyenes telepítése",
+  "Instalando la extensión HEVC…": "HEVC-bővítmény telepítése…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Letölti és telepíti a Microsoft hivatalos, ingyenes csomagját. Nélküle a TikTok általában 540–720p felbontásban küldi a videókat."
 }

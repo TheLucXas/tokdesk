@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Kapag bukas lang ang app o nasa tray",
   "te mencionó: {0}": "ay bumanggit sa iyo: {0}",
   "Revisar cada": "Mag-check kada",
-  "Compartidos, republicaciones y similares": "Mga share, repost, at iba pa"
+  "Compartidos, republicaciones y similares": "Mga share, repost, at iba pa",
+  "Reiniciar": "I-restart",
+  "No se pudo instalar la extensión HEVC: {0}": "Hindi ma-install ang HEVC extension: {0}",
+  "Descargando la extensión HEVC… {0}%": "Dina-download ang HEVC extension… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Patuloy na nagpe-play kapag gumagamit ka ng ibang window, naka-minimize ang app o nasa system tray",
+  "Buscando la extensión HEVC en Microsoft…": "Hinahanap ang HEVC extension sa Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Na-install ang HEVC extension. I-restart ang app para mapanood sa 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Manood ng mga video sa 1080p: i-install nang libre ang HEVC extension",
+  "Instalando la extensión HEVC…": "Ini-install ang HEVC extension…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Dina-download at ini-install ang opisyal at libreng package mula sa Microsoft. Kung wala ito, karaniwang nagpapadala ang TikTok ng mga video sa 540–720p."
 }

@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "শুধু অ্যাপ খোলা থাকলে বা ট্রেতে থাকলে",
   "te mencionó: {0}": "আপনাকে উল্লেখ করেছেন: {0}",
   "Revisar cada": "পরীক্ষার ব্যবধান",
-  "Compartidos, republicaciones y similares": "শেয়ার, রিপোস্ট ও এ ধরনের কিছু"
+  "Compartidos, republicaciones y similares": "শেয়ার, রিপোস্ট ও এ ধরনের কিছু",
+  "Reiniciar": "রিস্টার্ট করুন",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC এক্সটেনশন ইনস্টল করা যায়নি: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC এক্সটেনশন ডাউনলোড হচ্ছে… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "অন্য উইন্ডো ব্যবহার করার সময়, অ্যাপ মিনিমাইজ বা ট্রেতে থাকলেও চলতে থাকে",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft-এ HEVC এক্সটেনশন খোঁজা হচ্ছে…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC এক্সটেনশন ইনস্টল হয়েছে। 1080p-তে দেখতে অ্যাপ রিস্টার্ট করুন।",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p-তে ভিডিও দেখুন: HEVC এক্সটেনশন বিনামূল্যে ইনস্টল করুন",
+  "Instalando la extensión HEVC…": "HEVC এক্সটেনশন ইনস্টল হচ্ছে…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft-এর অফিসিয়াল ও বিনামূল্যের প্যাকেজ ডাউনলোড করে ইনস্টল করে। এটি ছাড়া TikTok সাধারণত ভিডিও 540–720p-তে পাঠায়।"
 }

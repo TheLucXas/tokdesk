@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Chỉ khi ứng dụng đang mở hoặc ở khay hệ thống",
   "te mencionó: {0}": "đã nhắc đến bạn: {0}",
   "Revisar cada": "Kiểm tra mỗi",
-  "Compartidos, republicaciones y similares": "Lượt chia sẻ, đăng lại và tương tự"
+  "Compartidos, republicaciones y similares": "Lượt chia sẻ, đăng lại và tương tự",
+  "Reiniciar": "Khởi động lại",
+  "No se pudo instalar la extensión HEVC: {0}": "Không thể cài đặt tiện ích HEVC: {0}",
+  "Descargando la extensión HEVC… {0}%": "Đang tải tiện ích HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Vẫn tiếp tục phát khi bạn dùng cửa sổ khác, khi ứng dụng được thu nhỏ hoặc nằm ở khay hệ thống",
+  "Buscando la extensión HEVC en Microsoft…": "Đang tìm tiện ích HEVC trên Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Đã cài đặt tiện ích HEVC. Khởi động lại ứng dụng để xem ở 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Xem video ở 1080p: cài đặt tiện ích HEVC miễn phí",
+  "Instalando la extensión HEVC…": "Đang cài đặt tiện ích HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Tải xuống và cài đặt gói chính thức, miễn phí từ Microsoft. Nếu không có, TikTok thường gửi video ở 540–720p."
 }

@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "アプリを開いているときまたはトレイにあるときのみ",
   "te mencionó: {0}": "があなたをメンションしました: {0}",
   "Revisar cada": "確認間隔",
-  "Compartidos, republicaciones y similares": "シェア、リポストなど"
+  "Compartidos, republicaciones y similares": "シェア、リポストなど",
+  "Reiniciar": "再起動",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC 拡張機能をインストールできませんでした: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC 拡張機能をダウンロード中… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "別のウィンドウを使っているときや、アプリを最小化またはトレイに入れたままでも再生が続きます",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft で HEVC 拡張機能を検索中…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC 拡張機能をインストールしました。1080p で見るにはアプリを再起動してください。",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p で動画を見る: HEVC 拡張機能を無料でインストール",
+  "Instalando la extensión HEVC…": "HEVC 拡張機能をインストール中…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft の公式で無料のパッケージをダウンロードしてインストールします。これがないと、TikTok は通常 540–720p で動画を送信します。"
 }

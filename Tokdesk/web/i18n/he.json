@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "רק כשהאפליקציה פתוחה או במגש",
   "te mencionó: {0}": "הזכיר/ה אותך: {0}",
   "Revisar cada": "בדוק כל",
-  "Compartidos, republicaciones y similares": "שיתופים, פרסומים מחדש ודומיהם"
+  "Compartidos, republicaciones y similares": "שיתופים, פרסומים מחדש ודומיהם",
+  "Reiniciar": "הפעל מחדש",
+  "No se pudo instalar la extensión HEVC: {0}": "לא ניתן היה להתקין את תוסף HEVC: {0}",
+  "Descargando la extensión HEVC… {0}%": "מוריד את תוסף HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "ההשמעה נמשכת כשאתה משתמש בחלון אחר, כשהאפליקציה ממוזערת או בשורת המשימות",
+  "Buscando la extensión HEVC en Microsoft…": "מחפש את תוסף HEVC ב-Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "תוסף HEVC הותקן. הפעל מחדש את האפליקציה כדי לצפות ב-1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "צפה בסרטונים ב-1080p: התקן את תוסף HEVC בחינם",
+  "Instalando la extensión HEVC…": "מתקין את תוסף HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "מוריד ומתקין את החבילה הרשמית והחינמית של Microsoft. בלעדיה, TikTok בדרך כלל שולח סרטונים ברזולוציית 540–720p."
 }

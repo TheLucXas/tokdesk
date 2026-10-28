@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "เฉพาะตอนเปิดแอปหรืออยู่ในถาดระบบ",
   "te mencionó: {0}": "กล่าวถึงคุณ: {0}",
   "Revisar cada": "ตรวจสอบทุก",
-  "Compartidos, republicaciones y similares": "การแชร์ การโพสต์ซ้ำ และอื่น ๆ ที่คล้ายกัน"
+  "Compartidos, republicaciones y similares": "การแชร์ การโพสต์ซ้ำ และอื่น ๆ ที่คล้ายกัน",
+  "Reiniciar": "รีสตาร์ต",
+  "No se pudo instalar la extensión HEVC: {0}": "ไม่สามารถติดตั้งส่วนขยาย HEVC ได้: {0}",
+  "Descargando la extensión HEVC… {0}%": "กำลังดาวน์โหลดส่วนขยาย HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "ยังคงเล่นต่อเมื่อคุณใช้หน้าต่างอื่น โดยแอปย่อลงหรืออยู่ในถาดระบบ",
+  "Buscando la extensión HEVC en Microsoft…": "กำลังค้นหาส่วนขยาย HEVC ใน Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "ติดตั้งส่วนขยาย HEVC แล้ว รีสตาร์ตแอปเพื่อดูในความละเอียด 1080p",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "ดูวิดีโอในความละเอียด 1080p: ติดตั้งส่วนขยาย HEVC ฟรี",
+  "Instalando la extensión HEVC…": "กำลังติดตั้งส่วนขยาย HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "ดาวน์โหลดและติดตั้งแพ็กเกจทางการที่ฟรีจาก Microsoft หากไม่มี TikTok มักส่งวิดีโอในความละเอียด 540–720p"
 }

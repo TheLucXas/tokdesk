@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "តែនៅពេលបើកកម្មវិធី ឬនៅក្នុងថាស",
   "te mencionó: {0}": "បានលើកឡើងពីអ្នក៖ {0}",
   "Revisar cada": "ពិនិត្យរាល់",
-  "Compartidos, republicaciones y similares": "ការចែករំលែក ការបង្ហោះឡើងវិញ និងអ្វីដែលស្រដៀងគ្នា"
+  "Compartidos, republicaciones y similares": "ការចែករំលែក ការបង្ហោះឡើងវិញ និងអ្វីដែលស្រដៀងគ្នា",
+  "Reiniciar": "ចាប់ផ្តើមឡើងវិញ",
+  "No se pudo instalar la extensión HEVC: {0}": "មិនអាចដំឡើងផ្នែកបន្ថែម HEVC បានទេ៖ {0}",
+  "Descargando la extensión HEVC… {0}%": "កំពុងទាញយកផ្នែកបន្ថែម HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "នៅតែចាក់ ពេលអ្នកប្រើវិនដូផ្សេង ដោយកម្មវិធីតូចចុះ ឬនៅក្នុងថាសប្រព័ន្ធ",
+  "Buscando la extensión HEVC en Microsoft…": "កំពុងស្វែងរកផ្នែកបន្ថែម HEVC នៅ Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "បានដំឡើងផ្នែកបន្ថែម HEVC។ ចាប់ផ្តើមកម្មវិធីឡើងវិញ ដើម្បីមើលក្នុង 1080p។",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "មើលវីដេអូក្នុង 1080p៖ ដំឡើងផ្នែកបន្ថែម HEVC ដោយឥតគិតថ្លៃ",
+  "Instalando la extensión HEVC…": "កំពុងដំឡើងផ្នែកបន្ថែម HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "ទាញយក និងដំឡើងកញ្ចប់ផ្លូវការ និងឥតគិតថ្លៃពី Microsoft។ បើគ្មានវាទេ TikTok ជាធម្មតាផ្ញើវីដេអូក្នុងគុណភាព 540–720p។"
 }

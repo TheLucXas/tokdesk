@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Kun når appen er åben eller i proceslinjen",
   "te mencionó: {0}": "nævnte dig: {0}",
   "Revisar cada": "Tjek hver",
-  "Compartidos, republicaciones y similares": "Delinger, reposts og lignende"
+  "Compartidos, republicaciones y similares": "Delinger, reposts og lignende",
+  "Reiniciar": "Genstart",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC-udvidelsen kunne ikke installeres: {0}",
+  "Descargando la extensión HEVC… {0}%": "Downloader HEVC-udvidelsen… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Afspilningen fortsætter, når du bruger et andet vindue, med appen minimeret eller i meddelelsesområdet",
+  "Buscando la extensión HEVC en Microsoft…": "Søger efter HEVC-udvidelsen hos Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC-udvidelsen er installeret. Genstart appen for at se i 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Se videoer i 1080p: installer HEVC-udvidelsen gratis",
+  "Instalando la extensión HEVC…": "Installerer HEVC-udvidelsen…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Downloader den officielle, gratis pakke fra Microsoft og installerer den. Uden den sender TikTok typisk videoer i 540–720p."
 }

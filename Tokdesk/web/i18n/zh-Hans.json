@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "仅在应用打开或位于托盘时",
   "te mencionó: {0}": "提到了你：{0}",
   "Revisar cada": "检查间隔",
-  "Compartidos, republicaciones y similares": "分享、转发及类似内容"
+  "Compartidos, republicaciones y similares": "分享、转发及类似内容",
+  "Reiniciar": "重启",
+  "No se pudo instalar la extensión HEVC: {0}": "无法安装 HEVC 扩展：{0}",
+  "Descargando la extensión HEVC… {0}%": "正在下载 HEVC 扩展… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "使用其他窗口、应用最小化或在托盘中时，仍会继续播放",
+  "Buscando la extensión HEVC en Microsoft…": "正在 Microsoft 上查找 HEVC 扩展…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC 扩展已安装。重启应用即可以 1080p 观看。",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "以 1080p 观看视频：免费安装 HEVC 扩展",
+  "Instalando la extensión HEVC…": "正在安装 HEVC 扩展…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "下载并安装 Microsoft 官方提供的免费扩展包。没有它，TikTok 通常会以 540–720p 发送视频。"
 }

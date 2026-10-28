@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "အက်ပ်ဖွင့်ထားချိန် သို့မဟုတ် tray တွင်ရှိချိန်သာ",
   "te mencionó: {0}": "သင့်ကို ဖော်ပြခဲ့သည်: {0}",
   "Revisar cada": "စစ်ဆေးချိန်ကာလ",
-  "Compartidos, republicaciones y similares": "မျှဝေမှုများ၊ ပြန်လည်တင်မှုများနှင့် အလားတူများ"
+  "Compartidos, republicaciones y similares": "မျှဝေမှုများ၊ ပြန်လည်တင်မှုများနှင့် အလားတူများ",
+  "Reiniciar": "ပြန်စတင်ရန်",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC တိုးချဲ့ပရိုဂရမ်ကို ထည့်သွင်း၍မရပါ: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC တိုးချဲ့ပရိုဂရမ်ကို ဒေါင်းလုဒ်လုပ်နေသည်… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "အခြားဝင်းဒိုးကို သုံးနေချိန်၊ အက်ပ်ကို ချုံ့ထားချိန် သို့မဟုတ် စနစ်ဘားတွင် ရှိချိန်တွင်ပင် ဆက်ဖွင့်နေမည်",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft တွင် HEVC တိုးချဲ့ပရိုဂရမ်ကို ရှာနေသည်…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC တိုးချဲ့ပရိုဂရမ် ထည့်သွင်းပြီးပါပြီ။ 1080p ဖြင့် ကြည့်ရန် အက်ပ်ကို ပြန်စတင်ပါ။",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "ဗီဒီယိုများကို 1080p ဖြင့် ကြည့်ပါ: HEVC တိုးချဲ့ပရိုဂရမ်ကို အခမဲ့ ထည့်သွင်းပါ",
+  "Instalando la extensión HEVC…": "HEVC တိုးချဲ့ပရိုဂရမ်ကို ထည့်သွင်းနေသည်…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft ၏ တရားဝင်နှင့် အခမဲ့ ပက်ကေ့ဂျ်ကို ဒေါင်းလုဒ်လုပ်ပြီး ထည့်သွင်းသည်။ မရှိပါက TikTok သည် ဗီဒီယိုများကို 540–720p ဖြင့် ပို့လေ့ရှိသည်။"
 }

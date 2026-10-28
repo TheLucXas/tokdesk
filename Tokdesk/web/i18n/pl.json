@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Tylko gdy aplikacja jest otwarta lub w zasobniku",
   "te mencionó: {0}": "wspomniał(a) o tobie: {0}",
   "Revisar cada": "Sprawdzaj co",
-  "Compartidos, republicaciones y similares": "Udostępnienia, reposty i podobne"
+  "Compartidos, republicaciones y similares": "Udostępnienia, reposty i podobne",
+  "Reiniciar": "Uruchom ponownie",
+  "No se pudo instalar la extensión HEVC: {0}": "Nie udało się zainstalować rozszerzenia HEVC: {0}",
+  "Descargando la extensión HEVC… {0}%": "Pobieranie rozszerzenia HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Odtwarzanie trwa, gdy używasz innego okna, ze zminimalizowaną aplikacją lub w zasobniku systemowym",
+  "Buscando la extensión HEVC en Microsoft…": "Wyszukiwanie rozszerzenia HEVC w Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Rozszerzenie HEVC zainstalowane. Uruchom ponownie aplikację, aby oglądać w 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Oglądaj filmy w 1080p: zainstaluj rozszerzenie HEVC za darmo",
+  "Instalando la extensión HEVC…": "Instalowanie rozszerzenia HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Pobiera oficjalny, bezpłatny pakiet Microsoft i go instaluje. Bez niego TikTok zwykle wysyła filmy w 540–720p."
 }

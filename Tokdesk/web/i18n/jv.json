@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Mung nalika aplikasi mbukak utawa ing baki",
   "te mencionó: {0}": "nyebut sampeyan: {0}",
   "Revisar cada": "Priksa saben",
-  "Compartidos, republicaciones y similares": "Dibagekake, diposting maneh, lan sapanunggalane"
+  "Compartidos, republicaciones y similares": "Dibagekake, diposting maneh, lan sapanunggalane",
+  "Reiniciar": "Wiwitna ulang",
+  "No se pudo instalar la extensión HEVC: {0}": "Ekstensi HEVC ora bisa diinstal: {0}",
+  "Descargando la extensión HEVC… {0}%": "Ngundhuh ekstensi HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Tetep muter nalika sampeyan nggunakake jendela liyane, kanthi aplikasi dicilikake utawa ing baki sistem",
+  "Buscando la extensión HEVC en Microsoft…": "Golek ekstensi HEVC ing Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Ekstensi HEVC wis diinstal. Wiwitna ulang aplikasi kanggo nonton ing 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Tonton video ing 1080p: instal ekstensi HEVC gratis",
+  "Instalando la extensión HEVC…": "Nginstal ekstensi HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Ngundhuh paket resmi lan gratis saka Microsoft lan nginstal. Tanpa iku, TikTok biasane ngirim video ing 540–720p."
 }

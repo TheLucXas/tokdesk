@@ -133,11 +133,10 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Pasar automáticamente'), value: state.auto, fn: (v) => setAuto(v) }),
         row({ type: 'toggle', label: t('Subtítulos'), value: state.cc, fn: (v) => setCaptions(v) }),
         row({ type: 'toggle', label: t('Reproducción en segundo plano'), hint: t('Sigue reproduciendo cuando usas otra ventana'), value: opt.bgPlay, fn: (v) => { opt.bgPlay = v; applyWinState(); } }),
-        row({ type: 'toggle', label: t('Audio de fondo'), hint: t('Sigue sonando con la ventana minimizada o en la bandeja'), value: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } }),
-        row({ type: 'link', ic: 'speed', label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar la extensión HEVC'),
-          sub: HEVC_OK ? '' : t('Gratis en Microsoft Store. Reinicia la app después.'), fn: () => send({ t: 'open', url: 'ms-windows-store://pdp/?ProductId=9N4WGH0Z6VHQ' }) }),
-        !HEVC_OK && row({ type: 'link', ic: 'speed', label: t('Si la gratuita no se instala: Extensiones de video HEVC'),
-          sub: t('Versión de pago de Microsoft (0,99 US$). Sin ella se usa H.264, que TikTok suele dar hasta 720p.'), fn: () => send({ t: 'open', url: 'ms-windows-store://pdp/?ProductId=9NMZLZ57R3T7' }) }),
+        row({ type: 'toggle', label: t('Audio de fondo'), hint: t('Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja'), value: state.bgAudio, fn: (v) => { setBgAudio(v); applyWinState(); } }),
+        row({ type: 'link', ic: 'speed', label: HEVC_OK ? t('Videos en 1080p (H.265) activados') : t('Ver videos en 1080p: instalar gratis la extensión HEVC'),
+          sub: HEVC_OK ? '' : t('Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.'),
+          fn: () => { if (!HEVC_OK && !hevcBusy) { hevcBusy = true; notice(t('Buscando la extensión HEVC en Microsoft…'), null, null, true); send({ t: 'hevcinstall' }); } } }),
         row({ type: 'toggle', label: t('Ahorro de datos'), hint: t('Usa la versión más liviana de cada video'), value: opt.dataSaver, fn: (v) => { opt.dataSaver = v; } }),
         row({ type: 'seg', label: t('Videos precargados'), value: opt.preload, options: [[0, '0'], [1, '1'], [2, '2'], [3, '3']], fn: (v) => { opt.preload = v; } }),
         row({ type: 'seg', label: t('Búfer en disco'), hint: t('Descarga por adelantado los próximos videos para que arranquen al instante'), value: opt.buffer, options: [[0, '0'], [3, '3'], [5, '5'], [10, '10']], fn: (v) => { opt.buffer = v; } }),
@@ -434,6 +433,10 @@ let win = { minimized: false, focused: true };
 function applyWinState() {
   const el = current(); if (!el) return;
   const shouldPause = (win.minimized && !state.bgAudio) || (!win.minimized && !win.focused && !opt.bgPlay);
+  // Sin «Audio de fondo», la app no se escucha mientras otra ventana tiene el foco (el video sigue sin sonido)
+  const shouldMute = !win.focused && !state.bgAudio && !document.pictureInPictureElement;
+  if (shouldMute && !el.media.muted) { el.dataset.autoMuted = '1'; el.media.muted = true; }
+  else if (!shouldMute && el.dataset.autoMuted) { delete el.dataset.autoMuted; el.media.muted = state.muted; }
   if (shouldPause && !el.media.paused && !document.pictureInPictureElement) {
     el.dataset.autoPaused = '1'; el.media.pause();
   } else if (!shouldPause && el.dataset.autoPaused) {
@@ -458,6 +461,7 @@ function onHostMessage(m) {
       renderSettings();
       break;
     case 'dl': onDownload(m); break;
+    case 'hevc': onHevc(m); break;
     case 'offsaved': onOffSaved(m); break;
     case 'offlist': onOffList(m); break;
     case 'win': win = m; applyWinState(); break;
@@ -490,4 +494,12 @@ function sendNotifyStrings() {
     follow: t('comenzó a seguirte'), more: t('y {0} más'), andmore: t('y {0} más'),
     open: t('Abrir Tokdesk'), pause: t('Pausar 1 hora'), quit: t('Salir'),
   } });
+}
+// Instalación de la extensión HEVC gratuita de Microsoft
+let hevcBusy = false;
+function onHevc(m) {
+  if (m.state === 'downloading') notice(t('Descargando la extensión HEVC… {0}%', m.p), null, null, true);
+  else if (m.state === 'installing') notice(t('Instalando la extensión HEVC…'), null, null, true);
+  else if (m.state === 'done') { hevcBusy = false; notice(t('Extensión HEVC instalada. Reinicia la app para ver en 1080p.'), t('Reiniciar'), () => send({ t: 'restart' }), true); }
+  else if (m.state === 'error') { hevcBusy = false; notice(t('No se pudo instalar la extensión HEVC: {0}', m.msg || '')); }
 }

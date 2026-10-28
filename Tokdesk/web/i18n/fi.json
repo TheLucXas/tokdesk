@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Vain kun sovellus on auki tai ilmaisinalueella",
   "te mencionó: {0}": "mainitsi sinut: {0}",
   "Revisar cada": "Tarkistusväli",
-  "Compartidos, republicaciones y similares": "Jaot, uudelleenjulkaisut ja vastaavat"
+  "Compartidos, republicaciones y similares": "Jaot, uudelleenjulkaisut ja vastaavat",
+  "Reiniciar": "Käynnistä uudelleen",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC-laajennuksen asennus epäonnistui: {0}",
+  "Descargando la extensión HEVC… {0}%": "Ladataan HEVC-laajennusta… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Toisto jatkuu, kun käytät toista ikkunaa, sovellus on pienennettynä tai ilmaisinalueella",
+  "Buscando la extensión HEVC en Microsoft…": "Haetaan HEVC-laajennusta Microsoftilta…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC-laajennus asennettu. Käynnistä sovellus uudelleen, jotta näet 1080p-laadulla.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Katso videot 1080p-laadulla: asenna HEVC-laajennus ilmaiseksi",
+  "Instalando la extensión HEVC…": "Asennetaan HEVC-laajennusta…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Lataa Microsoftin virallisen ja ilmaisen paketin ja asentaa sen. Ilman sitä TikTok lähettää yleensä videot 540–720p-laatuisina."
 }

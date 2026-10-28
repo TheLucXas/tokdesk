@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Yalnızca uygulama açıkken veya tepsideyken",
   "te mencionó: {0}": "senden bahsetti: {0}",
   "Revisar cada": "Kontrol sıklığı",
-  "Compartidos, republicaciones y similares": "Paylaşımlar, yeniden paylaşımlar ve benzerleri"
+  "Compartidos, republicaciones y similares": "Paylaşımlar, yeniden paylaşımlar ve benzerleri",
+  "Reiniciar": "Yeniden başlat",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC uzantısı kurulamadı: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC uzantısı indiriliyor… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Başka bir pencere kullanırken, uygulama simge durumunda ya da bildirim alanındayken izlemeye devam eder",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft\u0027ta HEVC uzantısı aranıyor…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC uzantısı kuruldu. 1080p\u0027de izlemek için uygulamayı yeniden başlat.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Videoları 1080p\u0027de izle: HEVC uzantısını ücretsiz kur",
+  "Instalando la extensión HEVC…": "HEVC uzantısı kuruluyor…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft\u0027un resmi ve ücretsiz paketini indirir ve kurar. Bu olmadan TikTok videoları genellikle 540–720p gönderir."
 }

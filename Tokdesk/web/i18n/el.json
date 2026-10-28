@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Μόνο με ανοιχτή την εφαρμογή ή στην περιοχή ειδοποιήσεων",
   "te mencionó: {0}": "σε ανέφερε: {0}",
   "Revisar cada": "Έλεγχος κάθε",
-  "Compartidos, republicaciones y similares": "Κοινοποιήσεις, αναδημοσιεύσεις και παρόμοια"
+  "Compartidos, republicaciones y similares": "Κοινοποιήσεις, αναδημοσιεύσεις και παρόμοια",
+  "Reiniciar": "Επανεκκίνηση",
+  "No se pudo instalar la extensión HEVC: {0}": "Δεν ήταν δυνατή η εγκατάσταση της επέκτασης HEVC: {0}",
+  "Descargando la extensión HEVC… {0}%": "Λήψη της επέκτασης HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Συνεχίζει να παίζει όταν χρησιμοποιείς άλλο παράθυρο, με την εφαρμογή ελαχιστοποιημένη ή στο δίσκο συστήματος",
+  "Buscando la extensión HEVC en Microsoft…": "Αναζήτηση της επέκτασης HEVC στη Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Η επέκταση HEVC εγκαταστάθηκε. Επανεκκίνησε την εφαρμογή για προβολή σε 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Δες βίντεο σε 1080p: εγκατέστησε δωρεάν την επέκταση HEVC",
+  "Instalando la extensión HEVC…": "Εγκατάσταση της επέκτασης HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Κατεβάζει και εγκαθιστά το επίσημο δωρεάν πακέτο της Microsoft. Χωρίς αυτό, το TikTok συνήθως στέλνει βίντεο σε 540–720p."
 }

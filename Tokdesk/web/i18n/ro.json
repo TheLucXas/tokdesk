@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Doar cu aplicația deschisă sau în bară",
   "te mencionó: {0}": "te-a menționat: {0}",
   "Revisar cada": "Verifică la fiecare",
-  "Compartidos, republicaciones y similares": "Distribuiri, repostări și similare"
+  "Compartidos, republicaciones y similares": "Distribuiri, repostări și similare",
+  "Reiniciar": "Repornește",
+  "No se pudo instalar la extensión HEVC: {0}": "Extensia HEVC nu s-a putut instala: {0}",
+  "Descargando la extensión HEVC… {0}%": "Se descarcă extensia HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Redarea continuă când folosești altă fereastră, cu aplicația minimizată sau în zona de notificări",
+  "Buscando la extensión HEVC en Microsoft…": "Se caută extensia HEVC la Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "Extensia HEVC a fost instalată. Repornește aplicația pentru a vedea în 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Vezi videoclipurile în 1080p: instalează gratuit extensia HEVC",
+  "Instalando la extensión HEVC…": "Se instalează extensia HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Descarcă pachetul oficial și gratuit de la Microsoft și îl instalează. Fără el, TikTok trimite de obicei videoclipurile în 540–720p."
 }

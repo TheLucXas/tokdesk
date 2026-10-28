@@ -583,6 +583,7 @@ function render() {
     if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
+      if (typeof applyWinState === 'function') { delete el.dataset.autoMuted; applyWinState(); }
       if (state.cc) loadCaptions(el);
       if (m.paused && !el.dataset.userPaused && m.getAttribute('src')) m.play().catch((e) => log('play: ' + e.message));
       if (it.photos.length > 1 && !el.photoTimer) {

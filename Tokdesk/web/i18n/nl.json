@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "Alleen als de app open staat of in het systeemvak",
   "te mencionó: {0}": "heeft je vermeld: {0}",
   "Revisar cada": "Controleer elke",
-  "Compartidos, republicaciones y similares": "Gedeelde video\u0027s, reposts en dergelijke"
+  "Compartidos, republicaciones y similares": "Gedeelde video\u0027s, reposts en dergelijke",
+  "Reiniciar": "Opnieuw starten",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC-extensie kon niet worden geïnstalleerd: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC-extensie downloaden… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "Blijft afspelen als je een ander venster gebruikt, met de app geminimaliseerd of in het systeemvak",
+  "Buscando la extensión HEVC en Microsoft…": "HEVC-extensie zoeken bij Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC-extensie geïnstalleerd. Start de app opnieuw om in 1080p te bekijken.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "Bekijk video\u0027s in 1080p: installeer de HEVC-extensie gratis",
+  "Instalando la extensión HEVC…": "HEVC-extensie installeren…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Downloadt het officiële, gratis pakket van Microsoft en installeert het. Zonder dit stuurt TikTok video\u0027s meestal in 540–720p."
 }

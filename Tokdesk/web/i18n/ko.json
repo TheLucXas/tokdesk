@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "앱이 열려 있거나 트레이에 있을 때만",
   "te mencionó: {0}": "님이 회원님을 언급했습니다: {0}",
   "Revisar cada": "확인 주기",
-  "Compartidos, republicaciones y similares": "공유, 리포스트 등"
+  "Compartidos, republicaciones y similares": "공유, 리포스트 등",
+  "Reiniciar": "다시 시작",
+  "No se pudo instalar la extensión HEVC: {0}": "HEVC 확장 프로그램을 설치할 수 없습니다: {0}",
+  "Descargando la extensión HEVC… {0}%": "HEVC 확장 프로그램 다운로드 중… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "다른 창을 사용하거나 앱을 최소화하거나 트레이에 두어도 계속 재생됩니다",
+  "Buscando la extensión HEVC en Microsoft…": "Microsoft에서 HEVC 확장 프로그램 검색 중…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "HEVC 확장 프로그램이 설치되었습니다. 1080p로 보려면 앱을 다시 시작하세요.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "1080p로 동영상 보기: HEVC 확장 프로그램을 무료로 설치",
+  "Instalando la extensión HEVC…": "HEVC 확장 프로그램 설치 중…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "Microsoft의 공식 무료 패키지를 다운로드하여 설치합니다. 없으면 TikTok은 보통 동영상을 540–720p로 보냅니다."
 }

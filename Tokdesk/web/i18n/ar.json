@@ -388,5 +388,14 @@
   "Solo con la app abierta o en la bandeja": "فقط عند فتح التطبيق أو وجوده في الشريط",
   "te mencionó: {0}": "أشار إليك: {0}",
   "Revisar cada": "التحقق كل",
-  "Compartidos, republicaciones y similares": "المشاركات وإعادة النشر وما شابه"
+  "Compartidos, republicaciones y similares": "المشاركات وإعادة النشر وما شابه",
+  "Reiniciar": "إعادة التشغيل",
+  "No se pudo instalar la extensión HEVC: {0}": "تعذّر تثبيت ملحق HEVC: {0}",
+  "Descargando la extensión HEVC… {0}%": "جارٍ تنزيل ملحق HEVC… {0}%",
+  "Se sigue escuchando cuando usas otra ventana, con la app minimizada o en la bandeja": "يستمر التشغيل عند استخدام نافذة أخرى، مع تصغير التطبيق أو وجوده في علبة النظام",
+  "Buscando la extensión HEVC en Microsoft…": "جارٍ البحث عن ملحق HEVC في Microsoft…",
+  "Extensión HEVC instalada. Reinicia la app para ver en 1080p.": "تم تثبيت ملحق HEVC. أعد تشغيل التطبيق للمشاهدة بدقة 1080p.",
+  "Ver videos en 1080p: instalar gratis la extensión HEVC": "شاهد الفيديوهات بدقة 1080p: ثبّت ملحق HEVC مجانًا",
+  "Instalando la extensión HEVC…": "جارٍ تثبيت ملحق HEVC…",
+  "Descarga el paquete oficial y gratuito de Microsoft y lo instala. Sin él, TikTok suele mandar los videos en 540–720p.": "ينزّل الحزمة الرسمية المجانية من Microsoft ويثبتها. بدونها، يرسل TikTok الفيديوهات عادةً بدقة 540–720p."
 }
