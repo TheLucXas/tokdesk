@@ -57,15 +57,20 @@ static class Hevc
             $"<ProductsParameters><SyncCurrentVersionOnly>false</SyncCurrentVersionOnly><DeviceAttributes>{Attrs}</DeviceAttributes><CallerAttributes>Interactive=1;IsSeeker=0;</CallerAttributes><Products/></ProductsParameters></parameters></SyncUpdates>";
         var x = WebUtility.HtmlDecode(await Post(http, Endpoint, Envelope("SyncUpdates", Endpoint, sync)));
 
+        // Las versiones nuevas pueden pedir Windows 11: se elige la más nueva que acepte este Windows
+        var os = Environment.OSVersion.Version;
+        var osPacked = ((ulong)os.Major << 48) | ((ulong)os.Minor << 32) | ((ulong)os.Build << 16);
         (Version ver, string id, string rev) best = default;
         foreach (Match m in Regex.Matches(x, @"<UpdateInfo>[\s\S]*?</UpdateInfo>"))
         {
             var p = Regex.Match(m.Value, "PackageMoniker=\"Microsoft\\.HEVCVideoExtension_([\\d.]+)_");
             var u = Regex.Match(m.Value, "UpdateID=\"([^\"]+)\" RevisionNumber=\"(\\d+)\"");
+            var min = Regex.Match(m.Value, "\"platform\\.minVersion\":(\\d+)");
+            if (min.Success && ulong.Parse(min.Groups[1].Value) > osPacked) continue;
             if (p.Success && u.Success && Version.TryParse(p.Groups[1].Value, out var v) && (best.ver == null || v > best.ver))
                 best = (v, u.Groups[1].Value, u.Groups[2].Value);
         }
-        if (best.ver == null) throw new InvalidOperationException("Microsoft no devolvió el paquete");
+        if (best.ver == null) throw new InvalidOperationException("Microsoft no tiene una versión para este Windows");
 
         var info = await Post(http, Endpoint + "/secured", Envelope("GetExtendedUpdateInfo2", Endpoint + "/secured",
             $"<GetExtendedUpdateInfo2 {Ns}><updateIDs><UpdateIdentity><UpdateID>{best.id}</UpdateID><RevisionNumber>{best.rev}</RevisionNumber></UpdateIdentity></updateIDs>" +
