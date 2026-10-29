@@ -555,6 +555,16 @@ function buildSlide(it) {
   media.addEventListener('pause', () => el.classList.add('paused'));
   media.addEventListener('loadedmetadata', () => { media.playbackRate = state.speed; });
   media.addEventListener('ended', () => { if (state.auto && el === current()) go(1); });
+  // Trabado esperando a internet y el búfer ya tiene la copia: se cambia al disco sin perder el punto
+  media.addEventListener('waiting', () => {
+    const url = offUrl(it);
+    if (!url || !media.getAttribute('src') || media.currentSrc.includes('offline.tokdesk')) return;
+    const at = media.currentTime, play = el === current();
+    log(`media ${it.id} trabado, se sigue desde el búfer`);
+    media.src = url;
+    media.addEventListener('loadedmetadata', () => { if (at) media.currentTime = at; }, { once: true });
+    if (play) media.play().catch(() => { });
+  });
   media.addEventListener('error', () => {
     if (!media.getAttribute('src')) return;
     const err = media.error;
@@ -564,6 +574,14 @@ function buildSlide(it) {
     if (media.currentSrc.includes('offline.tokdesk') && net) {
       offline.buffer.delete(it.id); offline.saved.delete(it.id);
       media.src = net;
+      if (el === current()) media.play().catch(() => { });
+      return;
+    }
+    // Se cortó internet pero el búfer ya tiene la copia: se sigue desde el disco
+    if (!media.currentSrc.includes('offline.tokdesk') && offUrl(it)) {
+      const at = media.currentTime;
+      media.src = offUrl(it);
+      media.addEventListener('loadedmetadata', () => { if (at) media.currentTime = at; }, { once: true });
       if (el === current()) media.play().catch(() => { });
       return;
     }
@@ -2919,14 +2937,23 @@ async function bufferAhead() {
   if (!opt.buffer || !f || f.key === 'offline' || offline.running) return;
   offline.running = true;
   try {
-    const from = f.idx + opt.preload + 1;
-    for (let i = from; i < Math.min(f.items.length, from + opt.buffer); i++) {
+    // Desde el siguiente: la precarga en memoria solo guarda unos segundos y sin conexión se corta
+    for (let i = f.idx + 1; i < Math.min(f.items.length, f.idx + 1 + opt.buffer); i++) {
       const it = f.items[i];
       if (!it.src || it.photos.length || it.ad || offUrl(it)) continue;
-      await offSave('buffer', it);
+      const url = await offSave('buffer', it);
+      if (url) useOffline(f, i);
       if (state.feed !== f) break;
     }
   } finally { offline.running = false; }
+}
+
+// Si el video ya tenía la fuente de internet y todavía no se está viendo, pasa a la copia del disco
+function useOffline(f, i) {
+  const el = state.slides.get(i), it = f.items[i];
+  if (state.feed !== f || !el || i === f.idx) return;
+  const m = el.media, url = offUrl(it);
+  if (url && m.getAttribute('src') && !m.getAttribute('src').includes('offline.tokdesk')) { m.preload = 'auto'; m.src = url; }
 }
 
 // Al abrir la app, mientras TikTok carga, se empieza con videos del búfer que todavía no viste: arrancan al instante
