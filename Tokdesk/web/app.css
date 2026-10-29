@@ -765,7 +765,8 @@ body.light .sortbtn { color: #161823; }
 #sheet .sheet-head, #share .share-head, #opts .grab { touch-action: none; cursor: grab; }
 
 /* El menú de ordenar queda por encima de la lista de comentarios */
-#sheet .sheet-head { position: relative; z-index: 3; }
+#sheet .sheet-head { position: relative; z-index: 3; overflow: visible; }
+#sheetTitle { display: block; overflow: hidden; text-overflow: ellipsis; }
 .cmt-sortmenu { z-index: 60; }
 
 /* Los avisos se ven también con un panel abierto (Configuración, perfil…) */
