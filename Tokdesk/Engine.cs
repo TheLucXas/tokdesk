@@ -192,18 +192,18 @@ sealed class Engine
     }
 
     /// <summary>Pedido genérico a la API de la web, hecho desde la propia página.</summary>
-    public async Task<(int status, string body)> Api(string method, string path, IEnumerable<(string k, string v)> query)
+    public async Task<(int status, string body)> Api(string method, string path, IEnumerable<(string k, string v)> query, string form = null)
     {
         await Task.WhenAny(_feedReady.Task, Task.Delay(10000));
         var q = query.ToArray();
-        var result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method);
+        var result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method, form);
         if (result.status == 200 && string.IsNullOrEmpty(result.body))
         {
             // TikTok devuelve 200 vacío cuando la sesión de la página quedó vieja (msToken vencido):
             // se recarga la página oficial y se reintenta una vez
             Log.Write($"API {method} {path}: respuesta vacía; se refresca la sesión y se reintenta");
             await RefreshSession();
-            result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method);
+            result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method, form);
         }
         if (result.status != 200 || string.IsNullOrEmpty(result.body))
             Log.Write($"API {method} {path}: status {result.status}, {result.body?.Length ?? 0} bytes");
@@ -249,12 +249,12 @@ sealed class Engine
         return (path ?? baseUrl[..qi]) + "?" + string.Join("&", parts);
     }
 
-    async Task<(int status, string body)> PageFetch(string url, string method)
+    async Task<(int status, string body)> PageFetch(string url, string method, string form = null)
     {
         var id = ++_nextId;
         var tcs = new TaskCompletionSource<(int status, string body)>();
         _pending[id] = tcs;
-        await _wv.ExecuteScriptAsync($"window.__tp && __tp.req({id}, {JsonSerializer.Serialize(method)}, {JsonSerializer.Serialize(url)})");
+        await _wv.ExecuteScriptAsync($"window.__tp && __tp.req({id}, {JsonSerializer.Serialize(method)}, {JsonSerializer.Serialize(url)}, {JsonSerializer.Serialize(form)})");
         var done = await Task.WhenAny(tcs.Task, Task.Delay(15000));
         _pending.Remove(id);
         return done == tcs.Task ? tcs.Task.Result : (0, null);
@@ -314,19 +314,19 @@ sealed class Engine
           window.__tp = {
             // XHR igual que la propia web, para que sus pedidos salgan tal cual los haría ella
             // Primero con fetch; si vuelve vacío, con XHR (la web firma una u otra vía según su versión)
-            req(id, method, url) {
+            req(id, method, url, body) {
               const headers = {};
               if (method === 'POST') {
                 headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                 const csrf = appContext().csrfToken;
                 if (csrf) headers['tt-csrf-token'] = csrf;
               }
-              fetch(url, { method, credentials: 'include', headers, body: method === 'POST' ? '' : undefined })
+              fetch(url, { method, credentials: 'include', headers, body: method === 'POST' ? (body || '') : undefined })
                 .then(r => r.text().then(t => ({ s: r.status, t })))
-                .then(({ s, t }) => t ? post({ id, status: s, body: t }) : this.xhr(id, method, url))
-                .catch(() => this.xhr(id, method, url));
+                .then(({ s, t }) => t ? post({ id, status: s, body: t }) : this.xhr(id, method, url, body))
+                .catch(() => this.xhr(id, method, url, body));
             },
-            xhr(id, method, url) {
+            xhr(id, method, url, body) {
               const x = new XMLHttpRequest();
               x.open(method, url, true);
               x.withCredentials = true;
@@ -337,7 +337,7 @@ sealed class Engine
               }
               x.onload = () => post({ id, status: x.status, body: x.responseText || '' });
               x.onerror = () => post({ id, status: 0, body: '' });
-              x.send(method === 'POST' ? '' : null);
+              x.send(method === 'POST' ? (body || '') : null);
             },
             lang() {
               const c = appContext();

@@ -100,14 +100,15 @@ function toast(msg) {
 // ---------- Pedidos a la API (los hace la página oficial oculta) ----------
 let rid = 0;
 const waiting = new Map();
-function api(m, path, q = {}) {
+// form: datos que van en el cuerpo del POST (como los manda la app de Android), no en la dirección
+function api(m, path, q = {}, form) {
   return new Promise((resolve) => {
     const id = ++rid;
     busy(1);
     waiting.set(id, (v) => { busy(-1); resolve(v); });
     const qs = {};
     for (const k in q) if (q[k] != null) qs[k] = String(q[k]);
-    send({ t: 'api', rid: id, m, path, q: qs });
+    send({ t: 'api', rid: id, m, path, q: qs, b: form ? new URLSearchParams(form).toString() : undefined });
     setTimeout(() => { if (waiting.delete(id)) { busy(-1); resolve({ status: 0, data: null }); } }, 25000);
   });
 }

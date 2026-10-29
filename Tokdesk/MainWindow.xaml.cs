@@ -421,7 +421,7 @@ public partial class MainWindow : Window
                 case "api":
                 {
                     var query = m.GetProperty("q").EnumerateObject().Select(p => (p.Name, p.Value.ToString()));
-                    var (status, body) = await _engine.Api(S("m"), S("path"), query);
+                    var (status, body) = await _engine.Api(S("m"), S("path"), query, m.TryGetProperty("b", out var fb) ? fb.GetString() : null);
                     PostToUi(new { t = "api", rid = m.GetProperty("rid").GetInt32(), status, body });
                     break;
                 }
