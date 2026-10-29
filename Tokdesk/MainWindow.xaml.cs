@@ -363,7 +363,7 @@ public partial class MainWindow : Window
         if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") StartTestHook();
 
         // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
-        _settings.ApplyShortcuts();
+        if (_settings.ApplyShortcuts(startup: true)) _settings.Save();
         Links.RegisterProtocol();
         // La opción de enlaces predeterminados se quitó: si alguien la había activado, se deshace
         if (_settings.LinkHandler) { _settings.LinkHandler = false; Links.ApplyHandler(false); _settings.Save(); }

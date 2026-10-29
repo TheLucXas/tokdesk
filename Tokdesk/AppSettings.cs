@@ -65,13 +65,28 @@ sealed class AppSettings
         catch (Exception ex) { Log.Write("No se pudieron guardar los ajustes: " + ex.Message); }
     }
 
-    /// <summary>Crea o borra los accesos directos del menú Inicio y del escritorio.</summary>
-    public void ApplyShortcuts()
+    // Campos que esta versión no conoce (de una más nueva): se conservan al guardar en vez de perderse
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, JsonElement> Extra { get; set; }
+
+    static string StartMenuLnk => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Tokdesk.lnk");
+    static string DesktopLnk => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Tokdesk.lnk");
+
+    /// <summary>
+    /// Crea o borra los accesos directos del menú Inicio y del escritorio. Al abrir la app
+    /// (<paramref name="startup"/>) nunca borra: si el acceso existe pero la opción figura apagada
+    /// (una versión vieja guardó los ajustes sin conocerla), se adopta. Devuelve true si cambió algo.
+    /// </summary>
+    public bool ApplyShortcuts(bool startup = false)
     {
         // La build de desarrollo no crea accesos: quedarían apuntando a su .exe en vez del lanzador
-        if (!AppInfo.HasLauncher) return;
-        Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Tokdesk.lnk"), StartMenuShortcut);
-        Shortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Tokdesk.lnk"), DesktopShortcut);
+        if (!AppInfo.HasLauncher) return false;
+        var changed = false;
+        if (startup && !StartMenuShortcut && System.IO.File.Exists(StartMenuLnk)) { StartMenuShortcut = true; changed = true; }
+        if (startup && !DesktopShortcut && System.IO.File.Exists(DesktopLnk)) { DesktopShortcut = true; changed = true; }
+        Shortcut(StartMenuLnk, StartMenuShortcut);
+        Shortcut(DesktopLnk, DesktopShortcut);
+        return changed;
     }
 
     static void Shortcut(string lnk, bool create)
