@@ -102,15 +102,17 @@ function toast(msg) {
 let rid = 0;
 const waiting = new Map();
 // form: datos que van en el cuerpo del POST (como los manda la app de Android), no en la dirección
-function api(m, path, q = {}, form) {
+// quiet: pedidos de fondo (chat en vivo, espectadores…) que no muestran la barra de carga
+function api(m, path, q = {}, form, quiet) {
   return new Promise((resolve) => {
     const id = ++rid;
-    busy(1);
-    waiting.set(id, (v) => { busy(-1); resolve(v); });
+    const b = quiet ? 0 : 1;
+    busy(b);
+    waiting.set(id, (v) => { busy(-b); resolve(v); });
     const qs = {};
     for (const k in q) if (q[k] != null) qs[k] = String(q[k]);
     send({ t: 'api', rid: id, m, path, q: qs, b: form ? new URLSearchParams(form).toString() : undefined });
-    setTimeout(() => { if (waiting.delete(id)) { busy(-1); resolve({ status: 0, data: null }); } }, 25000);
+    setTimeout(() => { if (waiting.delete(id)) { busy(-b); resolve({ status: 0, data: null }); } }, 25000);
   });
 }
 function onApi(msg) {

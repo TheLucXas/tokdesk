@@ -30,7 +30,7 @@ function liveItem(room) {
 async function loadLives(f, channel) {
   if (f.loading || !f.hasMore) return;
   f.loading = true;
-  const r = await api('GET', 'https://webcast.tiktok.com/webcast/feed/', { channel_id: channel, count: 10, max_time: f.cursor || 0 });
+  const r = await api('GET', 'https://webcast.tiktok.com/webcast/feed/', { channel_id: channel, count: 10, max_time: f.cursor || 0 }, undefined, channel === 81);
   f.loading = false;
   const d = r.data;
   const list = d && Array.isArray(d.data) ? d.data.map((x) => x.data).filter((x) => x && x.owner) : null;
@@ -45,8 +45,8 @@ async function loadLives(f, channel) {
 }
 
 // Sala de un usuario (para directos del feed o de un anillo): null si no está en vivo
-async function roomOf(uniqueId) {
-  const r = await api('GET', '/api-live/user/room/', { uniqueId, sourceType: 54 });
+async function roomOf(uniqueId, quiet) {
+  const r = await api('GET', '/api-live/user/room/', { uniqueId, sourceType: 54 }, undefined, quiet);
   const d = r.data && r.data.data;
   const lr = d && d.liveRoom;
   if (!lr || lr.status !== 2) return null;
@@ -97,6 +97,7 @@ async function startLive(el, it) {
   el.liveStarting = false;
   if (!el.isConnected || currentItem() !== it) return;
   wireLive(el, it);
+  loadMyAvatar();
   if (!it.flv || !window.mpegts) { el.classList.remove('waiting'); el.classList.add('live-ended'); return; }
   const v = el.media;
   // Directo de baja latencia: sin búfer de acumulación, persiguiendo el borde en vivo y limpiando lo ya visto
@@ -169,7 +170,7 @@ const WEBCAST = 'https://webcast.tiktok.com/webcast/';
 // Me gusta y espectadores de la sala, cada 15 s mientras se mira
 async function pollRoom(el, it, gen) {
   while (el.livePlayer && el.isConnected && el.liveGen === gen) {
-    const r = await api('GET', WEBCAST + 'room/info/', { room_id: it.roomId });
+    const r = await api('GET', WEBCAST + 'room/info/', { room_id: it.roomId }, undefined, true);
     const d = r.data && r.data.data;
     if (d) {
       if (d.status === 4) { el.classList.add('live-ended'); stopLive(el); return; }
@@ -216,7 +217,7 @@ async function pollChat(el, it, gen) {
   const box = $('.lv-chat', el);
   while (el.livePlayer && el.isConnected && el.liveGen === gen) {
     const r = await api('GET', WEBCAST + 'im/fetch/', { room_id: it.roomId, resp_content_type: 'protobuf', fetch_rule: 1, cursor, internal_ext: ext,
-      last_rtt: 0, did_rule: 3, live_id: 12, version_code: 180800, __b64: 1 });
+      last_rtt: 0, did_rule: 3, live_id: 12, version_code: 180800, __b64: 1 }, undefined, true);
     let wait = 2000;
     if (r.data && r.data.b64) {
       const bin = Uint8Array.from(atob(r.data.b64), (c) => c.charCodeAt(0));
@@ -230,7 +231,13 @@ async function pollChat(el, it, gen) {
         const id = pbGet(msg, 3);
         if (id) { if (seen.has(id)) continue; seen.add(id); if (seen.size > 2000) seen.clear(); }
         const method = pbText(pbGet(msg, 1)), pay = pbFields(pbGet(msg, 2) || new Uint8Array());
-        if (method === 'WebcastChatMessage') addChat(box, pbUser(pbGet(pay, 2)), pbText(pbGet(pay, 3)));
+        if (method === 'WebcastChatMessage') {
+          const u = pbUser(pbGet(pay, 2)), txt = pbText(pbGet(pay, 3));
+          // El mensaje propio ya se mostró al confirmarse el envío: si vuelve por el chat en vivo no se repite
+          const own = el.ownSent && el.ownSent.findIndex((x) => x === txt);
+          if (own != null && own >= 0 && isMe(u)) { el.ownSent.splice(own, 1); continue; }
+          addChat(box, u, txt);
+        }
         else if (method === 'WebcastMemberMessage') addChat(box, pbUser(pbGet(pay, 2)), t('se unió'), 'join');
         else if (method === 'WebcastLikeMessage') {
           const total = pbGet(pay, 3);
@@ -306,7 +313,7 @@ async function checkAuthorLive(it, el) {
   await new Promise((r) => setTimeout(r, 1500));
   if (currentItem() !== it || Date.now() - liveCheckAt < 3000) return;
   liveCheckAt = Date.now();
-  const r = await roomOf(it.author);
+  const r = await roomOf(it.author, true);
   liveNow.set(it.author, { at: Date.now(), live: !!r });
   if (r && el.isConnected) markLiveAvatar(el);
 }
@@ -370,15 +377,25 @@ async function liveChat(it, el) {
   inp.disabled = false;
   inp.focus();
   log('live chat @' + it.author + ': ' + r);
-  if (r === 'ok' || r === 'dup') { expectEcho(el, it, text); return; }
+  if (r === 'ok') {
+    // Se muestra enseguida con tu nombre y foto (el chat en vivo no siempre le devuelve al que escribe sus mensajes)
+    (el.ownSent = el.ownSent || []).push(text);
+    addChat($('.lv-chat', el), { nick: myName(), avatar: myAvatar() }, text, 'mine');
+    return;
+  }
+  if (r === 'dup') return;
   inp.value = text;
   toast(r && r.startsWith('err:') ? t('TikTok no aceptó el mensaje: {0}', r.slice(4)) : t('No se pudo confirmar el envío del mensaje'));
 }
-// El mensaje propio aparece cuando llega por el chat en vivo (sin eco local); si el servidor no lo devuelve, se avisa
-function expectEcho(el, it, text) {
-  const box = $('.lv-chat', el);
-  const has = () => $$('.lv-msg span', box).some((s) => s.textContent === text);
-  setTimeout(() => { if (el.isConnected && el.liveGen && !has()) toast(t('Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios')); }, 12000);
+const myName = () => (state.me && (state.me.nickName || state.me.nickname || state.me.uniqueId)) || '';
+const myAvatar = () => (state.me && (state.myAvatar || (state.me.avatarUri && state.me.avatarUri[0]) || state.me.avatarThumb)) || '';
+const isMe = (u) => !!(state.me && (u.uid === state.me.uniqueId || u.nick === myName()));
+// La foto propia se pide una vez (la sesión de la web no la trae siempre)
+async function loadMyAvatar() {
+  if (!state.me || state.myAvatar) return;
+  const r = await api('GET', '/api/user/detail/', { uniqueId: state.me.uniqueId }, undefined, true);
+  const u = r.data && r.data.userInfo && r.data.userInfo.user;
+  if (u) state.myAvatar = u.avatarThumb || u.avatarMedium || '';
 }
 
 // Me gusta: se suman los toques y se mandan juntos (como la app, que agrupa los corazones)

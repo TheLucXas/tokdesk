@@ -980,3 +980,4 @@ body.light #emojiPop { background: #fff; }
 .lv-form .lv-input { background: transparent; }
 body.light .emoji-btn { color: rgba(22,24,35,.7); }
 .lv-form .emoji-btn { color: #fff !important; }
+.lv-msg.mine b { color: #8fd3ff; }
