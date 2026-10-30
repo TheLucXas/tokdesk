@@ -495,5 +495,16 @@
   "se unió": "menyertai",
   "envió un regalo": "menghantar hadiah",
   "No se pudo dar me gusta": "Tidak dapat menyukai",
-  "Emojis": "Emoji"
+  "Emojis": "Emoji",
+  "Tamaño del texto": "Saiz teks",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Teks sahaja, tanpa mengubah bahagian antara muka yang lain",
+  "Texto de los mensajes": "Teks mesej",
+  "Texto del chat del LIVE": "Teks sembang LIVE",
+  "Opacidad del chat del LIVE": "Kelegapan sembang LIVE",
+  "Ancho del chat del LIVE": "Lebar sembang LIVE",
+  "Ancho de los paneles": "Lebar panel",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Komen, profil, carian dan mesej dalam tetingkap lebar",
+  "TikTok no aceptó el mensaje: {0}": "TikTok tidak menerima mesej: {0}",
+  "No se pudo confirmar el envío del mensaje": "Tidak dapat mengesahkan mesej telah dihantar",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesej anda tidak muncul dalam sembang langsung: mungkin pencipta menghadkan komen"
 }

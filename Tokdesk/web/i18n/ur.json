@@ -495,5 +495,16 @@
   "se unió": "شامل ہوئے",
   "envió un regalo": "نے تحفہ بھیجا",
   "No se pudo dar me gusta": "لائک نہیں ہو سکا",
-  "Emojis": "ایموجی"
+  "Emojis": "ایموجی",
+  "Tamaño del texto": "متن کا سائز",
+  "Solo el texto, sin cambiar el resto de la interfaz": "صرف متن، باقی انٹرفیس کو بدلے بغیر",
+  "Texto de los mensajes": "پیغامات کا متن",
+  "Texto del chat del LIVE": "LIVE چیٹ کا متن",
+  "Opacidad del chat del LIVE": "LIVE چیٹ کی شفافیت",
+  "Ancho del chat del LIVE": "LIVE چیٹ کی چوڑائی",
+  "Ancho de los paneles": "پینلز کی چوڑائی",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "چوڑی ونڈوز میں تبصرے، پروفائل، تلاش اور پیغامات",
+  "TikTok no aceptó el mensaje: {0}": "TikTok نے پیغام قبول نہیں کیا: {0}",
+  "No se pudo confirmar el envío del mensaje": "پیغام بھیجے جانے کی تصدیق نہیں ہو سکی",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "آپ کا پیغام لائیو چیٹ میں نظر نہیں آ رہا: ہو سکتا ہے تخلیق کار تبصرے محدود کر رہا ہو"
 }

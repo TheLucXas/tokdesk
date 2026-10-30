@@ -495,5 +495,16 @@
   "se unió": "si è unito",
   "envió un regalo": "ha inviato un regalo",
   "No se pudo dar me gusta": "Impossibile mettere Mi piace",
-  "Emojis": "Emoji"
+  "Emojis": "Emoji",
+  "Tamaño del texto": "Dimensione del testo",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Solo il testo, senza cambiare il resto dell'interfaccia",
+  "Texto de los mensajes": "Testo dei messaggi",
+  "Texto del chat del LIVE": "Testo della chat del LIVE",
+  "Opacidad del chat del LIVE": "Opacità della chat del LIVE",
+  "Ancho del chat del LIVE": "Larghezza della chat del LIVE",
+  "Ancho de los paneles": "Larghezza dei pannelli",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Commenti, profilo, ricerca e messaggi nelle finestre larghe",
+  "TikTok no aceptó el mensaje: {0}": "TikTok non ha accettato il messaggio: {0}",
+  "No se pudo confirmar el envío del mensaje": "Impossibile confermare l'invio del messaggio",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Il tuo messaggio non compare nella chat del live: forse il creator limita i commenti"
 }

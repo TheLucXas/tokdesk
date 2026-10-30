@@ -495,5 +495,16 @@
   "se unió": "បានចូលរួម",
   "envió un regalo": "បានផ្ញើអំណោយ",
   "No se pudo dar me gusta": "មិនអាចចុចចូលចិត្តបានទេ",
-  "Emojis": "រូបអារម្មណ៍"
+  "Emojis": "រូបអារម្មណ៍",
+  "Tamaño del texto": "ទំហំអក្សរ",
+  "Solo el texto, sin cambiar el resto de la interfaz": "តែអក្សរប៉ុណ្ណោះ ដោយមិនប្តូរផ្នែកផ្សេងទៀតនៃចំណុចប្រទាក់",
+  "Texto de los mensajes": "អក្សរនៃសារ",
+  "Texto del chat del LIVE": "អក្សរនៃជជែក LIVE",
+  "Opacidad del chat del LIVE": "ភាពស្រអាប់នៃជជែក LIVE",
+  "Ancho del chat del LIVE": "ទទឹងនៃជជែក LIVE",
+  "Ancho de los paneles": "ទទឹងនៃផ្ទាំង",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "មតិ ប្រូហ្វាល់ ការស្វែងរក និងសារ នៅក្នុងបង្អួចធំទូលាយ",
+  "TikTok no aceptó el mensaje: {0}": "TikTok មិនទទួលយកសារទេ៖ {0}",
+  "No se pudo confirmar el envío del mensaje": "មិនអាចបញ្ជាក់ថាសារត្រូវបានផ្ញើទេ",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "សាររបស់អ្នកមិនបង្ហាញក្នុងជជែកផ្ទាល់ទេ៖ ប្រហែលអ្នកបង្កើតកំពុងកំណត់មតិ"
 }

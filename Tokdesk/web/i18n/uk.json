@@ -495,5 +495,16 @@
   "se unió": "приєднався(-лася)",
   "envió un regalo": "надіслав(ла) подарунок",
   "No se pudo dar me gusta": "Не вдалося вподобати",
-  "Emojis": "Емодзі"
+  "Emojis": "Емодзі",
+  "Tamaño del texto": "Розмір тексту",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Лише текст, решта інтерфейсу не змінюється",
+  "Texto de los mensajes": "Текст повідомлень",
+  "Texto del chat del LIVE": "Текст чату LIVE",
+  "Opacidad del chat del LIVE": "Прозорість чату LIVE",
+  "Ancho del chat del LIVE": "Ширина чату LIVE",
+  "Ancho de los paneles": "Ширина панелей",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Коментарі, профіль, пошук і повідомлення в широких вікнах",
+  "TikTok no aceptó el mensaje: {0}": "TikTok не прийняв повідомлення: {0}",
+  "No se pudo confirmar el envío del mensaje": "Не вдалося підтвердити надсилання повідомлення",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше повідомлення не з’явилося в чаті трансляції: можливо, автор обмежує коментарі"
 }

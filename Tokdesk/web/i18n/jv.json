@@ -495,5 +495,16 @@
   "se unió": "gabung",
   "envió un regalo": "ngirim hadiah",
   "No se pudo dar me gusta": "Ora bisa nyenengi",
-  "Emojis": "Emoji"
+  "Emojis": "Emoji",
+  "Tamaño del texto": "Ukuran teks",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Teks thok, ora ngowahi bagean antarmuka liyane",
+  "Texto de los mensajes": "Teks pesen",
+  "Texto del chat del LIVE": "Teks obrolan LIVE",
+  "Opacidad del chat del LIVE": "Opasitas obrolan LIVE",
+  "Ancho del chat del LIVE": "Jembaré obrolan LIVE",
+  "Ancho de los paneles": "Jembaré panel",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Komentar, profil, panelusuran lan pesen ing jendela jembar",
+  "TikTok no aceptó el mensaje: {0}": "TikTok ora nampa pesen: {0}",
+  "No se pudo confirmar el envío del mensaje": "Ora bisa dikonfirmasi yen pesen wis dikirim",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Pesenmu ora katon ing obrolan live: bisa uga kreator mbatesi komentar"
 }

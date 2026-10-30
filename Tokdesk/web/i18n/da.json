@@ -495,5 +495,16 @@
   "se unió": "deltog",
   "envió un regalo": "sendte en gave",
   "No se pudo dar me gusta": "Kunne ikke synes godt om",
-  "Emojis": "Emojis"
+  "Emojis": "Emojis",
+  "Tamaño del texto": "Tekststørrelse",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Kun teksten, uden at ændre resten af grænsefladen",
+  "Texto de los mensajes": "Beskedtekst",
+  "Texto del chat del LIVE": "Tekst i LIVE-chatten",
+  "Opacidad del chat del LIVE": "Gennemsigtighed i LIVE-chatten",
+  "Ancho del chat del LIVE": "Bredde på LIVE-chatten",
+  "Ancho de los paneles": "Bredde på paneler",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Kommentarer, profil, søgning og beskeder i brede vinduer",
+  "TikTok no aceptó el mensaje: {0}": "TikTok accepterede ikke beskeden: {0}",
+  "No se pudo confirmar el envío del mensaje": "Kunne ikke bekræfte, at beskeden blev sendt",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Din besked vises ikke i livechatten: skaberen begrænser måske kommentarer"
 }

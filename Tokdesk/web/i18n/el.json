@@ -495,5 +495,16 @@
   "se unió": "μπήκε",
   "envió un regalo": "έστειλε δώρο",
   "No se pudo dar me gusta": "Δεν ήταν δυνατό το «μου αρέσει»",
-  "Emojis": "Emoji"
+  "Emojis": "Emoji",
+  "Tamaño del texto": "Μέγεθος κειμένου",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Μόνο το κείμενο, χωρίς αλλαγή του υπόλοιπου περιβάλλοντος",
+  "Texto de los mensajes": "Κείμενο μηνυμάτων",
+  "Texto del chat del LIVE": "Κείμενο του chat του LIVE",
+  "Opacidad del chat del LIVE": "Αδιαφάνεια του chat του LIVE",
+  "Ancho del chat del LIVE": "Πλάτος του chat του LIVE",
+  "Ancho de los paneles": "Πλάτος των πάνελ",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Σχόλια, προφίλ, αναζήτηση και μηνύματα σε πλατιά παράθυρα",
+  "TikTok no aceptó el mensaje: {0}": "Το TikTok δεν δέχτηκε το μήνυμα: {0}",
+  "No se pudo confirmar el envío del mensaje": "Δεν ήταν δυνατή η επιβεβαίωση της αποστολής του μηνύματος",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Το μήνυμά σου δεν εμφανίζεται στο chat του live: ίσως ο δημιουργός περιορίζει τα σχόλια"
 }

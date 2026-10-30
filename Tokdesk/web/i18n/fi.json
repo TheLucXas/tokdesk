@@ -495,5 +495,16 @@
   "se unió": "liittyi",
   "envió un regalo": "lähetti lahjan",
   "No se pudo dar me gusta": "Tykkääminen epäonnistui",
-  "Emojis": "Emojit"
+  "Emojis": "Emojit",
+  "Tamaño del texto": "Tekstin koko",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Vain teksti, muu käyttöliittymä ei muutu",
+  "Texto de los mensajes": "Viestien teksti",
+  "Texto del chat del LIVE": "LIVE-keskustelun teksti",
+  "Opacidad del chat del LIVE": "LIVE-keskustelun läpinäkyvyys",
+  "Ancho del chat del LIVE": "LIVE-keskustelun leveys",
+  "Ancho de los paneles": "Paneelien leveys",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Kommentit, profiili, haku ja viestit leveissä ikkunoissa",
+  "TikTok no aceptó el mensaje: {0}": "TikTok ei hyväksynyt viestiä: {0}",
+  "No se pudo confirmar el envío del mensaje": "Viestin lähettämistä ei voitu vahvistaa",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Viestisi ei näy live-keskustelussa: tekijä on ehkä rajoittanut kommentteja"
 }

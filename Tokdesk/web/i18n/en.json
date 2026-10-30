@@ -495,5 +495,16 @@
   "se unió": "joined",
   "envió un regalo": "sent a gift",
   "No se pudo dar me gusta": "Couldn't like",
-  "Emojis": "Emojis"
+  "Emojis": "Emojis",
+  "Tamaño del texto": "Text size",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Only the text, without changing the rest of the interface",
+  "Texto de los mensajes": "Message text",
+  "Texto del chat del LIVE": "LIVE chat text",
+  "Opacidad del chat del LIVE": "LIVE chat opacity",
+  "Ancho del chat del LIVE": "LIVE chat width",
+  "Ancho de los paneles": "Panel width",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Comments, profile, search and messages in wide windows",
+  "TikTok no aceptó el mensaje: {0}": "TikTok didn't accept the message: {0}",
+  "No se pudo confirmar el envío del mensaje": "Couldn't confirm the message was sent",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Your message doesn't appear in the live chat: the creator may be limiting comments"
 }

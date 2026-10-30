@@ -495,5 +495,16 @@
   "se unió": "যোগ দিয়েছেন",
   "envió un regalo": "একটি উপহার পাঠিয়েছেন",
   "No se pudo dar me gusta": "লাইক করা যায়নি",
-  "Emojis": "ইমোজি"
+  "Emojis": "ইমোজি",
+  "Tamaño del texto": "টেক্সটের আকার",
+  "Solo el texto, sin cambiar el resto de la interfaz": "শুধু টেক্সট, ইন্টারফেসের বাকি অংশ না বদলে",
+  "Texto de los mensajes": "বার্তার টেক্সট",
+  "Texto del chat del LIVE": "LIVE চ্যাটের টেক্সট",
+  "Opacidad del chat del LIVE": "LIVE চ্যাটের অস্বচ্ছতা",
+  "Ancho del chat del LIVE": "LIVE চ্যাটের প্রস্থ",
+  "Ancho de los paneles": "প্যানেলের প্রস্থ",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "চওড়া উইন্ডোতে মন্তব্য, প্রোফাইল, অনুসন্ধান ও বার্তা",
+  "TikTok no aceptó el mensaje: {0}": "TikTok বার্তাটি গ্রহণ করেনি: {0}",
+  "No se pudo confirmar el envío del mensaje": "বার্তা পাঠানো নিশ্চিত করা যায়নি",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "আপনার বার্তা লাইভ চ্যাটে দেখা যাচ্ছে না: নির্মাতা হয়তো মন্তব্য সীমিত করেছেন"
 }

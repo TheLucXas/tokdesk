@@ -495,5 +495,16 @@
   "se unió": "doet mee",
   "envió un regalo": "heeft een cadeau gestuurd",
   "No se pudo dar me gusta": "Liken is mislukt",
-  "Emojis": "Emoji's"
+  "Emojis": "Emoji's",
+  "Tamaño del texto": "Tekstgrootte",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Alleen de tekst, de rest van de interface blijft ongewijzigd",
+  "Texto de los mensajes": "Berichttekst",
+  "Texto del chat del LIVE": "Tekst van de LIVE-chat",
+  "Opacidad del chat del LIVE": "Dekking van de LIVE-chat",
+  "Ancho del chat del LIVE": "Breedte van de LIVE-chat",
+  "Ancho de los paneles": "Breedte van de panelen",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Reacties, profiel, zoeken en berichten in brede vensters",
+  "TikTok no aceptó el mensaje: {0}": "TikTok heeft het bericht niet geaccepteerd: {0}",
+  "No se pudo confirmar el envío del mensaje": "Kon niet bevestigen dat het bericht is verzonden",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Je bericht verschijnt niet in de livechat: misschien beperkt de maker reacties"
 }

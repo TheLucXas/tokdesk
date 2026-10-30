@@ -495,5 +495,16 @@
   "se unió": "katıldı",
   "envió un regalo": "hediye gönderdi",
   "No se pudo dar me gusta": "Beğenilemedi",
-  "Emojis": "Emojiler"
+  "Emojis": "Emojiler",
+  "Tamaño del texto": "Metin boyutu",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Arayüzün geri kalanını değiştirmeden yalnızca metin",
+  "Texto de los mensajes": "Mesaj metni",
+  "Texto del chat del LIVE": "LIVE sohbeti metni",
+  "Opacidad del chat del LIVE": "LIVE sohbeti opaklığı",
+  "Ancho del chat del LIVE": "LIVE sohbeti genişliği",
+  "Ancho de los paneles": "Panel genişliği",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Geniş pencerelerde yorumlar, profil, arama ve mesajlar",
+  "TikTok no aceptó el mensaje: {0}": "TikTok mesajı kabul etmedi: {0}",
+  "No se pudo confirmar el envío del mensaje": "Mesajın gönderildiği doğrulanamadı",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesajın canlı yayın sohbetinde görünmüyor: yayıncı yorumları sınırlıyor olabilir"
 }

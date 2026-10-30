@@ -495,5 +495,16 @@
   "se unió": "csatlakozott",
   "envió un regalo": "ajándékot küldött",
   "No se pudo dar me gusta": "Nem sikerült kedvelni",
-  "Emojis": "Emojik"
+  "Emojis": "Emojik",
+  "Tamaño del texto": "Szövegméret",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Csak a szöveg, a felület többi része változatlan marad",
+  "Texto de los mensajes": "Üzenetek szövege",
+  "Texto del chat del LIVE": "LIVE-csevegés szövege",
+  "Opacidad del chat del LIVE": "LIVE-csevegés átlátszatlansága",
+  "Ancho del chat del LIVE": "LIVE-csevegés szélessége",
+  "Ancho de los paneles": "Panelek szélessége",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Hozzászólások, profil, keresés és üzenetek széles ablakokban",
+  "TikTok no aceptó el mensaje: {0}": "A TikTok nem fogadta el az üzenetet: {0}",
+  "No se pudo confirmar el envío del mensaje": "Nem sikerült megerősíteni az üzenet elküldését",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Az üzeneted nem jelenik meg az élő csevegésben: lehet, hogy a készítő korlátozza a hozzászólásokat"
 }

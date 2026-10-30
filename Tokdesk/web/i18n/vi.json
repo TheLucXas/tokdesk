@@ -495,5 +495,16 @@
   "se unió": "đã tham gia",
   "envió un regalo": "đã gửi một món quà",
   "No se pudo dar me gusta": "Không thể thích",
-  "Emojis": "Biểu tượng cảm xúc"
+  "Emojis": "Biểu tượng cảm xúc",
+  "Tamaño del texto": "Cỡ chữ",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Chỉ chữ, không đổi phần còn lại của giao diện",
+  "Texto de los mensajes": "Chữ của tin nhắn",
+  "Texto del chat del LIVE": "Chữ của trò chuyện LIVE",
+  "Opacidad del chat del LIVE": "Độ mờ của trò chuyện LIVE",
+  "Ancho del chat del LIVE": "Chiều rộng của trò chuyện LIVE",
+  "Ancho de los paneles": "Chiều rộng của các bảng",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Bình luận, trang cá nhân, tìm kiếm và tin nhắn trong cửa sổ rộng",
+  "TikTok no aceptó el mensaje: {0}": "TikTok không chấp nhận tin nhắn: {0}",
+  "No se pudo confirmar el envío del mensaje": "Không thể xác nhận tin nhắn đã được gửi",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Tin nhắn của bạn không xuất hiện trong khung trò chuyện của live: có thể nhà sáng tạo đang hạn chế bình luận"
 }

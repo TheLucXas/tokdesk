@@ -495,5 +495,16 @@
   "se unió": "加入了",
   "envió un regalo": "送出了禮物",
   "No se pudo dar me gusta": "無法按讚",
-  "Emojis": "表情符號"
+  "Emojis": "表情符號",
+  "Tamaño del texto": "文字大小",
+  "Solo el texto, sin cambiar el resto de la interfaz": "僅變更文字，不改變介面其餘部分",
+  "Texto de los mensajes": "訊息文字",
+  "Texto del chat del LIVE": "LIVE 聊天文字",
+  "Opacidad del chat del LIVE": "LIVE 聊天不透明度",
+  "Ancho del chat del LIVE": "LIVE 聊天寬度",
+  "Ancho de los paneles": "面板寬度",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "寬視窗中的留言、個人檔案、搜尋和訊息",
+  "TikTok no aceptó el mensaje: {0}": "TikTok 未接受該訊息：{0}",
+  "No se pudo confirmar el envío del mensaje": "無法確認訊息是否已傳送",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "你的訊息未顯示在直播聊天中：創作者可能限制了留言"
 }

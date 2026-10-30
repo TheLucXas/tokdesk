@@ -495,5 +495,16 @@
   "se unió": "ဝင်ရောက်လာသည်",
   "envió un regalo": "လက်ဆောင်ပို့ခဲ့သည်",
   "No se pudo dar me gusta": "Like မလုပ်နိုင်ပါ",
-  "Emojis": "အီမိုဂျီ"
+  "Emojis": "အီမိုဂျီ",
+  "Tamaño del texto": "စာလုံးအရွယ်အစား",
+  "Solo el texto, sin cambiar el resto de la interfaz": "အင်တာဖေ့စ်၏ကျန်အပိုင်းကို မပြောင်းဘဲ စာသားသာ",
+  "Texto de los mensajes": "မက်ဆေ့ချ်များ၏ စာသား",
+  "Texto del chat del LIVE": "LIVE ချက်တင်၏ စာသား",
+  "Opacidad del chat del LIVE": "LIVE ချက်တင်၏ ဖောက်ထွင်းမြင်ရမှု",
+  "Ancho del chat del LIVE": "LIVE ချက်တင်၏ အကျယ်",
+  "Ancho de los paneles": "ပန်နယ်များ၏ အကျယ်",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "ကျယ်သောဝင်းဒိုးများတွင် မှတ်ချက်များ၊ ပရိုဖိုင်၊ ရှာဖွေမှုနှင့် မက်ဆေ့ချ်များ",
+  "TikTok no aceptó el mensaje: {0}": "TikTok က မက်ဆေ့ချ်ကို လက်မခံပါ- {0}",
+  "No se pudo confirmar el envío del mensaje": "မက်ဆေ့ချ်ပို့ပြီးကြောင်း အတည်မပြုနိုင်ပါ",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "သင့်မက်ဆေ့ချ်သည် တိုက်ရိုက်ချက်တင်တွင် မပေါ်ပါ- ဖန်တီးသူက မှတ်ချက်များကို ကန့်သတ်ထားနိုင်သည်"
 }

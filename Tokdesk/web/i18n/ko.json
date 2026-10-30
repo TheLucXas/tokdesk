@@ -495,5 +495,16 @@
   "se unió": "님이 참여했습니다",
   "envió un regalo": "님이 선물을 보냈습니다",
   "No se pudo dar me gusta": "좋아요를 누를 수 없습니다",
-  "Emojis": "이모티콘"
+  "Emojis": "이모티콘",
+  "Tamaño del texto": "글자 크기",
+  "Solo el texto, sin cambiar el resto de la interfaz": "나머지 인터페이스는 그대로 두고 글자만 변경합니다",
+  "Texto de los mensajes": "메시지 글자",
+  "Texto del chat del LIVE": "LIVE 채팅 글자",
+  "Opacidad del chat del LIVE": "LIVE 채팅 불투명도",
+  "Ancho del chat del LIVE": "LIVE 채팅 너비",
+  "Ancho de los paneles": "패널 너비",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "넓은 창에서의 댓글, 프로필, 검색, 메시지",
+  "TikTok no aceptó el mensaje: {0}": "TikTok에서 메시지를 받지 않았습니다: {0}",
+  "No se pudo confirmar el envío del mensaje": "메시지 전송을 확인할 수 없습니다",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "메시지가 라이브 채팅에 나타나지 않습니다. 크리에이터가 댓글을 제한했을 수 있습니다"
 }

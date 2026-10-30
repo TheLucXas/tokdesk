@@ -495,5 +495,16 @@
   "se unió": "เข้าร่วมแล้ว",
   "envió un regalo": "ส่งของขวัญ",
   "No se pudo dar me gusta": "กดถูกใจไม่ได้",
-  "Emojis": "อีโมจิ"
+  "Emojis": "อีโมจิ",
+  "Tamaño del texto": "ขนาดข้อความ",
+  "Solo el texto, sin cambiar el resto de la interfaz": "เฉพาะข้อความ โดยไม่เปลี่ยนส่วนอื่นของอินเทอร์เฟซ",
+  "Texto de los mensajes": "ข้อความของแชท",
+  "Texto del chat del LIVE": "ข้อความของแชท LIVE",
+  "Opacidad del chat del LIVE": "ความทึบของแชท LIVE",
+  "Ancho del chat del LIVE": "ความกว้างของแชท LIVE",
+  "Ancho de los paneles": "ความกว้างของแผง",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "ความคิดเห็น โปรไฟล์ การค้นหา และข้อความในหน้าต่างกว้าง",
+  "TikTok no aceptó el mensaje: {0}": "TikTok ไม่รับข้อความ: {0}",
+  "No se pudo confirmar el envío del mensaje": "ยืนยันไม่ได้ว่าส่งข้อความแล้ว",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ข้อความของคุณไม่แสดงในแชทไลฟ์ ครีเอเตอร์อาจจำกัดความคิดเห็น"
 }

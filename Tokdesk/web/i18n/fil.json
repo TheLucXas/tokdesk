@@ -495,5 +495,16 @@
   "se unió": "sumali",
   "envió un regalo": "nagpadala ng regalo",
   "No se pudo dar me gusta": "Hindi ma-like",
-  "Emojis": "Mga emoji"
+  "Emojis": "Mga emoji",
+  "Tamaño del texto": "Laki ng teksto",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Teksto lang, hindi babaguhin ang iba pang bahagi ng interface",
+  "Texto de los mensajes": "Teksto ng mga mensahe",
+  "Texto del chat del LIVE": "Teksto ng chat ng LIVE",
+  "Opacidad del chat del LIVE": "Opacity ng chat ng LIVE",
+  "Ancho del chat del LIVE": "Lapad ng chat ng LIVE",
+  "Ancho de los paneles": "Lapad ng mga panel",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Mga komento, profile, paghahanap at mga mensahe sa malalapad na window",
+  "TikTok no aceptó el mensaje: {0}": "Hindi tinanggap ng TikTok ang mensahe: {0}",
+  "No se pudo confirmar el envío del mensaje": "Hindi makumpirma na naipadala ang mensahe",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Hindi lumalabas ang mensahe mo sa chat ng live: maaaring nililimitahan ng creator ang mga komento"
 }

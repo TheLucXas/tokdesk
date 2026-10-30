@@ -495,5 +495,16 @@
   "se unió": "が参加しました",
   "envió un regalo": "がギフトを贈りました",
   "No se pudo dar me gusta": "いいねできませんでした",
-  "Emojis": "絵文字"
+  "Emojis": "絵文字",
+  "Tamaño del texto": "文字サイズ",
+  "Solo el texto, sin cambiar el resto de la interfaz": "文字のみ変更し、インターフェースのそれ以外は変更しません",
+  "Texto de los mensajes": "メッセージの文字",
+  "Texto del chat del LIVE": "LIVEチャットの文字",
+  "Opacidad del chat del LIVE": "LIVEチャットの不透明度",
+  "Ancho del chat del LIVE": "LIVEチャットの幅",
+  "Ancho de los paneles": "パネルの幅",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "幅の広いウィンドウでのコメント、プロフィール、検索、メッセージ",
+  "TikTok no aceptó el mensaje: {0}": "TikTokがメッセージを受け付けませんでした: {0}",
+  "No se pudo confirmar el envío del mensaje": "メッセージが送信されたか確認できませんでした",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "メッセージがライブのチャットに表示されません。クリエイターがコメントを制限している可能性があります"
 }

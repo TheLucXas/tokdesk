@@ -495,5 +495,16 @@
   "se unió": "entrou",
   "envió un regalo": "enviou um presente",
   "No se pudo dar me gusta": "Não foi possível curtir",
-  "Emojis": "Emojis"
+  "Emojis": "Emojis",
+  "Tamaño del texto": "Tamanho do texto",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Apenas o texto, sem alterar o resto da interface",
+  "Texto de los mensajes": "Texto das mensagens",
+  "Texto del chat del LIVE": "Texto do chat do LIVE",
+  "Opacidad del chat del LIVE": "Opacidade do chat do LIVE",
+  "Ancho del chat del LIVE": "Largura do chat do LIVE",
+  "Ancho de los paneles": "Largura dos painéis",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Comentários, perfil, pesquisa e mensagens em janelas largas",
+  "TikTok no aceptó el mensaje: {0}": "O TikTok não aceitou a mensagem: {0}",
+  "No se pudo confirmar el envío del mensaje": "Não foi possível confirmar o envio da mensagem",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Sua mensagem não aparece no chat da live: o criador pode estar limitando os comentários"
 }

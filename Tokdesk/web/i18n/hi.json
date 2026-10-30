@@ -495,5 +495,16 @@
   "se unió": "शामिल हुए",
   "envió un regalo": "ने गिफ़्ट भेजा",
   "No se pudo dar me gusta": "लाइक नहीं हो सका",
-  "Emojis": "इमोजी"
+  "Emojis": "इमोजी",
+  "Tamaño del texto": "टेक्स्ट का आकार",
+  "Solo el texto, sin cambiar el resto de la interfaz": "सिर्फ़ टेक्स्ट, बाकी इंटरफ़ेस को बदले बिना",
+  "Texto de los mensajes": "संदेशों का टेक्स्ट",
+  "Texto del chat del LIVE": "LIVE चैट का टेक्स्ट",
+  "Opacidad del chat del LIVE": "LIVE चैट की पारदर्शिता",
+  "Ancho del chat del LIVE": "LIVE चैट की चौड़ाई",
+  "Ancho de los paneles": "पैनलों की चौड़ाई",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "चौड़ी विंडो में कमेंट, प्रोफ़ाइल, खोज और संदेश",
+  "TikTok no aceptó el mensaje: {0}": "TikTok ने संदेश स्वीकार नहीं किया: {0}",
+  "No se pudo confirmar el envío del mensaje": "संदेश भेजे जाने की पुष्टि नहीं हो सकी",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "आपका संदेश लाइव चैट में नहीं दिख रहा: हो सकता है क्रिएटर ने कमेंट सीमित कर रखे हों"
 }

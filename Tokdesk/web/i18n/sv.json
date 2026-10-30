@@ -495,5 +495,16 @@
   "se unió": "gick med",
   "envió un regalo": "skickade en gåva",
   "No se pudo dar me gusta": "Det gick inte att gilla",
-  "Emojis": "Emojier"
+  "Emojis": "Emojier",
+  "Tamaño del texto": "Textstorlek",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Bara texten, utan att ändra resten av gränssnittet",
+  "Texto de los mensajes": "Meddelandetext",
+  "Texto del chat del LIVE": "Text i LIVE-chatten",
+  "Opacidad del chat del LIVE": "Genomskinlighet i LIVE-chatten",
+  "Ancho del chat del LIVE": "Bredd på LIVE-chatten",
+  "Ancho de los paneles": "Bredd på panelerna",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Kommentarer, profil, sökning och meddelanden i breda fönster",
+  "TikTok no aceptó el mensaje: {0}": "TikTok godtog inte meddelandet: {0}",
+  "No se pudo confirmar el envío del mensaje": "Det gick inte att bekräfta att meddelandet skickades",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ditt meddelande syns inte i livechatten: skaparen kanske begränsar kommentarer"
 }

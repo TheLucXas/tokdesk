@@ -495,5 +495,16 @@
   "se unió": "s-a alăturat",
   "envió un regalo": "a trimis un cadou",
   "No se pudo dar me gusta": "Nu s-a putut aprecia",
-  "Emojis": "Emoji"
+  "Emojis": "Emoji",
+  "Tamaño del texto": "Dimensiunea textului",
+  "Solo el texto, sin cambiar el resto de la interfaz": "Doar textul, fără a schimba restul interfeței",
+  "Texto de los mensajes": "Textul mesajelor",
+  "Texto del chat del LIVE": "Textul chatului LIVE",
+  "Opacidad del chat del LIVE": "Opacitatea chatului LIVE",
+  "Ancho del chat del LIVE": "Lățimea chatului LIVE",
+  "Ancho de los paneles": "Lățimea panourilor",
+  "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Comentarii, profil, căutare și mesaje în ferestre late",
+  "TikTok no aceptó el mensaje: {0}": "TikTok nu a acceptat mesajul: {0}",
+  "No se pudo confirmar el envío del mensaje": "Nu s-a putut confirma trimiterea mesajului",
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesajul tău nu apare în chatul live-ului: poate creatorul limitează comentariile"
 }
