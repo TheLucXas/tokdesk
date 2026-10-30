@@ -301,6 +301,25 @@ sealed class SidePage
         finally { _locked = false; await Eval("(() => { window.__tdShareAt = 0; return null; })()"); }
     }
 
+    /// <summary>
+    /// Directos: escribir en el chat y dar me gusta los hace la propia web con sus botones (así queda firmado).
+    /// El live queda abierto y tomado en la página oculta mientras se mira; <see cref="LiveRelease"/> la suelta.
+    /// </summary>
+    public async Task<string> LiveAct(string url, string js)
+    {
+        const string ready = "(() => document.querySelector('[data-e2e=\"room-chat-like-btn\"]') ? 'ok' : null)()";
+        if (!(_locked && _liveUrl == url && (_wv.Source ?? "").EndsWith("/live")))
+        {
+            _liveUrl = null;
+            if (await OpenLocked(url, ready, "LIVE") == null) return null;
+            _liveUrl = url;
+        }
+        _lockedAt = DateTime.UtcNow;
+        return await Poll(js, 8000);
+    }
+    string _liveUrl;
+    public void LiveRelease() { if (_liveUrl == null) return; _liveUrl = null; _locked = false; }
+
     public async Task Warm()
     {
         await Ensure();

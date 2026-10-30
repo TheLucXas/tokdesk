@@ -65,7 +65,8 @@ function liveOverlay(it) {
     </div>
     ${it.desc ? `<div class="lv-title">${esc(it.desc)}</div>` : ''}
     <div class="lv-chat"></div>
-    <div class="lv-bottom"><button class="lv-input">${esc(t('Escribe algo…'))}</button>
+    <div class="lv-bottom"><form class="lv-form"><input class="lv-input" maxlength="150" autocomplete="off" placeholder="${esc(t('Escribe algo…'))}"></form>
+      <button class="lv-like" title="${esc(t('Me gusta'))}">${ICON.heart}</button>
       <button class="lv-share" title="${esc(t('Compartir'))}">${ICON.share}</button>
       <button class="livebtn" title="${esc(t('Ver en el navegador'))}">${ICON.globe}</button></div>
     <div class="live-end">${esc(t('La transmisión terminó'))}</div>`;
@@ -79,8 +80,9 @@ function wireLive(el, it) {
   $('.lv-follow', el).onclick = async (e) => { stop(e); await follow(it, true); $('.lv-follow', el).hidden = true; };
   $('.lv-host img', el).onclick = (e) => { stop(e); openProfile(it); };
   $('.lv-share', el).onclick = (e) => { stop(e); openShare(it); };
-  // Escribir en el chat solo se puede en la web de TikTok
-  $('.lv-input', el).onclick = (e) => { stop(e); send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author + '/live', browser: true }); };
+  $('.lv-form', el).onclick = stop;
+  $('.lv-form', el).onsubmit = (e) => { e.preventDefault(); liveChat(it, el); };
+  $('.lv-like', el).onclick = (e) => { stop(e); liveLike(it); };
 }
 
 async function startLive(el, it) {
@@ -117,6 +119,7 @@ async function startLive(el, it) {
 }
 
 function stopLive(el) {
+  if (el.liveSession) { el.liveSession = false; send({ t: 'liverelease' }); }
   if (!el.livePlayer) return;
   try { el.livePlayer.pause(); el.livePlayer.unload(); el.livePlayer.detachMediaElement(); el.livePlayer.destroy(); } catch { }
   el.livePlayer = null;
@@ -266,3 +269,56 @@ async function checkAuthorLive(it, el) {
 }
 setTimeout(refreshFollowLive, 6000);
 setInterval(refreshFollowLive, 3 * 60e3);
+
+// ---------- Escribir en el chat y dar me gusta: los hace la web del directo en la página oculta ----------
+let liveRid = 0;
+const liveWait = new Map();
+function liveAct(it, js) {
+  if (!state.me) { askLogin(); return Promise.resolve(null); }
+  const el = [...state.slides.values()].find((x) => x.item === it);
+  if (el) el.liveSession = true;
+  return new Promise((resolve) => {
+    const rid = ++liveRid;
+    liveWait.set(rid, resolve);
+    send({ t: 'liveact', rid, url: 'https://www.tiktok.com/@' + it.author + '/live', js });
+    setTimeout(() => { if (liveWait.delete(rid)) resolve(null); }, 40000);
+  });
+}
+function onLiveAct(m) { const f = liveWait.get(m.rid); liveWait.delete(m.rid); if (f) f(m.r); }
+
+async function liveChat(it, el) {
+  const inp = $('.lv-input', el);
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.disabled = true;
+  // Se escribe en el campo de la web y se toca su Enviar; listo cuando el campo queda vacío
+  const r = await liveAct(it, `(() => {
+    const f = document.querySelector('[data-e2e="room-chat-input-field"]'), b = document.querySelector('[data-e2e="room-chat-send-btn"]');
+    if (!f || !b) return null;
+    if (!window.__tdSent) { f.focus(); document.execCommand('insertText', false, ${JSON.stringify(text)}); window.__tdSent = 1; setTimeout(() => b.click(), 150); return null; }
+    if ((f.textContent || '').trim()) return null;
+    window.__tdSent = 0;
+    return 'sent';
+  })()`);
+  inp.disabled = false;
+  if (r !== 'sent') { inp.value = text; toast(t('No se pudo enviar el mensaje')); return; }
+  addChat($('.lv-chat', el), { nick: state.me.nickname || state.me.uniqueId, avatar: state.me.avatar || '' }, text);
+}
+
+// Me gusta: se suman los toques y se mandan juntos (como la app, que agrupa los corazones)
+function liveLike(it) {
+  const el = [...state.slides.values()].find((x) => x.item === it);
+  if (!el) return;
+  it.likeCount = (it.likeCount || 0) + 1;
+  $('.lv-likes i', el).textContent = fmt(it.likeCount);
+  const h = $('.lv-like', el);
+  h.classList.remove('pop'); void h.offsetWidth; h.classList.add('pop');
+  el.likePending = (el.likePending || 0) + 1;
+  clearTimeout(el.likeTimer);
+  el.likeTimer = setTimeout(async () => {
+    const n = el.likePending; el.likePending = 0;
+    const r = await liveAct(it, `(() => { const b = document.querySelector('[data-e2e="room-chat-like-btn"]'); if (!b) return null; for (let i = 0; i < ${n}; i++) b.click(); return 'ok'; })()`);
+    if (r !== 'ok') toast(t('No se pudo dar me gusta'));
+  }, 700);
+}

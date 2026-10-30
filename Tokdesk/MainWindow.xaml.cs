@@ -543,6 +543,13 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "reportstate", s = await _side.ReportAct(S("kind"), m.GetProperty("i").GetInt32()) });
                     break;
                 case "reportclose": await _side.ReportClose(); break;
+                case "liveact":
+                    {
+                        var r = await _side.LiveAct(S("url"), S("js"));
+                        PostToUi(new { t = "liveact", rid = m.GetProperty("rid").GetInt32(), r });
+                        break;
+                    }
+                case "liverelease": _side.LiveRelease(); break;
                 case "sharevideo":
                     {
                         var people = m.GetProperty("people").EnumerateArray().Select(x => x.GetString()).ToArray();

@@ -933,6 +933,7 @@ function togglePause() {
 
 // ---------- Acciones de cuenta ----------
 async function like(it, force) {
+  if (it.live) return liveLike(it);
   const on = force ?? !it.liked;
   if (on === it.liked) return;
   if (!state.me) return askLogin();
@@ -2981,6 +2982,7 @@ host && host.addEventListener('message', (e) => {
     case 'audiofixed': onAudioFixed(m); break;
     case 'audioprobed': onAudioProbed(m); break;
     case 'shared': onShared(m); break;
+    case 'liveact': onLiveAct(m); break;
     case 'dmreact': if (!m.ok) toast(t('No se pudo reaccionar')); break;
     case 'sharedurl': state.openingShared = false; if (m.url) openVideoLink(m.url); else toast(t('No se pudo abrir el video')); break;
     case 'toast': toast(m.m); break;
