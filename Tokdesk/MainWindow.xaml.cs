@@ -236,6 +236,8 @@ public partial class MainWindow : Window
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] struct MONITORINFO { public int Size; public RECT Monitor, Work; public uint Flags; }
     [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
     [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
+    [StructLayout(LayoutKind.Sequential)] struct APPBARDATA { public int Size; public IntPtr Hwnd; public uint CallbackMessage, Edge; public RECT Rc; public IntPtr LParam; }
+    [DllImport("shell32.dll")] static extern IntPtr SHAppBarMessage(uint msg, ref APPBARDATA data);
 
     static void FitToWorkArea(IntPtr hwnd, IntPtr lParam)
     {
@@ -247,6 +249,19 @@ public partial class MainWindow : Window
         mmi.MaxPosition.Y = info.Work.Top - info.Monitor.Top;
         mmi.MaxSize.X = info.Work.Right - info.Work.Left;
         mmi.MaxSize.Y = info.Work.Bottom - info.Work.Top;
+        // Barra de tareas con «ocultar automáticamente»: si la ventana tapa el borde entero, Windows no la vuelve a mostrar
+        for (uint edge = 0; edge < 4; edge++)
+        {
+            var abd = new APPBARDATA { Size = Marshal.SizeOf<APPBARDATA>(), Edge = edge, Rc = info.Monitor };
+            if (SHAppBarMessage(0x0B /* ABM_GETAUTOHIDEBAREX */, ref abd) == IntPtr.Zero) continue;
+            switch (edge)
+            {
+                case 0: mmi.MaxPosition.X += 2; mmi.MaxSize.X -= 2; break;
+                case 1: mmi.MaxPosition.Y += 2; mmi.MaxSize.Y -= 2; break;
+                case 2: mmi.MaxSize.X -= 2; break;
+                case 3: mmi.MaxSize.Y -= 2; break;
+            }
+        }
         Marshal.StructureToPtr(mmi, lParam, true);
     }
 
