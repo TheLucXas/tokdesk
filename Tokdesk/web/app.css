@@ -31,7 +31,7 @@ svg { display: block; width: 100%; height: 100%; }
 #top > .topicon { position: absolute; left: 10px; top: 34px; }
 #top > #btnSearch { left: auto; right: 10px; }
 #btnLive { width: auto; padding: 0; }
-.livetv { display: inline-block; border: 2px solid #fff; border-radius: 5px; font-size: 10px; font-weight: 800; padding: 2px 4px; letter-spacing: .3px; }
+.livetv { width: 28px; height: 24px; display: block; color: #fff; }
 #top > #backbar { position: absolute; left: 6px; right: 6px; top: 32px; }
 #top .winbtns { position: absolute; right: 4px; top: 2px; }
 #top .winbtns button { width: 26px; height: 24px; padding: 5px; }
@@ -184,7 +184,7 @@ svg { display: block; width: 100%; height: 100%; }
 #backbar button { width: 30px; height: 30px; padding: 4px; }
 #backTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.sub #backbar { display: flex; }
-body.sub .tabs, body.sub #btnSearch { display: none; }
+body.sub .tabs, body.sub #btnSearch, body.sub #btnLive { display: none; }
 #volwrap { position: relative; display: flex; align-items: center; }
 #volpop { position: absolute; right: -6px; top: 100%; z-index: 30; padding: 10px 12px 8px; display: none;
   background: rgba(20,20,20,.92); border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
@@ -682,13 +682,14 @@ body.light .lessreplies { color: rgba(22,24,35,.55); }
 .avatar.living::after { content: 'LIVE'; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); background: #fe2c55; color: #fff; font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 3px; }
 .avatar.living .follow { display: none; }
 @keyframes livepulse { 50% { box-shadow: 0 0 0 3px rgba(254,44,85,.35); } }
-#liveRow { display: none; position: absolute; top: 76px; left: 0; right: 0; z-index: 6; gap: 12px; padding: 4px 12px 8px; overflow-x: auto; scrollbar-width: none; background: linear-gradient(rgba(0,0,0,.5), transparent); }
+#liveRow { display: none; position: absolute; top: 76px; left: 0; right: 0; height: 104px; z-index: 6; gap: 14px; padding: 2px 12px 0; overflow-x: auto; scrollbar-width: none; background: #000; }
 body.liverow:not(.sub) #liveRow { display: flex; }
-#liveRow button { position: relative; flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; color: #fff; }
-#liveRow .ring { width: 56px; height: 56px; border-radius: 50%; padding: 2px; border: 2px solid #fe2c55; }
-#liveRow .ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-#liveRow .live-tag { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); font-size: 9px; padding: 1px 4px; }
-#liveRow .nm { font-size: 11px; margin-top: 8px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.liverow:not(.sub) #pager, body.liverow:not(.sub) #empty { top: 180px; }
+#liveRow button { position: relative; flex: none; width: 72px; display: flex; flex-direction: column; align-items: center; color: #fff; }
+#liveRow .ring { width: 66px; height: 66px; border-radius: 50%; padding: 3px; border: 2.5px solid #fe2c55; }
+#liveRow .ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+#liveRow .live-tag { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); font-size: 10px; padding: 1px 5px; border: 1.5px solid #000; }
+#liveRow .nm { font-size: 12px; font-weight: 600; margin-top: 10px; max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cmt.hidden-cmt .gone { font-size: 13px; color: rgba(255,255,255,.45); }
 body.light .cmt.hidden-cmt .gone { color: rgba(22,24,35,.45); }
 
@@ -926,3 +927,38 @@ body.light .exnick small { color: rgba(22,24,35,.45); }
 #profile.open, #page.open, #activity.open, #chat.open, #search.open, #settings.open, #help.open { transform: none; }
 #inbox { transform: none; opacity: 0; visibility: hidden; transition: opacity .18s, visibility .18s; }
 #inbox.open { opacity: 1; visibility: visible; }
+
+/* Pantalla del directo como la app: sin la columna de botones de los videos */
+.slide.is-live .rail, .slide.is-live .meta, .slide.is-live .progress, .slide.is-live .cc { display: none; }
+.lv-top { position: absolute; z-index: 6; left: 10px; right: 10px; top: 84px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.lv-host { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,.35); border-radius: 22px; padding: 3px 4px 3px 3px; max-width: 60%; }
+.lv-host img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+.lv-hn { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.lv-hn b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-likes { display: flex; align-items: center; gap: 3px; font-size: 11px; opacity: .85; }
+.lv-likes svg { width: 11px; height: 11px; }
+.lv-follow { background: var(--red); color: #fff; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 16px; flex: none; }
+.lv-right { display: flex; align-items: center; gap: 8px; }
+.lv-viewers { display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,.35); border-radius: 14px; padding: 4px 9px; font-size: 13px; font-weight: 600; }
+.lv-viewers svg { width: 14px; height: 14px; }
+.lv-close { width: 30px; height: 30px; padding: 6px; color: #fff; }
+.lv-title { position: absolute; z-index: 6; left: 12px; top: 130px; max-width: 70%; font-size: 13px; background: rgba(0,0,0,.3); border-radius: 12px; padding: 3px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-chat { position: absolute; z-index: 6; left: 10px; bottom: 58px; width: min(72%, 380px); max-height: 38%; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 4px;
+  -webkit-mask-image: linear-gradient(transparent, #000 22%); mask-image: linear-gradient(transparent, #000 22%); }
+.lv-msg { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,.6); animation: exin .2s ease-out; }
+.lv-msg img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex: none; }
+.lv-msg b { color: rgba(255,255,255,.7); font-weight: 600; }
+.lv-msg.join span, .lv-msg.gift span { color: rgba(255,255,255,.7); }
+.lv-bottom { position: absolute; z-index: 6; left: 10px; right: 10px; bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.lv-input { flex: 1; text-align: left; background: rgba(0,0,0,.35); color: rgba(255,255,255,.75); border-radius: 20px; padding: 9px 14px; font-size: 14px; }
+.lv-bottom > button:not(.lv-input) { width: 38px; height: 38px; padding: 8px; border-radius: 50%; background: rgba(0,0,0,.35); color: #fff; flex: none; }
+.lv-bottom .livebtn { position: static; transform: none; }
+.sh-title { display: flex; align-items: center; justify-content: space-between; }
+#shRefresh { font-size: 13px; font-weight: 400; color: rgba(255,255,255,.6); }
+#cmtSearch { position: absolute; left: 14px; top: 14px; max-width: 45%; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 400; color: rgba(255,255,255,.6); white-space: nowrap; overflow: hidden; }
+#cmtSearch b { color: #5aa7ff; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+#cmtSearch svg { width: 13px; height: 13px; color: #5aa7ff; flex: none; }
+body.light #cmtSearch { color: rgba(22,24,35,.6); }
+body.light #cmtSearch b, body.light #cmtSearch svg { color: #2b5db9; }
+#sheet .sheet-head:has(#cmtSearch:not([hidden])) { padding-top: 42px; }
+#cmtSearch[hidden] { display: none; }

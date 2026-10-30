@@ -323,8 +323,15 @@ sealed class Engine
                 const csrf = appContext().csrfToken;
                 if (csrf) headers['tt-csrf-token'] = csrf;
               }
+              // Respuestas binarias (protobuf del chat de los directos): se piden con __b64=1 y vuelven en base64
+              const bin = /[?&]__b64=1/.test(url);
+              if (bin) url = url.replace(/([?&])__b64=1&?/, '$1');
               fetch(url, { method, credentials: 'include', headers, body: method === 'POST' ? (body || '') : undefined })
-                .then(r => r.text().then(t => ({ s: r.status, t })))
+                .then(r => bin ? r.arrayBuffer().then(a => {
+                    const u8 = new Uint8Array(a); let s = '';
+                    for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192));
+                    return { s: r.status, t: 'b64:' + btoa(s) };
+                  }) : r.text().then(t => ({ s: r.status, t })))
                 .then(({ s, t }) => t ? post({ id, status: s, body: t }) : this.xhr(id, method, url, body))
                 .catch(() => this.xhr(id, method, url, body));
             },

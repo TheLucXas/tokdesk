@@ -18,7 +18,7 @@ function liveItem(room) {
   const flv = flvOf(su.live_core_sdk_data && su.live_core_sdk_data.pull_data && su.live_core_sdk_data.pull_data.stream_data)
     || fp.HD1 || fp.SD1 || fp.FULL_HD1 || fp.SD2 || null;
   return {
-    id: 'live' + (room.id_str || room.id), live: true, src: null, photos: [], flv,
+    id: 'live' + (room.id_str || room.id), roomId: room.id_str || String(room.id), live: true, src: null, photos: [], flv, likeCount: room.like_count || 0,
     cover: urlOf(room.cover) || urlOf(ow.avatar_large) || urlOf(ow.avatar_thumb), ratio: 16 / 9,
     author: ow.display_id, nick: ow.nickname, avatar: urlOf(ow.avatar_thumb), authorId: ow.id_str || String(ow.id || ''), secUid: ow.sec_uid,
     desc: room.title || '', music: '', likes: 0, comments: 0, saves: 0, shares: 0, plays: 0,
@@ -51,25 +51,69 @@ async function roomOf(uniqueId) {
   const lr = d && d.liveRoom;
   if (!lr || lr.status !== 2) return null;
   return { flv: flvOf(lr.streamData && lr.streamData.pull_data && lr.streamData.pull_data.stream_data), title: lr.title,
-    viewers: lr.liveRoomStats && lr.liveRoomStats.userCount, cover: lr.coverUrl, user: d.user || {} };
+    viewers: lr.liveRoomStats && lr.liveRoomStats.userCount, cover: lr.coverUrl, user: d.user || {}, roomId: d.user && d.user.roomId };
+}
+
+// La pantalla del directo es la de la app, no la de un video: anfitrión con me gusta y botón de seguir arriba
+// a la izquierda, espectadores y cerrar arriba a la derecha, chat superpuesto abajo y la barra de escribir
+function liveOverlay(it) {
+  return `<div class="lv-top">
+      <div class="lv-host"><img alt="" src="${esc(it.avatar || '')}"><div class="lv-hn"><b>${esc(it.nick || it.author || '')}</b>
+        <span class="lv-likes">${ICON.heart}<i>${it.likeCount ? fmt(it.likeCount) : ''}</i></span></div>
+        <button class="lv-follow"${it.followed ? ' hidden' : ''}>${esc(t('Seguir'))}</button></div>
+      <div class="lv-right"><span class="lv-viewers">${ICON.user}<i>${it.viewers ? fmt(it.viewers) : ''}</i></span><button class="lv-close" title="${esc(t('Cerrar'))}">${ICON.close}</button></div>
+    </div>
+    ${it.desc ? `<div class="lv-title">${esc(it.desc)}</div>` : ''}
+    <div class="lv-chat"></div>
+    <div class="lv-bottom"><button class="lv-input">${esc(t('Escribe algo…'))}</button>
+      <button class="lv-share" title="${esc(t('Compartir'))}">${ICON.share}</button>
+      <button class="livebtn" title="${esc(t('Ver en el navegador'))}">${ICON.globe}</button></div>
+    <div class="live-end">${esc(t('La transmisión terminó'))}</div>`;
+}
+
+function wireLive(el, it) {
+  if (el.liveWired) return;
+  el.liveWired = true;
+  const stop = (e) => e.stopPropagation();
+  $('.lv-close', el).onclick = (e) => { stop(e); back(); };
+  $('.lv-follow', el).onclick = async (e) => { stop(e); await follow(it, true); $('.lv-follow', el).hidden = true; };
+  $('.lv-host img', el).onclick = (e) => { stop(e); openProfile(it); };
+  $('.lv-share', el).onclick = (e) => { stop(e); openShare(it); };
+  // Escribir en el chat solo se puede en la web de TikTok
+  $('.lv-input', el).onclick = (e) => { stop(e); send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author + '/live', browser: true }); };
 }
 
 async function startLive(el, it) {
   if (el.livePlayer || el.liveStarting) return;
   el.liveStarting = true;
-  if (!it.flv && it.author) { const r = await roomOf(it.author); if (r) { it.flv = r.flv; it.viewers = r.viewers || it.viewers; } }
+  if ((!it.flv || !it.roomId) && it.author) {
+    const r = await roomOf(it.author);
+    if (r) { it.flv = it.flv || r.flv; it.roomId = it.roomId || r.roomId; it.viewers = r.viewers || it.viewers; }
+  }
   el.liveStarting = false;
   if (!el.isConnected || currentItem() !== it) return;
+  wireLive(el, it);
   if (!it.flv || !window.mpegts) { el.classList.remove('waiting'); el.classList.add('live-ended'); return; }
   const v = el.media;
   const p = mpegts.createPlayer({ type: 'flv', isLive: true, url: it.flv }, { enableWorker: false, liveBufferLatencyChasing: true });
-  p.on(mpegts.Events.ERROR, (a, b) => { log('live: ' + a + ' ' + b); el.classList.add('live-ended'); });
+  p.on(mpegts.Events.ERROR, async (a, b) => {
+    log('live: ' + a + ' ' + b);
+    // La dirección del feed puede estar vencida: se pide la de la sala una vez y se reintenta
+    stopLive(el);
+    if (!it.retried && it.author) {
+      it.retried = true;
+      const r = await roomOf(it.author);
+      if (r && r.flv && r.flv !== it.flv) { it.flv = r.flv; if (currentItem() === it) startLive(el, it); return; }
+    }
+    el.classList.add('live-ended');
+  });
   p.attachMediaElement(v);
   p.load();
   el.livePlayer = p;
   v.muted = state.muted; v.volume = state.volume;
   v.addEventListener('playing', () => el.classList.remove('waiting', 'paused'), { once: true });
   v.play().catch(() => {});
+  if (it.roomId) { pollRoom(el, it); pollChat(el, it); }
 }
 
 function stopLive(el) {
@@ -78,11 +122,99 @@ function stopLive(el) {
   el.livePlayer = null;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const WEBCAST = 'https://webcast.tiktok.com/webcast/';
+
+// Me gusta y espectadores de la sala, cada 15 s mientras se mira
+async function pollRoom(el, it) {
+  while (el.livePlayer && el.isConnected) {
+    const r = await api('GET', WEBCAST + 'room/info/', { room_id: it.roomId });
+    const d = r.data && r.data.data;
+    if (d) {
+      if (d.status === 4) { el.classList.add('live-ended'); stopLive(el); return; }
+      it.likeCount = d.like_count || it.likeCount;
+      it.viewers = d.user_count || (d.stats && d.stats.total_user) || it.viewers;
+      $('.lv-likes i', el).textContent = it.likeCount ? fmt(it.likeCount) : '';
+      $('.lv-viewers i', el).textContent = it.viewers ? fmt(it.viewers) : '';
+      const ow = d.owner || {};
+      if (ow.follow_info && ow.follow_info.follow_status) $('.lv-follow', el).hidden = true;
+    }
+    await sleep(15000);
+  }
+}
+
+// ---------- Chat del directo (solo lectura): webcast/im/fetch responde en protobuf ----------
+function pbFields(buf) {
+  const out = [];
+  let i = 0;
+  const varint = () => { let x = 0, m = 1, b; do { b = buf[i++]; x += (b & 127) * m; m *= 128; } while (b >= 128 && i < buf.length); return x; };
+  try {
+    while (i < buf.length) {
+      const key = varint(), f = Math.floor(key / 8), w = key & 7;
+      if (w === 0) out.push([f, varint()]);
+      else if (w === 2) { const n = varint(); if (i + n > buf.length) break; out.push([f, buf.subarray(i, i + n)]); i += n; }
+      else if (w === 1) i += 8;
+      else if (w === 5) i += 4;
+      else break;
+    }
+  } catch { }
+  return out;
+}
+const pbGet = (fields, n) => (fields.find((x) => x[0] === n) || [])[1];
+const pbText = (b) => (b && b.length != null ? new TextDecoder().decode(b) : '');
+function pbUser(b) {
+  if (!b || b.length == null) return {};
+  const u = pbFields(b);
+  const pic = pbGet(u, 9);
+  return { nick: pbText(pbGet(u, 3)), uid: pbText(pbGet(u, 38)), avatar: pic ? pbText(pbGet(pbFields(pic), 1)) : '' };
+}
+
+async function pollChat(el, it) {
+  let cursor = '', ext = '';
+  const box = $('.lv-chat', el);
+  while (el.livePlayer && el.isConnected) {
+    const r = await api('GET', WEBCAST + 'im/fetch/', { room_id: it.roomId, resp_content_type: 'protobuf', fetch_rule: 1, cursor, internal_ext: ext,
+      last_rtt: 0, did_rule: 3, live_id: 12, version_code: 180800, __b64: 1 });
+    let wait = 2000;
+    if (r.data && r.data.b64) {
+      const bin = Uint8Array.from(atob(r.data.b64), (c) => c.charCodeAt(0));
+      const top = pbFields(bin);
+      cursor = pbText(pbGet(top, 2)) || cursor;
+      ext = pbText(pbGet(top, 5)) || ext;
+      wait = Math.min(5000, Math.max(1000, pbGet(top, 3) || 1500));
+      for (const [f, m] of top) {
+        if (f !== 1) continue;
+        const msg = pbFields(m);
+        const method = pbText(pbGet(msg, 1)), pay = pbFields(pbGet(msg, 2) || new Uint8Array());
+        if (method === 'WebcastChatMessage') addChat(box, pbUser(pbGet(pay, 2)), pbText(pbGet(pay, 3)));
+        else if (method === 'WebcastMemberMessage') addChat(box, pbUser(pbGet(pay, 2)), t('se unió'), 'join');
+        else if (method === 'WebcastLikeMessage') {
+          const total = pbGet(pay, 3);
+          if (total) { it.likeCount = total; $('.lv-likes i', el).textContent = fmt(total); }
+        } else if (method === 'WebcastRoomUserSeqMessage') {
+          const total = pbGet(pay, 3);
+          if (total) { it.viewers = total; $('.lv-viewers i', el).textContent = fmt(total); }
+        } else if (method === 'WebcastGiftMessage') addChat(box, pbUser(pbGet(pay, 7)), t('envió un regalo'), 'gift');
+      }
+    } else wait = 5000;
+    await sleep(wait);
+  }
+}
+function addChat(box, u, text, kind) {
+  if (!text || !u.nick) return;
+  const row = document.createElement('div');
+  row.className = 'lv-msg' + (kind ? ' ' + kind : '');
+  row.innerHTML = `${u.avatar ? `<img alt="" src="${esc(u.avatar)}">` : ''}<div><b>${esc(u.nick)}</b> <span>${esc(text)}</span></div>`;
+  box.appendChild(row);
+  while (box.children.length > 60) box.firstChild.remove();
+  box.scrollTop = box.scrollHeight;
+}
+
 async function openLiveOf(uniqueId) {
   const r = await roomOf(uniqueId);
   if (!r) { toast(t('La transmisión terminó')); return; }
   const u = r.user;
-  const it = { id: 'live' + u.roomId, live: true, src: null, photos: [], flv: r.flv, cover: r.cover || u.avatarLarger, ratio: 16 / 9,
+  const it = { id: 'live' + u.roomId, roomId: u.roomId, live: true, src: null, photos: [], flv: r.flv, cover: r.cover || u.avatarLarger, ratio: 16 / 9,
     author: u.uniqueId, nick: u.nickname, avatar: u.avatarThumb, authorId: u.id, secUid: u.secUid, desc: r.title || '', music: '',
     likes: 0, comments: 0, saves: 0, shares: 0, plays: 0, viewers: r.viewers || 0, subtitles: [], liked: false, saved: false,
     followed: u.followStatus === 1, lang: '' };
@@ -92,7 +224,7 @@ async function openLiveOf(uniqueId) {
 }
 
 // Botón LIVE arriba a la izquierda, como en la app
-$('#btnLive').innerHTML = '<span class="livetv">LIVE</span>';
+$('#btnLive').innerHTML = '<svg class="livetv" viewBox="0 0 28 24"><path d="M9 1.5l4 4M19 1.5l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="1.5" y="5.5" width="25" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><text x="14" y="17.6" text-anchor="middle" font-size="8.5" font-weight="800" fill="currentColor" font-family="Arial, sans-serif">LIVE</text></svg>';
 $('#btnLive').addEventListener('click', () => openSubFeed(feedFor('lives'), 0));
 
 // Seguidos en vivo: fila arriba de «Siguiendo» y anillo en su foto en cualquier feed

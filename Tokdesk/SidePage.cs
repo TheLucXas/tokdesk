@@ -205,7 +205,7 @@ sealed class SidePage
     /// Comparte un video con amigos desde el menú «Enviar a» de la web oficial (llega como video, no como enlace).
     /// <paramref name="people"/>: usuario (uniqueId) o, si no se sabe, el nombre que muestra el menú.
     /// </summary>
-    public async Task<bool> ShareVideo(string url, string[] people, string message)
+    public async Task<(bool ok, bool msgSent)> ShareVideo(string url, string[] people, string message)
     {
         var list = JsonSerializer.Serialize(people);
         // El menú carga los amigos un rato después del primer clic en compartir; se insiste pasando el mouse
@@ -222,7 +222,7 @@ sealed class SidePage
               return items.length ? 'ok' : null;
             })()
             """;
-        if (await OpenLocked(url, openJs, "Compartir") == null) return false;
+        if (await OpenLocked(url, openJs, "Compartir") == null) return (false, false);
         try
         {
             var picked = await Eval($$"""
@@ -274,11 +274,12 @@ sealed class SidePage
             {
                 var seen = await Eval("(() => [...document.querySelectorAll('[data-e2e^=\"share-\"]')].map(e => e.dataset.e2e + '=' + ((e.querySelector('p') || {}).textContent || '')).join(' | ').slice(0, 600))()");
                 Log.Write($"Compartir: no se encontró a {string.Join(",", people)} en el menú: {seen}");
-                return false;
+                return (false, false);
             }
             await Task.Delay(500);
+            string msgOk = null;
             if (!string.IsNullOrWhiteSpace(message))
-                await Eval($$"""
+                msgOk = await Eval($$"""
                     (() => {
                       const i = [...document.querySelectorAll('input, textarea')].find(x => /mensaje|message/i.test(x.getAttribute('placeholder') || ''));
                       if (!i) return null;
@@ -293,8 +294,9 @@ sealed class SidePage
             var ok = await Poll("(() => [...document.querySelectorAll('body *')].some(e => e.children.length < 2 && /Enviado a|Sent to/i.test(e.textContent || '') && e.textContent.length < 80) ? 'ok' : null)()", 10000);
             // Sin el aviso pero con el botón Enviar ya fuera de la pantalla, el envío salió: no se manda además como enlace
             if (ok == null) ok = await Eval("(() => [...document.querySelectorAll('button')].some(x => /^(Enviar|Send)$/i.test(x.textContent.trim())) ? null : 'gone')()");
-            Log.Write($"Compartir: {(ok != null ? "enviado" : "sin confirmación")} a {picked}");
-            return ok != null;
+            // Ya se tocó Enviar: aunque no llegue la confirmación no se manda además como enlace (salía repetido)
+            Log.Write($"Compartir: {(ok != null ? "enviado" : "sin confirmación")} a {picked}, mensaje {(msgOk == "ok" ? "en el menú" : "aparte")}");
+            return (true, msgOk == "ok");
         }
         finally { _locked = false; await Eval("(() => { window.__tdShareAt = 0; return null; })()"); }
     }

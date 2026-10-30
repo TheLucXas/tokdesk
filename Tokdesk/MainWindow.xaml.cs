@@ -546,8 +546,8 @@ public partial class MainWindow : Window
                 case "sharevideo":
                     {
                         var people = m.GetProperty("people").EnumerateArray().Select(x => x.GetString()).ToArray();
-                        var ok = await _side.ShareVideo(S("url"), people, S("msg"));
-                        PostToUi(new { t = "shared", ok, rid = m.GetProperty("rid").GetInt32() });
+                        var (ok, msgSent) = await _side.ShareVideo(S("url"), people, S("msg"));
+                        PostToUi(new { t = "shared", ok, msgSent, rid = m.GetProperty("rid").GetInt32() });
                         break;
                     }
                 case "hevcuninstall":

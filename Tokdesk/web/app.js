@@ -88,7 +88,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // Hashtags y menciones quedan como enlaces internos
 const richText = (s) => esc(s).replace(/([#@])([\p{L}\p{N}_.]+)/gu,
   (_, p, w) => `<b class="${p === '#' ? 'tag' : 'mention'}" data-v="${w}">${p}${w}</b>`);
-const linkOf = (it) => `https://www.tiktok.com/@${it.author}/video/${it.id}`;
+const linkOf = (it) => it.live ? `https://www.tiktok.com/@${it.author}/live` : `https://www.tiktok.com/@${it.author}/video/${it.id}`;
 
 let toastTimer;
 function toast(msg) {
@@ -117,7 +117,7 @@ function onApi(msg) {
   if (!resolve) return;
   waiting.delete(msg.rid);
   let data = null;
-  try { data = msg.body ? JSON.parse(msg.body) : null; } catch { }
+  try { data = msg.body && msg.body.startsWith('b64:') ? { b64: msg.body.slice(4) } : msg.body ? JSON.parse(msg.body) : null; } catch { }
   resolve({ status: msg.status, data });
 }
 
@@ -352,7 +352,7 @@ function normalize(it) {
     ratio: v.width && v.height ? v.height / v.width : 4 / 3, storyStatus: a.UserStoryStatus || 0,
     author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb || a.avatarMedium, authorId: a.id, secUid: a.secUid,
     signature: a.signature, authorStats: it.authorStats || null,
-    desc: it.desc || '', lang: it.textLanguage || '',
+    desc: it.desc || '', lang: it.textLanguage || '', sugWords: Array.isArray(it.suggestedWords) ? it.suggestedWords : null,
     music: [mu.title, mu.authorName].filter(Boolean).join(' · '), musicCover: mu.coverThumb || a.avatarThumb, musicUrl: mu.playUrl,
     musicId: mu.id, musicTitle: mu.title,
     // Para descargar: con marca de agua (la de TikTok) y la de mayor calidad (cualquier códec)
@@ -566,7 +566,7 @@ function back() {
 // ---------- Slides ----------
 function buildSlide(it) {
   const el = document.createElement('div');
-  el.className = 'slide paused waiting';
+  el.className = 'slide paused waiting' + (it.live ? ' is-live' : '');
   const photoHtml = it.photos.length
     ? `<div class="photos">${it.photos.map((p, i) => `<img alt="" class="${i ? '' : 'on'}" src="${esc(p)}">`).join('')}</div>
        ${it.photos.length > 1 ? `<button class="photonav prev">‹</button><button class="photonav next">›</button>
@@ -576,7 +576,7 @@ function buildSlide(it) {
   el.innerHTML = `
     <img class="poster" alt="" src="${esc(it.cover)}">
     ${photoHtml}
-    ${it.live ? `<div class="livebar"><span class="live-tag">LIVE</span>${it.viewers ? `<span class="live-viewers">${ICON.views}${fmt(it.viewers)}</span>` : ''}<button class="livebtn" title="${esc(t('Ver en el navegador'))}">${ICON.globe}</button></div><div class="live-end">${esc(t('La transmisión terminó'))}</div>` : ''}
+    ${it.live ? liveOverlay(it) : ''}
     <div class="loading spinner"></div>
     <div class="shade"></div>
     <div class="rail">
@@ -1533,7 +1533,7 @@ function renderFriends() {
 const shareSel = new Map();
 const shareWait = new Map();
 let shareRid = 0;
-function onShared(m) { const f = shareWait.get(m.rid); shareWait.delete(m.rid); if (f) f(m.ok); }
+function onShared(m) { const f = shareWait.get(m.rid); shareWait.delete(m.rid); if (f) f(m.ok, m.msgSent); }
 function updateShareCompose() {
   const on = shareSel.size > 0;
   $('#share').classList.toggle('composing', on);
@@ -1559,8 +1559,9 @@ $('#shareSend').addEventListener('click', () => {
   notice('✓ ' + t('Enviado a {0}', who), to.length === 1 ? '›' : null, to.length === 1 ? () => openChat(to[0]) : null);
   // Se comparte desde el menú «Enviar a» de la web oficial (llega como video); si falla, como enlace
   const rid = ++shareRid;
-  shareWait.set(rid, (ok) => {
-    if (ok) return;
+  shareWait.set(rid, (ok, msgSent) => {
+    // El video salió como video; si el menú no tenía campo para el comentario, va como mensaje aparte (como la app)
+    if (ok) { if (msg && !msgSent) for (const c of to) sendDm(c.id, msg, (good) => { if (!good) toast(t('No se pudo enviar a {0}', c.name)); }); return; }
     log('Compartir: el menú oficial no confirmó, se envía como enlace');
     for (const c of to) {
       const finish = (good) => { if (!good) toast(t('No se pudo enviar a {0}', c.name)); };
@@ -1839,7 +1840,7 @@ function onConv(m) {
     if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
-    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" ${picRatio(x.image)} src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
+    if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
     else if (x.video) inner += `<div class="vthumb" data-url="${esc(x.video)}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">Video</div></div>`;
     else if (x.image) inner += `<img class="pic" alt="" ${picRatio(x.image)} src="${esc(x.image)}">`;
     if (!inner && x.other) inner = esc(x.other);
@@ -2400,14 +2401,53 @@ $('#pfBody').addEventListener('scroll', () => updateSeenPill(), { passive: true 
 $('#pfSeen').addEventListener('click', goSeenNow);
 
 // ---------- Búsqueda ----------
+// Búsquedas sugeridas de un video (suggestedWords del detalle; el feed no las trae): se piden una vez por video
+const sugCache = new Map();
+function sugWordsOf(it) {
+  if (it.sugWords) return Promise.resolve(it.sugWords);
+  if (!sugCache.has(it.id)) sugCache.set(it.id, api('GET', '/api/item/detail/', { itemId: it.id }).then((r) => {
+    const s = r.data && r.data.itemInfo && r.data.itemInfo.itemStruct;
+    return (s && Array.isArray(s.suggestedWords) && s.suggestedWords) || [];
+  }));
+  return sugCache.get(it.id);
+}
+// «Podría interesarte» sin escribir: como en la app, sale de lo que estuviste viendo
+let interestWords = [], interestPage = 0;
+async function loadInterests() {
+  const cur = currentItem();
+  const recent = [cur, ...historyList().filter((x) => !cur || x.id !== cur.id).slice(0, 2)].filter((x) => x && x.id && !x.live);
+  const lists = await Promise.all(recent.map(sugWordsOf));
+  const seen = new Set(searchHistory().map((h) => h.toLowerCase()));
+  interestWords = [];
+  // Se intercalan las de cada video para que no salgan todas del mismo
+  for (let i = 0; i < 10; i++) for (const l of lists) { const w = l[i]; if (w && !seen.has(w.toLowerCase())) { seen.add(w.toLowerCase()); interestWords.push(w); } }
+  interestPage = 0;
+  showInterests();
+}
+function showInterests() {
+  if ($('#searchInput').value.trim() || $('#search').classList.contains('searching')) return;
+  const n = interestWords.length;
+  const page = n ? Array.from({ length: Math.min(6, n) }, (_, i) => interestWords[(interestPage * 6 + i) % n]) : [];
+  $('#searchInput').placeholder = page[0] || t('Buscar');
+  renderSearchHome(page, true);
+}
+
 function openSearch() {
   openPanel('search');
   $('#search').classList.remove('searching');
   $('#searchInput').value = '';
   $('#searchHome').dataset.all = '';
   renderSearchHome();
+  loadInterests();
   setTimeout(() => $('#searchInput').focus(), 250);
 }
+$('#cmtSearch').addEventListener('click', () => {
+  const q = $('#cmtSearch').dataset.q;
+  if (!q) return;
+  openSearch();
+  $('#searchInput').value = q;
+  $('#searchForm').requestSubmit();
+});
 $('#searchForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const kw = $('#searchInput').value.trim();
@@ -2793,6 +2833,14 @@ $('#cmtForm').addEventListener('submit', async (e) => {
 function openComments(it) {
   if (!it) return;
   state.sheetFor = it.id;
+  // «Buscar: …» en azul arriba de los comentarios, como la app (búsquedas sugeridas del video)
+  $('#cmtSearch').hidden = true;
+  if (!it.live) sugWordsOf(it).then((w) => {
+    if (!w.length || state.sheetFor !== it.id) return;
+    $('#cmtSearch').innerHTML = `${esc(t('Buscar:'))} <b>${esc(w[0])}</b>${ICON.search}`;
+    $('#cmtSearch').dataset.q = w[0];
+    $('#cmtSearch').hidden = false;
+  });
   fetchComments(it.id);
   renderComments();
   openPanel('sheet');
@@ -2850,14 +2898,15 @@ function addSearchHistory(kw) {
   pref.set('searchHistory', [kw, ...searchHistory().filter((x) => x !== kw)].slice(0, 30));
 }
 
-function renderSearchHome(sugs) {
+function renderSearchHome(sugs, interests) {
   const box = $('#searchHome');
   const hist = searchHistory();
   const showAll = box.dataset.all === '1';
   let html = (showAll ? hist : hist.slice(0, 6)).map((h) => `<button class="sh-row" data-q="${esc(h)}">${ICON.clock}<span>${esc(h)}</span><span class="del" data-del="${esc(h)}">✕</span></button>`).join('');
   if (hist.length > 6 && !showAll) html += '<button class="sh-row" id="shMore" style="justify-content:center;font-weight:400;color:rgba(255,255,255,.6)">' + t('Ver más') + ' ▾</button>';
   if (sugs && sugs.length) {
-    html += '<div class="sh-title">' + t('Podría interesarte') + '</div>' + sugs.map((s) => `<button class="sh-row sh-sug" data-q="${esc(s)}"><span>${esc(s)}</span></button>`).join('');
+    html += '<div class="sh-title">' + t('Podría interesarte') + (interests && interestWords.length > 6 ? `<button id="shRefresh">↻ ${esc(t('Actualizar'))}</button>` : '') + '</div>'
+      + sugs.map((s) => `<button class="sh-row sh-sug" data-q="${esc(s)}"><span>${esc(s)}</span></button>`).join('');
   }
   box.innerHTML = html || '<div class="sheet-msg">' + t('Busca videos y usuarios.') + '</div>';
   $$('[data-q]', box).forEach((b) => b.onclick = (e) => {
@@ -2871,7 +2920,9 @@ function renderSearchHome(sugs) {
     $('#searchForm').requestSubmit();
   });
   const more = $('#shMore');
-  if (more) more.onclick = () => { box.dataset.all = '1'; renderSearchHome(sugs); };
+  if (more) more.onclick = () => { box.dataset.all = '1'; interests ? showInterests() : renderSearchHome(sugs); };
+  const rf = $('#shRefresh');
+  if (rf) rf.onclick = () => { interestPage++; showInterests(); };
 }
 
 // Sugerencias mientras se escribe (las da la misma API de la web)
@@ -2880,7 +2931,7 @@ $('#searchInput').addEventListener('input', () => {
   $('#search').classList.remove('searching');
   clearTimeout(sugTimer);
   const kw = $('#searchInput').value.trim();
-  if (!kw) { renderSearchHome(); return; }
+  if (!kw) { showInterests(); return; }
   sugTimer = setTimeout(async () => {
     const r = await api('GET', '/api/search/general/preview/', { keyword: kw });
     if ($('#searchInput').value.trim() !== kw) return;
