@@ -223,6 +223,7 @@ function feedFor(key) {
       f.hasMore = !!d.HasMoreAfter && d.itemList.length > 0;
       feedChanged(f);
     } });
+    case 'searchtop': return makeFeed(key, { title: arg, load: (f) => loadPaged(f, '/api/search/general/full/', { keyword: arg, count: 12 }, 'offset') });
     case 'search': return makeFeed(key, { title: arg, load: (f) => loadPaged(f, '/api/search/item/full/', { keyword: arg, count: 12 }, 'offset') });
   }
 }
@@ -418,7 +419,7 @@ function feedChanged(f) {
   if (f === state.feed) { updateEmpty(); render(); if (document.body.classList.contains('exgrid')) renderExplore(); }
   if (state.profileKey === f.key) renderGrid($('#pfGrid'), $('#pfMore'), f);
   if (state.pageKey === f.key) renderGrid($('#pgGrid'), $('#pgMore'), f);
-  if (state.searchKey === f.key) renderGrid($('#searchGrid'), $('#searchMore'), f);
+  if (state.searchKey === f.key) renderSearchCards(f);
 }
 
 function updateEmpty() {
@@ -492,33 +493,50 @@ $$('#exChips button').forEach((b) => b.addEventListener('click', () => {
 }));
 $('#exChips').addEventListener('wheel', (e) => { if (e.deltaY) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 function renderExplore() {
-  const f = state.feed, grid = $('#exGrid');
+  const f = state.feed;
   const cat = f.key.split(':')[1] || '120';
   $$('#exChips button').forEach((b) => b.classList.toggle('on', b.dataset.cat === cat));
+  renderCards($('#exGrid'), $('#exMore'), f, (i) => { state.stack.push(f); setFeed(f, i); });
+}
+// Resultados de búsqueda: Tendencias y Videos usan las mismas tarjetas que la app (con fecha)
+function renderSearchCards(f) {
+  renderCards($('#searchGrid'), $('#searchMore'), f, (i) => {
+    const kw = state.searchKw, key = f.key;
+    state.returnTo = { key, fn: () => { openPanel('search'); state.searchKey = key; state.searchKw = kw; } };
+    openSubFeed(f, i);
+  }, true);
+}
+const colsFor = (grid) => Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)));
+function renderCards(grid, more, f, open, withDate) {
   // Dos columnas con el ancho de un celular; más si la ventana es ancha
-  const n = Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)));
-  if (grid.dataset.key !== f.key || grid.dataset.n > f.items.length || grid.children.length !== n) {
+  const n = colsFor(grid);
+  if (grid.dataset.key !== f.key || +grid.dataset.n > f.items.length || grid.children.length !== n) {
     grid.innerHTML = '<div class="excol"></div>'.repeat(n); grid.dataset.key = f.key; grid.dataset.n = 0;
   }
+  grid.classList.add('cards');
   const cols = [...grid.children];
   for (let i = +grid.dataset.n; i < f.items.length; i++) {
     const it = f.items[i];
     const el = document.createElement('div');
     el.className = 'extile';
     const r = Math.min(4 / 3, Math.max(1, it.ratio || 4 / 3));
+    const when = withDate && it.created ? (/\d-/.test(ago(it.created)) ? ago(it.created) : t('hace {0}', ago(it.created))) : '';
     el.innerHTML = `<div class="excover" style="aspect-ratio:1/${r.toFixed(3)}"><img alt="" loading="lazy" src="${esc(it.cover)}">${it.photos.length ? `<span class="exkind">${ICON.grid}</span>` : ''}</div>
       <div class="exdesc">${esc(it.desc || '')}</div>
-      <div class="exfoot"><img alt="" src="${esc(it.avatar || '')}"><span class="exnick">${esc(it.nick || it.author)}</span><span class="exlikes">${ICON.heartline}${fmt(it.likes)}</span></div>`;
-    el.onclick = () => { state.stack.push(f); setFeed(f, i); };
+      <div class="exfoot"><img alt="" src="${esc(it.avatar || '')}"><span class="exnick">${esc(it.nick || it.author)}${when ? `<small>${esc(when)}</small>` : ''}</span><span class="exlikes">${ICON.heartline}${fmt(it.likes)}</span></div>`;
+    el.onclick = () => open(i);
     // Cada tarjeta va a la columna más corta, así el orden se lee de izquierda a derecha como en la app
     cols.reduce((a, b) => (b.offsetHeight < a.offsetHeight ? b : a)).appendChild(el);
   }
   grid.dataset.n = f.items.length;
-  $('#exMore').innerHTML = f.loading || f.hasMore ? '<div class="spinner"></div>' : '';
+  more.innerHTML = f.loading || (f.hasMore && !f.items.length) ? '<div class="spinner"></div>'
+    : f.error ? esc(t('No se pudieron cargar los videos.')) : !f.items.length && !f.hasMore ? esc(t('Sin videos.')) : '';
 }
 window.addEventListener('resize', () => {
   const grid = $('#exGrid');
-  if (document.body.classList.contains('exgrid') && grid.children.length !== Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)))) renderExplore();
+  if (document.body.classList.contains('exgrid') && grid.children.length !== colsFor(grid)) renderExplore();
+  const sg = $('#searchGrid'), sf = state.searchKey && feeds.get(state.searchKey);
+  if (sf && sg.children.length !== colsFor(sg)) renderSearchCards(sf);
 });
 $('#exView').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
@@ -1194,6 +1212,7 @@ function closePanels() {
   state.profileKey = null;
   state.searchKey = null;
   state.pageKey = null;
+  if (typeof stopPreview === 'function') stopPreview();
   document.body.classList.remove('cmt-open');
   setReply(null);
   hideCtx();
@@ -1213,7 +1232,7 @@ function closePanel(id) {
   if (id === 'sheet') { state.sheetFor = null; document.body.classList.remove('cmt-open'); setReply(null); }
   if (id === 'profile') state.profileKey = null;
   if (id === 'page') state.pageKey = null;
-  if (id === 'search') state.searchKey = null;
+  if (id === 'search') { state.searchKey = null; stopPreview(); }
   if (id === 'chat' && chatConv) closeChat();
 }
 
@@ -2389,16 +2408,15 @@ $('#searchForm').addEventListener('submit', (e) => {
   $('#searchInput').blur();
   addSearchHistory(kw);
   $('#search').classList.add('searching');
-  const key = 'search:' + kw;
-  feeds.delete(key);
-  const f = feedFor(key);
-  state.searchKey = key;
+  feeds.delete('search:' + kw); feeds.delete('searchtop:' + kw);
   state.searchKw = kw;
-  renderGrid($('#searchGrid'), $('#searchMore'), f);
+  const tab = $('#searchTabs button.on').dataset.st;
+  const f = feedFor((tab === 'videos' ? 'search:' : 'searchtop:') + kw);
+  state.searchKey = f.key;
+  renderSearchCards(f);
   f.load(f);
   searchUsers(kw);
   $('#searchSounds').innerHTML = ''; $('#searchLive').innerHTML = '';
-  const tab = $('#searchTabs button.on').dataset.st;
   if (tab === 'sounds') searchSounds(kw);
   if (tab === 'live') searchLive(kw);
 });
@@ -2407,8 +2425,15 @@ $('#searchForm').addEventListener('submit', (e) => {
 $$('#searchTabs button').forEach((b) => b.addEventListener('click', () => {
   $$('#searchTabs button').forEach((x) => x.classList.toggle('on', x === b));
   const st = b.dataset.st;
-  $('#searchGrid').style.display = st === 'videos' ? '' : 'none';
-  $('#searchMore').style.display = st === 'videos' ? '' : 'none';
+  const cards = st === 'top' || st === 'videos';
+  $('#searchGrid').style.display = cards ? '' : 'none';
+  $('#searchMore').style.display = cards ? '' : 'none';
+  if (cards && state.searchKw) {
+    const f = feedFor((st === 'videos' ? 'search:' : 'searchtop:') + state.searchKw);
+    state.searchKey = f.key;
+    renderSearchCards(f);
+    if (!f.items.length) f.load(f);
+  }
   $('#searchUsers').style.display = st === 'users' ? '' : 'none';
   $('#searchSounds').style.display = st === 'sounds' ? '' : 'none';
   $('#searchLive').style.display = st === 'live' ? '' : 'none';
@@ -2418,7 +2443,7 @@ $$('#searchTabs button').forEach((b) => b.addEventListener('click', () => {
 for (const id of ['searchUsers', 'searchSounds', 'searchLive']) $('#' + id).style.display = 'none';
 
 const urlOf = (img) => img && img.url_list && img.url_list[0];
-const mmss = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+const mmss = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
 async function searchSounds(kw) {
   const box = $('#searchSounds');
@@ -2428,14 +2453,33 @@ async function searchSounds(kw) {
   const list = ((r.data && r.data.data) || []).map((x) => x.music_info).filter(Boolean);
   if (!list.length) { box.innerHTML = `<div class="sheet-msg">${t('No se encontraron sonidos.')}</div>`; return; }
   box.innerHTML = list.map((m, i) => `<button class="ib-item snd" data-i="${i}">
-      <img class="av sq" alt="" src="${esc(urlOf(m.cover_thumb) || urlOf(m.cover_medium))}">
+      <span class="sndcv"><img class="av sq" alt="" src="${esc(urlOf(m.cover_thumb) || urlOf(m.cover_medium))}"><span class="sndplay">${ICON.play}</span></span>
       <div class="tx"><div class="nm">${esc(m.title)}</div>
       <div class="ls">${esc(m.author || m.owner_nickname || '')}</div>
       <div class="ls">${m.duration ? mmss(m.duration) + ' · ' : ''}${t('{0} videos', fmt(m.user_count || 0))}</div></div></button>`).join('');
-  $$('button.ib-item', box).forEach((b) => b.onclick = () => {
+  $$('button.ib-item', box).forEach((b) => b.onclick = (e) => {
     const m = list[+b.dataset.i];
+    if (e.target.closest('.sndcv')) { previewSound(b, urlOf(m.play_url)); return; }
+    stopPreview();
     openSoundPage({ musicId: m.id_str || String(m.id), musicTitle: m.title, music: m.author, musicCover: urlOf(m.cover_large) || urlOf(m.cover_medium) });
   });
+}
+
+// Tocar la portada de un sonido lo escucha ahí mismo, como en la app
+let preview = null;
+function stopPreview() {
+  if (!preview) return;
+  preview.a.pause(); preview.b.classList.remove('playing'); preview = null;
+}
+function previewSound(b, url) {
+  const same = preview && preview.b === b;
+  stopPreview();
+  if (same || !url) return;
+  const a = new Audio(url);
+  a.volume = state.volume; a.play().catch(() => {});
+  a.onended = stopPreview;
+  preview = { a, b };
+  b.classList.add('playing');
 }
 
 // LIVE: TikTok solo deja ver transmisiones en su web, así que se abren ahí
