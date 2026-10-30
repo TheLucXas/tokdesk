@@ -169,6 +169,7 @@ public partial class MainWindow : Window
         version = AppInfo.VersionText,
         updates = Updater.Configured,
         downloads = DownloadDir(),
+        existed = AppSettings.Existed,
     };
 
     void ApplySetting(string key, JsonElement v)

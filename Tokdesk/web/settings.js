@@ -468,8 +468,9 @@ function onHostMessage(m) {
       // Primera vez con una versión nueva: aviso con acceso a las novedades
       if (m.version) {
         const last = pref.get('lastVersion', null);
-        // Tras actualizar (la app ya se reinició en la versión nueva) se abren solas las novedades
-        if (last && last !== m.version) setTimeout(openChangelog, 1500);
+        // Tras actualizar (la app ya se reinició en la versión nueva) se abren solas las novedades.
+        // Las versiones viejas (1.0.0, 1.0.1) no guardaban lastVersion: si ya había ajustes, también es una actualización
+        if ((last || m.existed) && last !== m.version) setTimeout(openChangelog, 1500);
         if (last !== m.version) pref.set('lastVersion', m.version);
       }
       break;

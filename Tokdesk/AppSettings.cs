@@ -49,11 +49,15 @@ sealed class AppSettings
     static readonly string File = Path.Combine(AppInfo.DataDir, "settings.json");
     static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
+    // Había ajustes de antes al abrir: la app ya estaba instalada (sirve para saber que se actualizó)
+    [System.Text.Json.Serialization.JsonIgnore] public static bool Existed { get; private set; }
+
     public static AppSettings Load()
     {
         try
         {
-            if (System.IO.File.Exists(File))
+            Existed = System.IO.File.Exists(File);
+            if (Existed)
                 return JsonSerializer.Deserialize<AppSettings>(System.IO.File.ReadAllText(File)) ?? new();
         }
         catch (Exception ex) { Log.Write("Ajustes ilegibles: " + ex.Message); }
