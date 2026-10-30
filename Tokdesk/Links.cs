@@ -26,7 +26,7 @@ static class Links
     {
         foreach (var a in args)
         {
-            var s = a.Trim('"');
+            var s = UrlFromFile(a.Trim('"')) ?? a.Trim('"');
             if (s.StartsWith("tokdesk:", StringComparison.OrdinalIgnoreCase))
             {
                 // tokdesk://open?u=<enlace> o tokdesk://www.tiktok.com/...
@@ -37,6 +37,53 @@ static class Links
             if (IsTikTok(s)) return s;
         }
         return null;
+    }
+
+    /// <summary>
+    /// Accesos directos de Internet (.url, .website) o un .txt con el enlace: los que llegan por el clic derecho
+    /// «Abrir en Tokdesk» o por «Enviar a».
+    /// </summary>
+    static string UrlFromFile(string path)
+    {
+        try
+        {
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            if (ext is not (".url" or ".website" or ".txt") || !File.Exists(path) || new FileInfo(path).Length > 64 * 1024) return null;
+            foreach (var line in File.ReadLines(path))
+            {
+                var l = line.Trim();
+                if (l.StartsWith("URL=", StringComparison.OrdinalIgnoreCase)) l = l[4..];
+                var m = System.Text.RegularExpressions.Regex.Match(l, @"https?://[^\s""'<>]+");
+                if (m.Success && IsTikTok(m.Value)) return m.Value;
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    /// <summary>
+    /// «Enviar a > Tokdesk» (para accesos directos .url, como los que se crean al arrastrar un enlace al escritorio).
+    /// El menú del navegador sobre un enlace es del navegador, y en los .url Windows ignora los verbos agregados.
+    /// </summary>
+    public static void RegisterShellMenu()
+    {
+        if (!AppInfo.HasLauncher) return;
+        try
+        {
+            var sendTo = Environment.GetFolderPath(Environment.SpecialFolder.SendTo);
+            var lnk = Path.Combine(sendTo, "Tokdesk.lnk");
+            if (!File.Exists(lnk) && Directory.Exists(sendTo))
+            {
+                var shell = Type.GetTypeFromProgID("WScript.Shell");
+                dynamic ws = Activator.CreateInstance(shell);
+                dynamic sc = ws.CreateShortcut(lnk);
+                sc.TargetPath = AppInfo.StartPath;
+                sc.IconLocation = AppInfo.StartPath + ",0";
+                sc.Description = "Abrir el enlace de TikTok en Tokdesk";
+                sc.Save();
+            }
+        }
+        catch (Exception ex) { Log.Write("Menú contextual: " + ex.Message); }
     }
 
     // Otra instancia recibió un enlace: lo deja en un archivo para la ventana que ya está abierta

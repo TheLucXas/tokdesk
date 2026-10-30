@@ -2589,7 +2589,7 @@ function cmtHtml(cm, reply, parentCid) {
     <img class="cav" alt="" src="${esc(av)}" data-full="${esc((u.avatar_medium && u.avatar_medium.url_list && u.avatar_medium.url_list[0]) || av)}" title="${esc(t('Ver foto'))}">
     <div class="body">
       <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span></div>
-      <div class="text">${richText(cm.text)}</div>
+      <div class="text">${richText(cm.showTr && cm.textTr ? cm.textTr : cm.text)}</div>
       ${img ? `<img class="cimg" alt="" src="${esc(img)}">` : ''}
       <div class="sub"><span>${ago(cm.create_time)}</span>
         <span class="reply-btn" data-cid="${esc(parentCid || cm.cid)}" data-name="${esc(u.nickname || u.unique_id)}">${t('Responder')}</span>
@@ -2629,6 +2629,7 @@ function openCommentOptions(id, cm, parentCid) {
   openOptions([[
     { ic: 'comment', label: t('Responder'), fn: () => { back(); setReply({ cid: parentCid || cm.cid, name: u.nickname || u.unique_id }); $('#cmtInput').focus(); } },
     { ic: 'link', label: t('Copiar'), fn: () => navigator.clipboard.writeText(cm.text || '').then(() => toast(t('Copiado'))) },
+    cm.text && { ic: 'globe', label: cm.showTr ? t('Ver original') : t('Traducir'), fn: () => { back(); translateComment(id, cm); } },
     { ic: 'heartline', label: cm.user_digged ? t('Quitar me gusta') : t('Me gusta'), fn: () => { back(); cmtLike(id, cm, !cm.user_digged); } },
     { ic: 'thumbdown', label: state.cmtDislikes.has(cm.cid) ? t('Quitar no me gusta') : t('No me gusta'), fn: () => { back(); cmtDislike(id, cm); } },
     { ic: 'user', label: t('Ver perfil de {0}', u.nickname || u.unique_id), fn: () => openUserByName(u.unique_id) },
@@ -2636,6 +2637,18 @@ function openCommentOptions(id, cm, parentCid) {
     mine ? { ic: 'broken', label: t('Eliminar'), danger: true, fn: () => { back(); deleteComment(id, cm, parentCid); } }
       : { ic: 'flag', label: t('Denunciar'), danger: true, fn: () => { const it = currentItem(); if (it) report(it, cm.text); } },
   ]], true);
+}
+
+// Traducir un comentario: la ruta de la app (contents/translation) responde desde la web
+async function translateComment(id, cm) {
+  if (cm.textTr) { cm.showTr = !cm.showTr; renderComments(); return; }
+  const info = [{ content_id: cm.cid, src_content: cm.text, src_lang: cm.comment_language || '', text_extra_list: [],
+    extra_comment_info: { digg_count: cm.digg_count || 0, is_first_level_comment: !cm.reply_id || cm.reply_id === '0' } }];
+  const r = await api('POST', '/aweme/v1/contents/translation/', { scene: 0 }, { trg_lang: resolveLang().split('-')[0], translation_info: JSON.stringify(info), group_id: id });
+  const x = r.data && (r.data.translated_content_list || [])[0];
+  if (!x || !x.translated_content) { toast(t('No se pudo traducir')); return; }
+  cm.textTr = x.translated_content; cm.showTr = true;
+  renderComments();
 }
 
 async function deleteComment(id, cm, parentCid) {
@@ -2913,6 +2926,7 @@ host && host.addEventListener('message', (e) => {
     case 'reportstate': onReportState(m); break;
     case 'editstate': onEditState(m); break;
     case 'openlink': closePanels(); openTikTokLink(m.url); break;
+    case 'cliplink': notice(t('¿Abrir el enlace copiado?'), t('Abrir') + ' ›', () => { closePanels(); openTikTokLink(m.url); }); break;
     case 'audiofixed': onAudioFixed(m); break;
     case 'audioprobed': onAudioProbed(m); break;
     case 'shared': onShared(m); break;

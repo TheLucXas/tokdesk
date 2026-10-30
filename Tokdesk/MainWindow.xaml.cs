@@ -52,7 +52,7 @@ public partial class MainWindow : Window
         };
         Closing += OnClosing;
         // La página no se entera sola de que la ventana se minimizó o perdió el foco: se le avisa
-        Activated += (_, _) => SendWinState();
+        Activated += (_, _) => { SendWinState(); OfferCopiedLink(); };
         Deactivated += (_, _) => SendWinState();
         IsVisibleChanged += (_, _) => SendWinState();
     }
@@ -394,6 +394,7 @@ public partial class MainWindow : Window
         // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
         if (_settings.ApplyShortcuts(startup: true)) _settings.Save();
         Links.RegisterProtocol();
+        Links.RegisterShellMenu();
         // La opción de enlaces predeterminados se quitó: si alguien la había activado, se deshace
         if (_settings.LinkHandler) { _settings.LinkHandler = false; Links.ApplyHandler(false); _settings.Save(); }
 
@@ -705,6 +706,24 @@ public partial class MainWindow : Window
         url = await Links.Resolve(Http, url);
         Log.Write("Enlace: " + url);
         PostToUi(new { t = "openlink", url });
+    }
+
+    // Como la app de Android: al volver a Tokdesk con un enlace de TikTok copiado, se ofrece abrirlo
+    // (sirve para «Copiar dirección del enlace» en el navegador, cuyo menú no se puede ampliar)
+    string _lastClip;
+    async void OfferCopiedLink()
+    {
+        if (!_uiReady) return;
+        try
+        {
+            if (!Clipboard.ContainsText()) return;
+            var m = System.Text.RegularExpressions.Regex.Match(Clipboard.GetText().Trim(), @"^https?://\S+$");
+            if (!m.Success || !Links.IsTikTok(m.Value) || m.Value == _lastClip) return;
+            _lastClip = m.Value;
+            var url = await Links.Resolve(Http, m.Value);
+            PostToUi(new { t = "cliplink", url });
+        }
+        catch { }
     }
 
     // Al terminar de iniciar sesión (aparece una cookie de sesión nueva) se vuelve sola a la app
