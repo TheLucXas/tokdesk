@@ -45,7 +45,7 @@
 | ⬇️ | **Downloads** | MP4 without watermark, best quality, original with watermark, MP3 audio, and cover image — to a folder you choose. |
 | 🎛️ | **Playback** | Speed, quality, captions, picture-in-picture, auto-scroll, background play, mute when unfocused, a seek bar with frame preview on hover, local history, and global media keys. |
 | 🎞️ | **1080p and offline** | One-click install of Microsoft's free HEVC extension for 1080p, a disk buffer so videos start instantly, and offline videos (100 MB–2 GB) for when you have no internet. |
-| 🔔 | **Notifications** | Windows notifications for likes, comments, mentions, followers, and messages, by category — even with the app closed, through a tiny helper (about 6 MB of RAM). |
+| 🔔 | **Notifications** | Windows notifications for likes, comments, mentions, followers, messages, and new Tokdesk versions, by category — even with the app closed, through a tiny helper (about 6 MB of RAM). |
 | 🎨 | **Make it yours** | Dark, light, or system theme, accent colors, interface zoom, custom CSS themes, and fully customizable keyboard shortcuts. |
 | 🪟 | **Desktop integration** | System tray, start with Windows, start minimized, close-to-tray, remember window size, and a maximized window that keeps an auto-hidden taskbar reachable. |
 | 🔗 | **Open TikTok links** | Copy a TikTok link anywhere (for example "Copy link address" in your browser) and Tokdesk offers to open it when you switch to it, like the mobile app; internet shortcuts also open with **Send to → Tokdesk**. |
