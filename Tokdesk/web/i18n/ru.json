@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Комментарии, профиль, поиск и сообщения в широких окнах",
   "TikTok no aceptó el mensaje: {0}": "TikTok не принял сообщение: {0}",
   "No se pudo confirmar el envío del mensaje": "Не удалось подтвердить отправку сообщения",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше сообщение не появилось в чате эфира: возможно, автор ограничивает комментарии"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше сообщение не появилось в чате эфира: возможно, автор ограничивает комментарии",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Сообщает о новой версии, когда приложение свёрнуто или в трее",
+  "Actualizaciones de Tokdesk": "Обновления Tokdesk"
 }

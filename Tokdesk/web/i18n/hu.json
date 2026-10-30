@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Hozzászólások, profil, keresés és üzenetek széles ablakokban",
   "TikTok no aceptó el mensaje: {0}": "A TikTok nem fogadta el az üzenetet: {0}",
   "No se pudo confirmar el envío del mensaje": "Nem sikerült megerősíteni az üzenet elküldését",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Az üzeneted nem jelenik meg az élő csevegésben: lehet, hogy a készítő korlátozza a hozzászólásokat"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Az üzeneted nem jelenik meg az élő csevegésben: lehet, hogy a készítő korlátozza a hozzászólásokat",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Értesít az új verzióról, ha az alkalmazás kis méretben vagy a tálcán van",
+  "Actualizaciones de Tokdesk": "Tokdesk-frissítések"
 }

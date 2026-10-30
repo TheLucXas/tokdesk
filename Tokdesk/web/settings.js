@@ -198,6 +198,7 @@ function renderSettings() {
         N.Notifications !== false && row({ type: 'toggle', label: t('Menciones y etiquetas'), value: N.NotifyMentions !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyMentions', v }) }),
         N.Notifications !== false && row({ type: 'toggle', label: t('Nuevos seguidores'), value: N.NotifyFollowers !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyFollowers', v }) }),
         N.Notifications !== false && row({ type: 'toggle', label: t('Otra actividad'), hint: t('Compartidos, republicaciones y similares'), value: N.NotifyOther !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyOther', v }) }),
+        N.Notifications !== false && row({ type: 'toggle', label: t('Actualizaciones de Tokdesk'), hint: t('Avisa si hay una versión nueva con la app minimizada o en la bandeja'), value: N.NotifyUpdates !== false, fn: (v) => send({ t: 'setsetting', k: 'NotifyUpdates', v }) }),
         N.Notifications !== false && row({ type: 'seg', label: t('Revisar cada'), value: N.NotifyInterval || 2, options: [[1, '1 min'], [2, '2 min'], [5, '5 min'], [15, '15 min']], fn: (v) => send({ t: 'setsetting', k: 'NotifyInterval', v }) }),
       ]],
       [t('Privacidad y datos'), [

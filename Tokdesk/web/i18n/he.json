@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "תגובות, פרופיל, חיפוש והודעות בחלונות רחבים",
   "TikTok no aceptó el mensaje: {0}": "TikTok לא קיבל את ההודעה: {0}",
   "No se pudo confirmar el envío del mensaje": "לא ניתן היה לאשר את שליחת ההודעה",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ההודעה שלך לא מופיעה בצ'אט של הלייב: ייתכן שהיוצר מגביל תגובות"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ההודעה שלך לא מופיעה בצ'אט של הלייב: ייתכן שהיוצר מגביל תגובות",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "מודיע על גרסה חדשה כשהאפליקציה ממוזערת או במגש המערכת",
+  "Actualizaciones de Tokdesk": "עדכוני Tokdesk"
 }

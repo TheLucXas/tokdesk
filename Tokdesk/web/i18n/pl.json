@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Komentarze, profil, wyszukiwanie i wiadomości w szerokich oknach",
   "TikTok no aceptó el mensaje: {0}": "TikTok nie przyjął wiadomości: {0}",
   "No se pudo confirmar el envío del mensaje": "Nie udało się potwierdzić wysłania wiadomości",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Twoja wiadomość nie pojawia się na czacie live: twórca może ograniczać komentarze"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Twoja wiadomość nie pojawia się na czacie live: twórca może ograniczać komentarze",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Powiadamia o nowej wersji, gdy aplikacja jest zminimalizowana lub w zasobniku",
+  "Actualizaciones de Tokdesk": "Aktualizacje Tokdesk"
 }

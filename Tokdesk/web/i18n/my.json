@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "ကျယ်သောဝင်းဒိုးများတွင် မှတ်ချက်များ၊ ပရိုဖိုင်၊ ရှာဖွေမှုနှင့် မက်ဆေ့ချ်များ",
   "TikTok no aceptó el mensaje: {0}": "TikTok က မက်ဆေ့ချ်ကို လက်မခံပါ- {0}",
   "No se pudo confirmar el envío del mensaje": "မက်ဆေ့ချ်ပို့ပြီးကြောင်း အတည်မပြုနိုင်ပါ",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "သင့်မက်ဆေ့ချ်သည် တိုက်ရိုက်ချက်တင်တွင် မပေါ်ပါ- ဖန်တီးသူက မှတ်ချက်များကို ကန့်သတ်ထားနိုင်သည်"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "သင့်မက်ဆေ့ချ်သည် တိုက်ရိုက်ချက်တင်တွင် မပေါ်ပါ- ဖန်တီးသူက မှတ်ချက်များကို ကန့်သတ်ထားနိုင်သည်",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "အက်ပ်ကို ချုံ့ထားချိန် သို့မဟုတ် ထရေးတွင်ရှိချိန် ဗားရှင်းအသစ်ကို အသိပေးသည်",
+  "Actualizaciones de Tokdesk": "Tokdesk အပ်ဒိတ်များ"
 }

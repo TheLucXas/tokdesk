@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "চওড়া উইন্ডোতে মন্তব্য, প্রোফাইল, অনুসন্ধান ও বার্তা",
   "TikTok no aceptó el mensaje: {0}": "TikTok বার্তাটি গ্রহণ করেনি: {0}",
   "No se pudo confirmar el envío del mensaje": "বার্তা পাঠানো নিশ্চিত করা যায়নি",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "আপনার বার্তা লাইভ চ্যাটে দেখা যাচ্ছে না: নির্মাতা হয়তো মন্তব্য সীমিত করেছেন"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "আপনার বার্তা লাইভ চ্যাটে দেখা যাচ্ছে না: নির্মাতা হয়তো মন্তব্য সীমিত করেছেন",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "অ্যাপ মিনিমাইজ বা ট্রেতে থাকলে নতুন সংস্করণের খবর দেয়",
+  "Actualizaciones de Tokdesk": "Tokdesk আপডেট"
 }

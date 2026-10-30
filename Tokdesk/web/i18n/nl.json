@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Reacties, profiel, zoeken en berichten in brede vensters",
   "TikTok no aceptó el mensaje: {0}": "TikTok heeft het bericht niet geaccepteerd: {0}",
   "No se pudo confirmar el envío del mensaje": "Kon niet bevestigen dat het bericht is verzonden",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Je bericht verschijnt niet in de livechat: misschien beperkt de maker reacties"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Je bericht verschijnt niet in de livechat: misschien beperkt de maker reacties",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Meldt een nieuwe versie als de app geminimaliseerd of in het systeemvak staat",
+  "Actualizaciones de Tokdesk": "Tokdesk-updates"
 }

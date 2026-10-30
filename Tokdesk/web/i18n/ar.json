@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "التعليقات والملف الشخصي والبحث والرسائل في النوافذ العريضة",
   "TikTok no aceptó el mensaje: {0}": "لم يقبل TikTok الرسالة: {0}",
   "No se pudo confirmar el envío del mensaje": "تعذر تأكيد إرسال الرسالة",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "رسالتك لا تظهر في دردشة البث: قد يكون المنشئ يقيّد التعليقات"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "رسالتك لا تظهر في دردشة البث: قد يكون المنشئ يقيّد التعليقات",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "ينبهك إلى إصدار جديد عندما يكون التطبيق مصغرًا أو في الشريط",
+  "Actualizaciones de Tokdesk": "تحديثات Tokdesk"
 }

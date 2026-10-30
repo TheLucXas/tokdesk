@@ -189,6 +189,7 @@ public partial class MainWindow : Window
             case "DesktopShortcut": _settings.DesktopShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
             case "AskDownloadFolder": _settings.AskDownloadFolder = v.GetBoolean(); break;
             case "Notifications": case "NotifyBackground": case "NotifyMessages": case "NotifyLikes":
+            case "NotifyUpdates": _settings.NotifyUpdates = v.GetBoolean(); break;
             case "NotifyComments": case "NotifyMentions": case "NotifyFollowers": case "NotifyOther":
                 typeof(AppSettings).GetProperty(key)!.SetValue(_settings, v.GetBoolean());
                 _ = NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
@@ -293,6 +294,8 @@ public partial class MainWindow : Window
 
     // ---------- Actualizaciones ----------
 
+    string _notifiedUpdate;
+
     async Task CheckUpdates(bool manual)
     {
         if (!Updater.Configured)
@@ -310,7 +313,13 @@ public partial class MainWindow : Window
                 return;
             }
             PostToUi(new { t = "update", status = "available", version = _pendingUpdate.Tag, notes = _pendingUpdate.Notes, manual });
-            if (!IsVisible) _tray.Notify("Tokdesk", $"Hay una versión nueva ({_pendingUpdate.Tag}).");
+            // Aviso de Windows si la app está minimizada, en la bandeja o sin foco (una vez por versión)
+            var away = !IsVisible || WindowState == WindowState.Minimized || !HasForeground();
+            if (away && _settings.Notifications && _settings.NotifyUpdates && _notifiedUpdate != _pendingUpdate.Tag)
+            {
+                _notifiedUpdate = _pendingUpdate.Tag;
+                _tray.Notify("Tokdesk", $"Hay una versión nueva ({_pendingUpdate.Tag}).");
+            }
             if (_settings.AutoInstallUpdates && !manual) await InstallUpdate();
         }
         catch (Exception ex)
@@ -439,7 +448,14 @@ public partial class MainWindow : Window
                 case "ready":
                     _engine?.ReplayFeed();
                     PostToUi(SettingsDto());
-                    if (_settings.AutoCheckUpdates && Updater.Configured && !_checkedOnce) { _checkedOnce = true; _ = CheckUpdates(false); }
+                    if (_settings.AutoCheckUpdates && Updater.Configured && !_checkedOnce)
+                    {
+                        _checkedOnce = true; _ = CheckUpdates(false);
+                        // Con la app abierta mucho tiempo (minimizada o en la bandeja) se vuelve a revisar cada 6 h
+                        var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(6) };
+                        t.Tick += (_, _) => { if (_settings.AutoCheckUpdates && _pendingUpdate == null) _ = CheckUpdates(false); };
+                        t.Start();
+                    }
                     _uiReady = true;
                     // Si la ventana abrió sin foco, Activated/Deactivated nunca llegan: se avisa el estado real
                     SendWinState();

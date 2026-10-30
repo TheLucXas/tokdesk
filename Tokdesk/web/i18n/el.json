@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Σχόλια, προφίλ, αναζήτηση και μηνύματα σε πλατιά παράθυρα",
   "TikTok no aceptó el mensaje: {0}": "Το TikTok δεν δέχτηκε το μήνυμα: {0}",
   "No se pudo confirmar el envío del mensaje": "Δεν ήταν δυνατή η επιβεβαίωση της αποστολής του μηνύματος",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Το μήνυμά σου δεν εμφανίζεται στο chat του live: ίσως ο δημιουργός περιορίζει τα σχόλια"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Το μήνυμά σου δεν εμφανίζεται στο chat του live: ίσως ο δημιουργός περιορίζει τα σχόλια",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Σε ειδοποιεί για νέα έκδοση όταν η εφαρμογή είναι ελαχιστοποιημένη ή στην περιοχή ειδοποιήσεων",
+  "Actualizaciones de Tokdesk": "Ενημερώσεις Tokdesk"
 }

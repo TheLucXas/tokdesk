@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Geniş pencerelerde yorumlar, profil, arama ve mesajlar",
   "TikTok no aceptó el mensaje: {0}": "TikTok mesajı kabul etmedi: {0}",
   "No se pudo confirmar el envío del mensaje": "Mesajın gönderildiği doğrulanamadı",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesajın canlı yayın sohbetinde görünmüyor: yayıncı yorumları sınırlıyor olabilir"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesajın canlı yayın sohbetinde görünmüyor: yayıncı yorumları sınırlıyor olabilir",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Uygulama simge durumundayken veya tepsideyken yeni sürümü bildirir",
+  "Actualizaciones de Tokdesk": "Tokdesk güncellemeleri"
 }

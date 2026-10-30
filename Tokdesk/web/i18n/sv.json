@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Kommentarer, profil, sökning och meddelanden i breda fönster",
   "TikTok no aceptó el mensaje: {0}": "TikTok godtog inte meddelandet: {0}",
   "No se pudo confirmar el envío del mensaje": "Det gick inte att bekräfta att meddelandet skickades",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ditt meddelande syns inte i livechatten: skaparen kanske begränsar kommentarer"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ditt meddelande syns inte i livechatten: skaparen kanske begränsar kommentarer",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Meddelar om en ny version när appen är minimerad eller i systemfältet",
+  "Actualizaciones de Tokdesk": "Tokdesk-uppdateringar"
 }

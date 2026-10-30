@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "寬視窗中的留言、個人檔案、搜尋和訊息",
   "TikTok no aceptó el mensaje: {0}": "TikTok 未接受該訊息：{0}",
   "No se pudo confirmar el envío del mensaje": "無法確認訊息是否已傳送",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "你的訊息未顯示在直播聊天中：創作者可能限制了留言"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "你的訊息未顯示在直播聊天中：創作者可能限制了留言",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "應用程式最小化或在系統匣中時提醒新版本",
+  "Actualizaciones de Tokdesk": "Tokdesk 更新"
 }

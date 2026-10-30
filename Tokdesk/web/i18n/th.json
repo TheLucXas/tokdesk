@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "ความคิดเห็น โปรไฟล์ การค้นหา และข้อความในหน้าต่างกว้าง",
   "TikTok no aceptó el mensaje: {0}": "TikTok ไม่รับข้อความ: {0}",
   "No se pudo confirmar el envío del mensaje": "ยืนยันไม่ได้ว่าส่งข้อความแล้ว",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ข้อความของคุณไม่แสดงในแชทไลฟ์ ครีเอเตอร์อาจจำกัดความคิดเห็น"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ข้อความของคุณไม่แสดงในแชทไลฟ์ ครีเอเตอร์อาจจำกัดความคิดเห็น",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "แจ้งเวอร์ชันใหม่เมื่อย่อแอปหรือแอปอยู่ในถาดระบบ",
+  "Actualizaciones de Tokdesk": "อัปเดต Tokdesk"
 }

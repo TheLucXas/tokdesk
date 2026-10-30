@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "幅の広いウィンドウでのコメント、プロフィール、検索、メッセージ",
   "TikTok no aceptó el mensaje: {0}": "TikTokがメッセージを受け付けませんでした: {0}",
   "No se pudo confirmar el envío del mensaje": "メッセージが送信されたか確認できませんでした",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "メッセージがライブのチャットに表示されません。クリエイターがコメントを制限している可能性があります"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "メッセージがライブのチャットに表示されません。クリエイターがコメントを制限している可能性があります",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "アプリを最小化中やトレイにあるときに新しいバージョンを通知します",
+  "Actualizaciones de Tokdesk": "Tokdesk のアップデート"
 }

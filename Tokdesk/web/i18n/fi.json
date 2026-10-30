@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Kommentit, profiili, haku ja viestit leveissä ikkunoissa",
   "TikTok no aceptó el mensaje: {0}": "TikTok ei hyväksynyt viestiä: {0}",
   "No se pudo confirmar el envío del mensaje": "Viestin lähettämistä ei voitu vahvistaa",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Viestisi ei näy live-keskustelussa: tekijä on ehkä rajoittanut kommentteja"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Viestisi ei näy live-keskustelussa: tekijä on ehkä rajoittanut kommentteja",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Ilmoittaa uudesta versiosta, kun sovellus on pienennettynä tai ilmaisinalueella",
+  "Actualizaciones de Tokdesk": "Tokdeskin päivitykset"
 }

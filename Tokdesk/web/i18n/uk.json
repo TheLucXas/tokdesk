@@ -506,5 +506,7 @@
   "Comentarios, perfil, búsqueda y mensajes en ventanas anchas": "Коментарі, профіль, пошук і повідомлення в широких вікнах",
   "TikTok no aceptó el mensaje: {0}": "TikTok не прийняв повідомлення: {0}",
   "No se pudo confirmar el envío del mensaje": "Не вдалося підтвердити надсилання повідомлення",
-  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше повідомлення не з’явилося в чаті трансляції: можливо, автор обмежує коментарі"
+  "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше повідомлення не з’явилося в чаті трансляції: можливо, автор обмежує коментарі",
+  "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Повідомляє про нову версію, коли застосунок згорнуто або в треї",
+  "Actualizaciones de Tokdesk": "Оновлення Tokdesk"
 }
