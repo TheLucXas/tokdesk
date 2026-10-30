@@ -2084,6 +2084,7 @@ function showProfileList(list) {
 // ---------- Colecciones (dentro de Favoritos) ----------
 function showCollections(on) {
   $('#pfColl').classList.toggle('show', on);
+  $('#pfColl').classList.remove('snd-list');
   $('#pfGrid').style.display = on ? 'none' : '';
   $('#pfMore').style.display = on ? 'none' : '';
 }
@@ -2091,8 +2092,30 @@ function showCollections(on) {
 $$('#pfSub button').forEach((b) => b.addEventListener('click', () => {
   $$('#pfSub button').forEach((x) => x.classList.toggle('on', x === b));
   if (b.dataset.sub === 'collections') loadCollections();
+  else if (b.dataset.sub === 'sounds') loadSavedSounds();
   else showProfileList('favorites');
 }));
+
+// Favoritos > Sonidos: los sonidos guardados (solo los tuyos; la web no muestra los de otros)
+async function loadSavedSounds() {
+  const it = state.profileFor; if (!it) return;
+  showCollections(true);
+  const box = $('#pfColl');
+  box.classList.add('snd-list');
+  box.innerHTML = '<div class="sheet-msg coll-back"><div class="spinner"></div></div>';
+  const r = await api('GET', '/api/user/collect/music_list/', { secUid: it.secUid, count: 30, cursor: 0 });
+  if (state.profileFor !== it) return;
+  const raw = (r.data && r.data.musicList) || [];
+  const list = raw.map((x) => ({ ...(x.music || x), videos: x.stats && x.stats.videoCount }));
+  if (!list.length) { box.innerHTML = `<div class="sheet-msg coll-back">${r.data ? t('No hay sonidos guardados.') : t('No se pudieron cargar los sonidos.')}</div>`; return; }
+  box.innerHTML = list.map((m, i) => `<button class="ib-item snd" data-i="${i}"><img class="av sq" alt="" src="${esc(m.coverThumb || m.coverMedium || '')}">
+    <div class="tx"><div class="nm">${esc(m.title)}</div><div class="ls">${esc(m.authorName || '')}</div>
+    <div class="ls">${m.duration ? mmss(m.duration) + ' · ' : ''}${t('{0} videos', fmt(m.videos || 0))}</div></div></button>`).join('');
+  $$('button.snd', box).forEach((b) => b.onclick = () => {
+    const m = list[+b.dataset.i];
+    openSoundPage({ musicId: m.id, musicTitle: m.title, music: m.authorName, musicCover: m.coverLarge || m.coverMedium });
+  });
+}
 
 async function loadCollections() {
   const it = state.profileFor; if (!it) return;
@@ -2893,7 +2916,7 @@ async function savedSounds() {
   for (let i = 0; i < 5; i++) {
     const r = await api('GET', '/api/user/collect/music_list/', { secUid: state.me.secUid, count: 30, cursor });
     const d = r.data || {};
-    for (const m of d.musicList || []) ids.add(String(m.id));
+    for (const m of d.musicList || []) ids.add(String((m.music || m).id));
     if (!d.hasMore) break;
     cursor = d.cursor;
   }
