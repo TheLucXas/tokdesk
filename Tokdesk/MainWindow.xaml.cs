@@ -389,7 +389,8 @@ public partial class MainWindow : Window
         catch (Exception ex) { Log.Write("Preferencias: " + ex.Message); }
         ui.Navigate($"https://{UiHost}/index.html");
 
-        if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") StartTestHook();
+        // TOKDESK_TEST=1: el mismo modo de pruebas pero con el perfil normal (para probar la build publicada)
+        if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1" || Environment.GetEnvironmentVariable("TOKDESK_TEST") == "1") StartTestHook();
 
         // Los accesos directos se rehacen al abrir: así apuntan siempre al lanzador actual
         if (_settings.ApplyShortcuts(startup: true)) _settings.Save();

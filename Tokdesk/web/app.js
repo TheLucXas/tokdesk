@@ -45,6 +45,7 @@ const opt = Object.assign({
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
+  textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -1258,7 +1259,8 @@ $('#scrim').addEventListener('click', closePanels);
 // ---------- Entrada: rueda, teclado, arrastre, clic ----------
 let wheelLock = 0, wheelAcc = 0, wheelIdle;
 window.addEventListener('wheel', (e) => {
-  if (anyPanelOpen() || e.target.closest('.desc.open, #ctx, #volwrap')) return;
+  // Sobre el chat del directo (o el emoji) la rueda desplaza el chat, no cambia de live
+  if (anyPanelOpen() || e.target.closest('.desc.open, #ctx, #volwrap, .lv-chat, #emojiPop')) return;
   e.preventDefault();
   clearTimeout(wheelIdle);
   wheelIdle = setTimeout(() => { wheelAcc = 0; }, 160);
@@ -1295,7 +1297,7 @@ window.addEventListener('keydown', (e) => {
 });
 let drag = null, clickTimer = null;
 pager.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0 || e.target.closest('.rail, .meta, .progress, .photonav')) return;
+  if (e.button !== 0 || e.target.closest('.rail, .meta, .progress, .photonav, .lv-chat, .lv-top, .lv-bottom')) return;
   hideCtx();
   drag = { y: e.clientY, x: e.clientX, dy: 0, dx: 0, moved: false, id: e.pointerId };
   // Mantener presionado abre las opciones, como en la app

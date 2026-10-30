@@ -86,6 +86,9 @@ function applyLook() {
   document.body.classList.toggle('no-disc', !opt.showDisc);
   document.body.classList.toggle('progress-always', opt.progressAlways);
   document.body.classList.toggle('reduce-motion', opt.reduceMotion);
+  // En una hoja propia antes del tema del usuario, para que su CSS pueda sobrescribirlas
+  $('#uiVars').textContent = `:root { --text-scale: ${opt.textScale / 100}; --chat-font: ${opt.chatFont}px; --live-chat-font: ${opt.liveChatFont}px;
+    --live-chat-opacity: ${opt.liveChatOpacity / 100}; --live-chat-width: ${opt.liveChatWidth}px; --panel-width: ${opt.panelWidth}px; }`;
   const th = opt.themes.find((x) => x.name === opt.activeTheme);
   $('#userTheme').textContent = th ? th.css : '';
 }
@@ -120,6 +123,12 @@ function renderSettings() {
         row({ type: 'colors', label: t('Color de acento') }),
         row({ type: 'link', ic: 'pencil', label: t('Temas personalizados (CSS)'), fn: () => { settingsTab = 'themes'; renderSettings(); } }),
         row({ type: 'range', label: t('Tamaño de la interfaz'), min: 70, max: 150, step: 5, value: Math.round((N.Zoom || 1) * 100), unit: '%', fn: (v) => send({ t: 'setsetting', k: 'Zoom', v: v / 100 }) }),
+        row({ type: 'range', label: t('Tamaño del texto'), hint: t('Solo el texto, sin cambiar el resto de la interfaz'), min: 80, max: 150, step: 5, value: opt.textScale, unit: '%', fn: (v) => { opt.textScale = v; } }),
+        row({ type: 'range', label: t('Texto de los mensajes'), min: 11, max: 22, step: 1, value: opt.chatFont, unit: ' px', fn: (v) => { opt.chatFont = v; } }),
+        row({ type: 'range', label: t('Texto del chat del LIVE'), min: 10, max: 22, step: 1, value: opt.liveChatFont, unit: ' px', fn: (v) => { opt.liveChatFont = v; } }),
+        row({ type: 'range', label: t('Opacidad del chat del LIVE'), min: 30, max: 100, step: 5, value: opt.liveChatOpacity, unit: '%', fn: (v) => { opt.liveChatOpacity = v; } }),
+        row({ type: 'range', label: t('Ancho del chat del LIVE'), min: 240, max: 640, step: 20, value: opt.liveChatWidth, unit: ' px', fn: (v) => { opt.liveChatWidth = v; } }),
+        row({ type: 'range', label: t('Ancho de los paneles'), hint: t('Comentarios, perfil, búsqueda y mensajes en ventanas anchas'), min: 480, max: 1000, step: 20, value: opt.panelWidth, unit: ' px', fn: (v) => { opt.panelWidth = v; } }),
         row({ type: 'seg', label: t('Ajuste del video'), value: opt.fit, options: [['contain', t('Completo')], ['cover', t('Llenar')]], fn: (v) => { opt.fit = v; } }),
         row({ type: 'toggle', label: t('Mostrar contadores (me gusta, comentarios…)'), value: opt.showCounts, fn: (v) => { opt.showCounts = v; } }),
         row({ type: 'toggle', label: t('Mostrar disco de música'), value: opt.showDisc, fn: (v) => { opt.showDisc = v; } }),
@@ -327,8 +336,10 @@ function renderKeys(body) {
 }
 
 const THEME_HELP = `/* Ejemplo: cambia lo que quieras con CSS.
-   --red es el color de acento. Clases útiles: body.light, .panel, .rail, .meta, #bottom, #top */
-:root { --red: #00e0ff; }
+   Variables en :root: --red (color de acento), --text-scale (tamaño del texto, 1 = 100 %),
+   --chat-font (texto de los mensajes), --live-chat-font, --live-chat-opacity y --live-chat-width (chat del LIVE),
+   --panel-width (ancho de los paneles). Clases útiles: body.light, .panel, .rail, .meta, #bottom, #top, .lv-chat */
+:root { --red: #00e0ff; --text-scale: 1.1; }
 #bottom { background: #0b0b14; }
 .panel.dark, #sheet, #share, #opts { background: #10101a; }
 .msg.mine .bub { background: #7c3aed; }`;

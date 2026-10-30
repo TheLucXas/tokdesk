@@ -4,10 +4,10 @@
 // Fuentes medidas desde la web: webcast/feed canal 87 = recomendados, canal 81 = seguidos en vivo ahora,
 // /api-live/user/room/ = la sala de un usuario.
 
-function flvOf(streamData) {
+function flvOf(streamData, low) {
   try {
     const sd = JSON.parse(streamData).data;
-    return ['hd', 'sd', 'ld', 'origin'].map((q) => sd[q] && sd[q].main && sd[q].main.flv).find(Boolean) || null;
+    return (low ? ['sd', 'ld', 'hd'] : ['hd', 'sd', 'ld', 'origin']).map((q) => sd[q] && sd[q].main && sd[q].main.flv).find(Boolean) || null;
   } catch { return null; }
 }
 
@@ -50,7 +50,8 @@ async function roomOf(uniqueId) {
   const d = r.data && r.data.data;
   const lr = d && d.liveRoom;
   if (!lr || lr.status !== 2) return null;
-  return { flv: flvOf(lr.streamData && lr.streamData.pull_data && lr.streamData.pull_data.stream_data), title: lr.title,
+  const raw = lr.streamData && lr.streamData.pull_data && lr.streamData.pull_data.stream_data;
+  return { flv: flvOf(raw), flvLow: flvOf(raw, true), title: lr.title,
     viewers: lr.liveRoomStats && lr.liveRoomStats.userCount, cover: lr.coverUrl, user: d.user || {}, roomId: d.user && d.user.roomId };
 }
 
@@ -91,14 +92,20 @@ async function startLive(el, it) {
   el.liveStarting = true;
   if ((!it.flv || !it.roomId) && it.author) {
     const r = await roomOf(it.author);
-    if (r) { it.flv = it.flv || r.flv; it.roomId = it.roomId || r.roomId; it.viewers = r.viewers || it.viewers; }
+    if (r) { it.flv = it.flv || r.flv; it.flvLow = r.flvLow; it.roomId = it.roomId || r.roomId; it.viewers = r.viewers || it.viewers; }
   }
   el.liveStarting = false;
   if (!el.isConnected || currentItem() !== it) return;
   wireLive(el, it);
   if (!it.flv || !window.mpegts) { el.classList.remove('waiting'); el.classList.add('live-ended'); return; }
   const v = el.media;
-  const p = mpegts.createPlayer({ type: 'flv', isLive: true, url: it.flv }, { enableWorker: false, liveBufferLatencyChasing: true });
+  // Directo de baja latencia: sin búfer de acumulación, persiguiendo el borde en vivo y limpiando lo ya visto
+  const url = it.lowQuality && it.flvLow ? it.flvLow : it.flv;
+  const p = mpegts.createPlayer({ type: 'flv', isLive: true, url }, {
+    enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 * 1024, lazyLoad: false,
+    liveBufferLatencyChasing: true, liveBufferLatencyMaxLatency: 4, liveBufferLatencyMinRemain: 0.8,
+    autoCleanupSourceBuffer: true, autoCleanupMaxBackwardDuration: 20, autoCleanupMinBackwardDuration: 10,
+  });
   p.on(mpegts.Events.ERROR, async (a, b) => {
     log('live: ' + a + ' ' + b);
     // La dirección del feed puede estar vencida: se pide la de la sala una vez y se reintenta
@@ -117,12 +124,39 @@ async function startLive(el, it) {
   v.addEventListener('playing', () => el.classList.remove('waiting', 'paused'), { once: true });
   v.play().catch(() => {});
   const gen = el.liveGen = (el.liveGen || 0) + 1;
+  watchLive(el, it, p);
   if (it.roomId) { pollRoom(el, it, gen); pollChat(el, it, gen); }
   // Se deja el directo listo en la página oculta para que escribir y dar me gusta respondan enseguida
   if (state.me) setTimeout(() => { if (el.livePlayer && currentItem() === it) liveAct(it, "'ok'"); }, 1500);
 }
 
+// Si la imagen se queda quieta: primero se salta al borde en vivo; si sigue trabada, se recarga el reproductor
+// (y si se traba seguido, se baja a la calidad estándar)
+function watchLive(el, it, p) {
+  const v = el.media;
+  let last = -1, still = 0, reloads = 0;
+  clearInterval(el.liveWatch);
+  el.liveWatch = setInterval(() => {
+    if (el.livePlayer !== p || !el.isConnected) { clearInterval(el.liveWatch); return; }
+    if (v.paused || el.dataset.userPaused) { still = 0; return; }
+    if (v.currentTime !== last) { last = v.currentTime; still = 0; return; }
+    still++;
+    const b = v.buffered, end = b.length ? b.end(b.length - 1) : 0;
+    if (still === 2 && end - v.currentTime > 0.5) { v.currentTime = end - 0.3; v.play().catch(() => {}); return; }
+    if (still >= 4) {
+      clearInterval(el.liveWatch);
+      reloads++;
+      if (it.flvLow && (++it.stalls >= 2 || reloads > 1)) it.lowQuality = true;
+      log('live: trabado, se recarga' + (it.lowQuality ? ' en calidad estándar' : ''));
+      stopLive(el);
+      if (currentItem() === it) startLive(el, it);
+    }
+  }, 1500);
+  it.stalls = it.stalls || 0;
+}
+
 function stopLive(el) {
+  clearInterval(el.liveWatch);
   if (el.liveSession) { el.liveSession = false; send({ t: 'liverelease' }); }
   if (!el.livePlayer) return;
   try { el.livePlayer.pause(); el.livePlayer.unload(); el.livePlayer.detachMediaElement(); el.livePlayer.destroy(); } catch { }
@@ -215,9 +249,11 @@ function addChat(box, u, text, kind) {
   const row = document.createElement('div');
   row.className = 'lv-msg' + (kind ? ' ' + kind : '');
   row.innerHTML = `${u.avatar ? `<img alt="" src="${esc(u.avatar)}">` : ''}<div><b>${esc(u.nick)}</b> <span>${esc(text)}</span></div>`;
+  // Si estás leyendo más arriba, el chat no salta al final
+  const atEnd = box.scrollTop + box.clientHeight > box.scrollHeight - 40;
   box.appendChild(row);
-  while (box.children.length > 60) box.firstChild.remove();
-  box.scrollTop = box.scrollHeight;
+  if (atEnd) { while (box.children.length > 60) box.firstChild.remove(); box.scrollTop = box.scrollHeight; }
+  else while (box.children.length > 200) box.firstChild.remove();
 }
 
 async function openLiveOf(uniqueId) {
@@ -297,26 +333,52 @@ async function liveChat(it, el) {
   const inp = $('.lv-input', el);
   const text = inp.value.trim();
   if (!text || el.chatSending) return;
-  // Un solo envío: el campo queda bloqueado hasta que la web lo toma y no se reintenta nunca
+  // Un solo envío: el campo queda bloqueado hasta saber qué pasó y no se reintenta nunca
   el.chatSending = true;
   inp.value = '';
   inp.disabled = true;
-  const r = await liveAct(it, `(() => {
+  const key = JSON.stringify(text), path = JSON.stringify('/@' + it.author + '/live');
+  // 1) Escribir en el campo de la web (comprobando que tomó el texto) y tocar su Enviar, en el live correcto
+  let r = await liveAct(it, `(() => {
+    if (location.pathname !== ${path}) return 'err:otro live';
     const f = document.querySelector('[data-e2e="room-chat-input-field"]'), b = document.querySelector('[data-e2e="room-chat-send-btn"]');
     if (!f || !b) return null;
-    const key = ${JSON.stringify(text)};
-    if (window.__tdLast === key && Date.now() - window.__tdLastAt < 5000) return 'dup';
-    window.__tdLast = key; window.__tdLastAt = Date.now();
+    if (window.__tdLast === ${key} && Date.now() - window.__tdLastAt < 5000) return 'dup';
+    window.__tdLast = ${key}; window.__tdLastAt = Date.now();
+    window.__tdAlerts = () => [...document.querySelectorAll('[role="alert"], [class*="toast" i]')].map((e) => (e.textContent || '').trim()).filter((x) => x && x.length < 160);
+    window.__tdErr0 = new Set(window.__tdAlerts());
     f.focus();
-    document.execCommand('insertText', false, key);
+    document.execCommand('selectAll', false);
+    document.execCommand('insertText', false, ${key});
+    if ((f.textContent || '').trim() !== ${key}) {
+      f.textContent = ${key};
+      f.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: ${key} }));
+    }
+    if ((f.textContent || '').trim() !== ${key}) return 'err:el campo no aceptó el texto';
     setTimeout(() => b.click(), 120);
     return 'queued';
+  })()`);
+  // 2) Confirmar en la propia web: el mensaje aparece en su chat, o se lee el aviso de error que muestre
+  if (r === 'queued') r = await liveAct(it, `(() => {
+    const mine = [...document.querySelectorAll('[data-e2e="chat-message"]')].slice(-20).some((m) => (m.textContent || '').includes(${key}));
+    if (mine) return 'ok';
+    // Solo cuentan los avisos que aparecieron después de tocar Enviar
+    const err = (window.__tdAlerts ? window.__tdAlerts() : []).filter((x) => !window.__tdErr0.has(x) && !x.includes(${key})).join(' | ');
+    return err ? 'err:' + err.slice(0, 150) : null;
   })()`);
   el.chatSending = false;
   inp.disabled = false;
   inp.focus();
-  // El mensaje propio aparece cuando llega por el chat en vivo (sin eco local, para que no salga repetido)
-  if (r !== 'queued' && r !== 'dup') { inp.value = text; toast(t('No se pudo enviar el mensaje')); }
+  log('live chat @' + it.author + ': ' + r);
+  if (r === 'ok' || r === 'dup') { expectEcho(el, it, text); return; }
+  inp.value = text;
+  toast(r && r.startsWith('err:') ? t('TikTok no aceptó el mensaje: {0}', r.slice(4)) : t('No se pudo confirmar el envío del mensaje'));
+}
+// El mensaje propio aparece cuando llega por el chat en vivo (sin eco local); si el servidor no lo devuelve, se avisa
+function expectEcho(el, it, text) {
+  const box = $('.lv-chat', el);
+  const has = () => $$('.lv-msg span', box).some((s) => s.textContent === text);
+  setTimeout(() => { if (el.isConnected && el.liveGen && !has()) toast(t('Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios')); }, 12000);
 }
 
 // Me gusta: se suman los toques y se mandan juntos (como la app, que agrupa los corazones)
