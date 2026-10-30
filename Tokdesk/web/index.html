@@ -13,6 +13,7 @@
 <body>
   <div id="busy"></div>
   <header id="top">
+    <button id="btnLive" class="topicon" title="LIVE"></button>
     <button id="btnSearch" class="topicon" title="Buscar (/)"></button>
     <div class="tabs">
       <button class="tab" data-feed="explore" data-i18n>Explorar</button>
@@ -36,6 +37,7 @@
   <main id="stage">
     <div id="pager"></div>
     <div id="empty"><img class="logo" src="logo.png" alt=""><div class="spinner"></div><p id="emptyText" data-i18n>Cargando videos…</p></div>
+    <div id="liveRow"></div>
     <div id="exView"><div id="exChips"></div><div id="exGrid"></div><div id="exMore" class="sheet-msg"></div></div>
     <div id="toast"></div>
     <div id="notice"></div>
@@ -203,7 +205,9 @@
 
   <script src="icons.js"></script>
   <script src="i18n.js"></script>
+  <script src="vendor/mpegts.js"></script>
   <script src="app.js"></script>
+  <script src="live.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

@@ -237,6 +237,39 @@ sealed class SidePage
                   return String(n);
                 })()
                 """);
+            // Quien no está entre los recientes del menú se busca con el buscador del propio menú, como en la web
+            var missing = people.Length - (int.TryParse(picked, out var n0) ? n0 : 0);
+            if (missing > 0)
+            {
+                var found = int.TryParse(picked, out var n1) ? n1 : 0;
+                foreach (var w in people)
+                {
+                    var wj = JsonSerializer.Serialize(w);
+                    var already = await Eval($$"""(() => { const it = document.querySelector('[data-e2e="share-' + {{wj}} + '"]'); return it && it.querySelector('[aria-checked="true"], [class*="Checked"], [class*="checked"]') ? 'y' : null; })()""");
+                    if (already != null) continue;
+                    await Eval($$"""
+                        (() => {
+                          const i = document.querySelector('[data-e2e="search-user-input"]');
+                          if (!i) return null;
+                          Object.getOwnPropertyDescriptor(Object.getPrototypeOf(i), 'value').set.call(i, {{wj}});
+                          i.dispatchEvent(new Event('input', { bubbles: true }));
+                          return 'ok';
+                        })()
+                        """);
+                    var hit = await Poll($$"""
+                        (() => {
+                          const want = {{wj}};
+                          const items = [...document.querySelectorAll('[data-e2e^="share-"]')].filter(e => e.querySelector('[data-e2e="share-avatar"]'));
+                          const it = items.find(e => e.dataset.e2e === 'share-' + want) || items.find(e => ((e.querySelector('p') || {}).textContent || '').trim() === want);
+                          if (!it) return null;
+                          (it.querySelector('[tabindex]') || it).click();
+                          return 'ok';
+                        })()
+                        """, 5000);
+                    if (hit != null) found++;
+                }
+                picked = found.ToString();
+            }
             if (picked == null || picked == "0")
             {
                 var seen = await Eval("(() => [...document.querySelectorAll('[data-e2e^=\"share-\"]')].map(e => e.dataset.e2e + '=' + ((e.querySelector('p') || {}).textContent || '')).join(' | ').slice(0, 600))()");
@@ -257,7 +290,9 @@ sealed class SidePage
             await Task.Delay(300);
             await Eval("(() => { const b = [...document.querySelectorAll('button')].find(x => /^(Enviar|Send)$/i.test(x.textContent.trim())); if (b) b.click(); return null; })()");
             // Éxito: aparece «Enviado a …» o se cierra el menú
-            var ok = await Poll("(() => [...document.querySelectorAll('body *')].some(e => e.children.length < 2 && /Enviado a|Sent to/i.test(e.textContent || '') && e.textContent.length < 80) ? 'ok' : null)()", 6000);
+            var ok = await Poll("(() => [...document.querySelectorAll('body *')].some(e => e.children.length < 2 && /Enviado a|Sent to/i.test(e.textContent || '') && e.textContent.length < 80) ? 'ok' : null)()", 10000);
+            // Sin el aviso pero con el botón Enviar ya fuera de la pantalla, el envío salió: no se manda además como enlace
+            if (ok == null) ok = await Eval("(() => [...document.querySelectorAll('button')].some(x => /^(Enviar|Send)$/i.test(x.textContent.trim())) ? null : 'gone')()");
             Log.Write($"Compartir: {(ok != null ? "enviado" : "sin confirmación")} a {picked}");
             return ok != null;
         }

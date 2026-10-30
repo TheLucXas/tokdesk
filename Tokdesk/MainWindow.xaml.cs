@@ -250,10 +250,24 @@ public partial class MainWindow : Window
         mmi.MaxSize.X = info.Work.Right - info.Work.Left;
         mmi.MaxSize.Y = info.Work.Bottom - info.Work.Top;
         // Barra de tareas con «ocultar automáticamente»: si la ventana tapa el borde entero, Windows no la vuelve a mostrar
+        var edges = new List<uint>();
         for (uint edge = 0; edge < 4; edge++)
         {
             var abd = new APPBARDATA { Size = Marshal.SizeOf<APPBARDATA>(), Edge = edge, Rc = info.Monitor };
-            if (SHAppBarMessage(0x0B /* ABM_GETAUTOHIDEBAREX */, ref abd) == IntPtr.Zero) continue;
+            if (SHAppBarMessage(0x0B /* ABM_GETAUTOHIDEBAREX */, ref abd) != IntPtr.Zero) edges.Add(edge);
+        }
+        // Con barras modificadas (Windhawk, TranslucentTB…) esa consulta da 0 aunque la barra se oculte:
+        // se usa el estado general y la posición de la barra si está en este monitor
+        if (edges.Count == 0)
+        {
+            var st = new APPBARDATA { Size = Marshal.SizeOf<APPBARDATA>() };
+            var pos = new APPBARDATA { Size = Marshal.SizeOf<APPBARDATA>() };
+            if (((long)SHAppBarMessage(0x04 /* ABM_GETSTATE */, ref st) & 1) != 0 && SHAppBarMessage(0x05 /* ABM_GETTASKBARPOS */, ref pos) != IntPtr.Zero
+                && pos.Rc.Left < info.Monitor.Right && pos.Rc.Right > info.Monitor.Left && pos.Rc.Top < info.Monitor.Bottom && pos.Rc.Bottom > info.Monitor.Top)
+                edges.Add(pos.Edge);
+        }
+        foreach (var edge in edges)
+        {
             switch (edge)
             {
                 case 0: mmi.MaxPosition.X += 2; mmi.MaxSize.X -= 2; break;

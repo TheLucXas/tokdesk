@@ -223,6 +223,9 @@ function feedFor(key) {
       f.hasMore = !!d.HasMoreAfter && d.itemList.length > 0;
       feedChanged(f);
     } });
+    case 'lives': return makeFeed(key, { title: 'LIVE', load: (f) => loadLives(f, 87) });
+    case 'livefollow': return makeFeed(key, { title: 'LIVE', hasMore: true, load: (f) => loadLives(f, 81) });
+    case 'liveone': return makeFeed(key, { title: 'LIVE', hasMore: false, load() { } });
     case 'searchtop': return makeFeed(key, { title: arg, load: (f) => loadPaged(f, '/api/search/general/full/', { keyword: arg, count: 12 }, 'offset') });
     case 'search': return makeFeed(key, { title: arg, load: (f) => loadPaged(f, '/api/search/item/full/', { keyword: arg, count: 12 }, 'offset') });
   }
@@ -447,6 +450,7 @@ function requestMore() {
 
 function teardown() {
   for (const el of state.slides.values()) {
+    if (typeof stopLive === 'function') stopLive(el);
     const m = el.media; m.pause(); m.removeAttribute('src'); m.load();
     clearInterval(el.photoTimer); el.remove();
   }
@@ -471,6 +475,7 @@ function setFeed(f, idx) {
   if (!f.items.length) requestMore();
   render();
   if (document.body.classList.contains('exgrid')) renderExplore();
+  if (typeof renderLiveRow === 'function') renderLiveRow();
 }
 
 function switchTab(key) {
@@ -571,7 +576,7 @@ function buildSlide(it) {
   el.innerHTML = `
     <img class="poster" alt="" src="${esc(it.cover)}">
     ${photoHtml}
-    ${it.live ? `<button class="livebtn">${esc(t('EN VIVO'))} · ${esc(t('Ver en el navegador'))}</button>` : ''}
+    ${it.live ? `<div class="livebar"><span class="live-tag">LIVE</span>${it.viewers ? `<span class="live-viewers">${ICON.views}${fmt(it.viewers)}</span>` : ''}<button class="livebtn" title="${esc(t('Ver en el navegador'))}">${ICON.globe}</button></div><div class="live-end">${esc(t('La transmisión terminó'))}</div>` : ''}
     <div class="loading spinner"></div>
     <div class="shade"></div>
     <div class="rail">
@@ -710,7 +715,8 @@ function buildSlide(it) {
     }));
   }
 
-  $('.avatar img', el).addEventListener('click', (e) => { e.stopPropagation(); openProfile(it); });
+  $('.avatar img', el).addEventListener('click', (e) => { e.stopPropagation(); if (it.authorLive && !it.live) openLiveOf(it.author); else openProfile(it); });
+  if (!it.live && typeof checkAuthorLive === 'function') checkAuthorLive(it, el);
   $('.follow', el).addEventListener('click', (e) => {
     e.stopPropagation();
     follow(it, true);
@@ -874,6 +880,7 @@ function render() {
     const src = it.photos.length ? it.musicUrl : it.src;
     if (src && i >= f.idx && i <= f.idx + opt.preload && !m.getAttribute('src')) { m.preload = 'auto'; m.src = (!it.photos.length && offUrl(it)) || src; }
     if (m.getAttribute('src')) probeAudio(el);
+    if (it.live) { if (i === f.idx) startLive(el, it); else stopLive(el); }
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
       if (typeof markSeen === 'function') { markSeen(it.id); recordHistory(it); }
@@ -3220,10 +3227,10 @@ document.addEventListener('pointerdown', (e) => {
   if (e.target.closest('#notice, #toast, #top, #viewer, .winbtns')) return;
   const chat = $('#chat');
   if (chat.classList.contains('open') && !chat.contains(e.target)) { e.preventDefault(); e.stopPropagation(); closeChat(); return; }
-  for (const id of ['share', 'sheet']) {
-    const p = $('#' + id);
-    if (p.classList.contains('open') && p === topPanel() && !p.contains(e.target)) { e.preventDefault(); e.stopPropagation(); closePanel(id); return; }
-  }
+  // Regla común: un clic fuera de la hoja o página de más arriba la cierra (todas, también las que se agreguen)
+  if (e.target.closest('#bottom')) return;
+  const top = $$('.panel.open').sort((a, b) => (+getComputedStyle(b).zIndex || 0) - (+getComputedStyle(a).zIndex || 0))[0];
+  if (top && !top.contains(e.target)) { e.preventDefault(); e.stopPropagation(); closePanel(top.id); }
 }, true);
 
 // Foto del perfil ampliable

@@ -196,14 +196,16 @@ sealed class Engine
     {
         await Task.WhenAny(_feedReady.Task, Task.Delay(10000));
         var q = query.ToArray();
-        var result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method, form);
+        // Los directos usan webcast.tiktok.com (la web los pide igual, desde la misma página)
+        var full = path.StartsWith("https://webcast.tiktok.com/") ? path : "https://www.tiktok.com" + path;
+        var result = await PageFetch(Rebuild(_feedUrl, full, false, q), method, form);
         if (result.status == 200 && string.IsNullOrEmpty(result.body))
         {
             // TikTok devuelve 200 vacío cuando la sesión de la página quedó vieja (msToken vencido):
             // se recarga la página oficial y se reintenta una vez
             Log.Write($"API {method} {path}: respuesta vacía; se refresca la sesión y se reintenta");
             await RefreshSession();
-            result = await PageFetch(Rebuild(_feedUrl, "https://www.tiktok.com" + path, false, q), method, form);
+            result = await PageFetch(Rebuild(_feedUrl, full, false, q), method, form);
         }
         if (result.status != 200 || string.IsNullOrEmpty(result.body))
             Log.Write($"API {method} {path}: status {result.status}, {result.body?.Length ?? 0} bytes");
