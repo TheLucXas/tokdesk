@@ -36,6 +36,7 @@
   <main id="stage">
     <div id="pager"></div>
     <div id="empty"><img class="logo" src="logo.png" alt=""><div class="spinner"></div><p id="emptyText" data-i18n>Cargando videos…</p></div>
+    <div id="exView"><div id="exChips"></div><div id="exGrid"></div><div id="exMore" class="sheet-msg"></div></div>
     <div id="toast"></div>
     <div id="notice"></div>
     <div id="speedBadge"></div>
@@ -96,7 +97,7 @@
           <button id="pfFollow" class="btn-red" data-i18n>Seguir</button>
           <button id="pfEdit" class="btn-gray" style="display:none" data-i18n>Editar perfil</button>
           <button id="pfMsg" class="btn-gray" style="display:none">Mensajes</button>
-          <button id="pfOpen" class="btn-gray" title="Abrir en el navegador">↗</button>
+          <button id="pfOpen" class="btn-gray" title="Más opciones" data-i18n-title>⋯</button>
         </div>
         <div class="pf-bio" id="pfBio"></div>
       </div>
@@ -130,9 +131,13 @@
     <div class="pf-tabs" id="searchTabs">
       <button data-st="videos" class="on" data-i18n>Videos</button>
       <button data-st="users" data-i18n>Usuarios</button>
+      <button data-st="sounds" data-i18n>Sonidos</button>
+      <button data-st="live" data-i18n>LIVE</button>
     </div>
     <div id="searchGrid"></div>
     <div id="searchUsers"></div>
+    <div id="searchSounds"></div>
+    <div id="searchLive"></div>
     <div id="searchMore" class="sheet-msg"></div>
   </section>
 
@@ -182,7 +187,7 @@
   <section id="page" class="panel dark" aria-hidden="true">
     <div class="ib-head"><button class="backbtn" data-close="page" id="pgBack"></button><span id="pgTitle"></span></div>
     <div id="pgBody">
-      <div class="pg-head"><div id="pgCover"></div><div class="pg-info"><div id="pgName"></div><div id="pgSub"></div><div id="pgCount"></div></div></div>
+      <div class="pg-head"><div id="pgCover"></div><div class="pg-info"><div id="pgName"></div><div id="pgSub"></div><div id="pgCount"></div><button id="pgSave" class="btn-gray"></button></div></div>
       <div id="pgGrid"></div><div id="pgMore" class="sheet-msg"></div>
     </div>
   </section>

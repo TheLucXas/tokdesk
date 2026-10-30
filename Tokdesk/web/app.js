@@ -169,7 +169,7 @@ function feedFor(key) {
   const [kind, arg] = [key.split(':')[0], key.slice(key.indexOf(':') + 1)];
   switch (kind) {
     case 'foryou': return makeFeed(key, { title: t('Para ti'), load(f) { if (!f.loading) { f.loading = true; send({ t: 'more' }); setTimeout(() => { f.loading = false; }, 8000); } } });
-    case 'explore': return makeFeed(key, { title: t('Explorar'), load: (f) => loadPaged(f, '/api/explore/item_list/', { categoryType: 120, count: 16 }) });
+    case 'explore': return makeFeed(key, { title: t('Explorar'), load: (f) => loadPaged(f, '/api/explore/item_list/', { categoryType: +arg || 120, count: 16 }) });
     case 'following': return makeFeed(key, { title: t('Siguiendo'), needsLogin: true, load: (f) => loadPaged(f, '/api/following/item_list/', { count: 8, pullType: 1, level: f.level || 1, isResetCounterUsed: true }) });
     case 'friends': return makeFeed(key, { title: t('Amigos'), needsLogin: true, async load(f) {
       // Amigos pagina con dos cursores (vistos y no vistos) en lugar de uno
@@ -210,6 +210,19 @@ function feedFor(key) {
         return loadPaged(f, '/api/challenge/item_list/', { challengeID: f.tagId, count: 16, coverFormat: 2 });
       },
     });
+    case 'related': return makeFeed(key, { title: t('Videos relacionados'), load: (f) => loadPaged(f, '/api/related/item_list/', { itemID: arg, count: 16 }) });
+    case 'story': return makeFeed(key, { title: t('Historias'), async load(f) {
+      if (f.loading || !f.hasMore) return;
+      f.loading = true;
+      const r = await api('GET', '/api/story/item_list/', { authorId: arg, count: 20, cursor: f.cursor || 0, loadBackward: false });
+      f.loading = false;
+      const d = r.data;
+      if (!d || !Array.isArray(d.itemList)) { f.hasMore = false; f.error = true; feedChanged(f); return; }
+      addItems(f, d.itemList);
+      f.cursor = d.MaxCursor || 0;
+      f.hasMore = !!d.HasMoreAfter && d.itemList.length > 0;
+      feedChanged(f);
+    } });
     case 'search': return makeFeed(key, { title: arg, load: (f) => loadPaged(f, '/api/search/item/full/', { keyword: arg, count: 12 }, 'offset') });
   }
 }
@@ -332,9 +345,10 @@ function normalize(it) {
   return {
     id: it.id, src, photos,
     cover: v.cover || v.originCover || v.dynamicCover || photos[0],
+    ratio: v.width && v.height ? v.height / v.width : 4 / 3, storyStatus: a.UserStoryStatus || 0,
     author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb || a.avatarMedium, authorId: a.id, secUid: a.secUid,
     signature: a.signature, authorStats: it.authorStats || null,
-    desc: it.desc || '',
+    desc: it.desc || '', lang: it.textLanguage || '',
     music: [mu.title, mu.authorName].filter(Boolean).join(' · '), musicCover: mu.coverThumb || a.avatarThumb, musicUrl: mu.playUrl,
     musicId: mu.id, musicTitle: mu.title,
     // Para descargar: con marca de agua (la de TikTok) y la de mayor calidad (cualquier códec)
@@ -401,7 +415,7 @@ function applyLocal(f) {
 
 function feedChanged(f) {
   applyLocal(f);
-  if (f === state.feed) { updateEmpty(); render(); }
+  if (f === state.feed) { updateEmpty(); render(); if (document.body.classList.contains('exgrid')) renderExplore(); }
   if (state.profileKey === f.key) renderGrid($('#pfGrid'), $('#pfMore'), f);
   if (state.pageKey === f.key) renderGrid($('#pgGrid'), $('#pgMore'), f);
   if (state.searchKey === f.key) renderGrid($('#searchGrid'), $('#searchMore'), f);
@@ -446,20 +460,70 @@ function setFeed(f, idx) {
   const sub = state.stack.length > 0;
   document.body.classList.toggle('sub', sub);
   $('#backTitle').textContent = f.title;
-  $$('.tab').forEach((t) => t.classList.toggle('active', !sub && t.dataset.feed === f.key));
+  $$('.tab').forEach((t) => t.classList.toggle('active', !sub && t.dataset.feed === f.key.split(':')[0]));
+  document.body.classList.toggle('exgrid', !sub && f.key.split(':')[0] === 'explore');
   // Las pestañas de arriba (Explorar / Siguiendo / Para ti) son de Inicio; Amigos tiene la suya abajo
-  const nav = f.key === 'friends' ? 'friends' : ['foryou', 'following', 'explore'].includes(f.key) ? 'home' : null;
+  const nav = f.key === 'friends' ? 'friends' : ['foryou', 'following', 'explore'].includes(f.key.split(':')[0]) ? 'home' : null;
   if (!sub && nav) $$('.nav').forEach((x) => { if (x.dataset.nav === 'home' || x.dataset.nav === 'friends') x.classList.toggle('active', x.dataset.nav === nav); });
   closePanels();
   updateEmpty();
   if (!f.items.length) requestMore();
   render();
+  if (document.body.classList.contains('exgrid')) renderExplore();
 }
 
 function switchTab(key) {
   state.stack = [];
+  if (key === 'explore') key = state.exploreKey || 'explore';
   setFeed(feedFor(key));
 }
+
+// ---------- Explorar: cuadrícula de dos columnas como en la app, con las categorías de la web ----------
+const EXPLORE_CATS = [[120, 'Todo'], [119, 'Canto y baile'], [104, 'Comedia'], [112, 'Deportes'], [100, 'Anime y cómics'],
+  [107, 'Relaciones'], [101, 'Espectáculos'], [110, 'Sincronía de labios'], [105, 'Vida cotidiana'], [102, 'Belleza y cuidado personal'],
+  [103, 'Juegos'], [114, 'Sociedad'], [109, 'Conjuntos de ropa'], [115, 'Automóviles'], [111, 'Comida'], [113, 'Animales'],
+  [106, 'Familia'], [108, 'Drama'], [117, 'Fitness y salud'], [116, 'Educación'], [118, 'Tecnología']];
+$('#exChips').innerHTML = EXPLORE_CATS.map(([c, n]) => `<button data-cat="${c}">${esc(t(n))}</button>`).join('');
+$$('#exChips button').forEach((b) => b.addEventListener('click', () => {
+  state.exploreKey = b.dataset.cat === '120' ? 'explore' : 'explore:' + b.dataset.cat;
+  $('#exView').scrollTop = 0;
+  switchTab('explore');
+  b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+}));
+$('#exChips').addEventListener('wheel', (e) => { if (e.deltaY) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
+function renderExplore() {
+  const f = state.feed, grid = $('#exGrid');
+  const cat = f.key.split(':')[1] || '120';
+  $$('#exChips button').forEach((b) => b.classList.toggle('on', b.dataset.cat === cat));
+  // Dos columnas con el ancho de un celular; más si la ventana es ancha
+  const n = Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)));
+  if (grid.dataset.key !== f.key || grid.dataset.n > f.items.length || grid.children.length !== n) {
+    grid.innerHTML = '<div class="excol"></div>'.repeat(n); grid.dataset.key = f.key; grid.dataset.n = 0;
+  }
+  const cols = [...grid.children];
+  for (let i = +grid.dataset.n; i < f.items.length; i++) {
+    const it = f.items[i];
+    const el = document.createElement('div');
+    el.className = 'extile';
+    const r = Math.min(4 / 3, Math.max(1, it.ratio || 4 / 3));
+    el.innerHTML = `<div class="excover" style="aspect-ratio:1/${r.toFixed(3)}"><img alt="" loading="lazy" src="${esc(it.cover)}">${it.photos.length ? `<span class="exkind">${ICON.grid}</span>` : ''}</div>
+      <div class="exdesc">${esc(it.desc || '')}</div>
+      <div class="exfoot"><img alt="" src="${esc(it.avatar || '')}"><span class="exnick">${esc(it.nick || it.author)}</span><span class="exlikes">${ICON.heartline}${fmt(it.likes)}</span></div>`;
+    el.onclick = () => { state.stack.push(f); setFeed(f, i); };
+    // Cada tarjeta va a la columna más corta, así el orden se lee de izquierda a derecha como en la app
+    cols.reduce((a, b) => (b.offsetHeight < a.offsetHeight ? b : a)).appendChild(el);
+  }
+  grid.dataset.n = f.items.length;
+  $('#exMore').innerHTML = f.loading || f.hasMore ? '<div class="spinner"></div>' : '';
+}
+window.addEventListener('resize', () => {
+  const grid = $('#exGrid');
+  if (document.body.classList.contains('exgrid') && grid.children.length !== Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)))) renderExplore();
+});
+$('#exView').addEventListener('scroll', (e) => {
+  const l = e.currentTarget;
+  if (l.scrollTop + l.clientHeight > l.scrollHeight - 600) requestMore();
+});
 
 function openSubFeed(f, idx) {
   if (state.feed !== f) state.stack.push(state.feed);
@@ -470,7 +534,9 @@ function back() {
   if (!state.stack.length) return;
   // Si el feed se abrió desde un chat, un perfil o una página, se vuelve ahí (como en la app)
   const ret = state.returnTo && state.feed && state.returnTo.key === state.feed.key ? state.returnTo : null;
-  setFeed(state.stack.pop());
+  // Desde la cuadrícula de Explorar se vuelve al mismo feed (en otro modo), así que se fuerza el cambio
+  const prev = state.stack.pop();
+  setFeed(prev, prev === state.feed ? prev.idx : undefined);
   if (ret) { state.returnTo = null; ret.fn(); }
 }
 
@@ -501,6 +567,7 @@ function buildSlide(it) {
     <div class="meta">
       <div class="user">${esc(it.nick || it.author)}${it.created ? `<span class="when"> · ${/\d-/.test(ago(it.created)) ? ago(it.created) : t('hace {0}', ago(it.created))}</span>` : ''}${it.ad ? '<span class="badge">Publicidad</span>' : ''}</div>
       <div class="desc">${richText(it.desc)}</div>
+      ${canTranslate(it) ? `<button class="trbtn">${t('Ver traducción')}</button>` : ''}
       ${it.music ? `<div class="musicline">${ICON.music}<span>${esc(it.music)}</span></div>` : ''}${duetLine(it)}
     </div>
     <div class="cc"></div>
@@ -642,6 +709,8 @@ function buildSlide(it) {
     if (tag) { tag.classList.contains('tag') ? openTag(tag.dataset.v) : openUserByName(tag.dataset.v); return; }
     desc.classList.toggle('open');
   });
+  const tr = $('.trbtn', el);
+  if (tr) tr.addEventListener('click', (e) => { e.stopPropagation(); translateDesc(it, desc, tr); });
   const ml = $('.musicline', el);
   if (ml) ml.addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
   $('.disc', el).addEventListener('click', (e) => { e.stopPropagation(); openMusic(it); });
@@ -760,6 +829,8 @@ function refreshSlide(it) {
 function render() {
   const f = state.feed;
   if (!f) return;
+  // En la cuadrícula de Explorar no hay video a la vista
+  if (document.body.classList.contains('exgrid')) { teardown(); return; }
   const lo = Math.max(0, f.idx - KEEP_BEHIND);
   const hi = Math.min(f.items.length - 1, f.idx + KEEP_AHEAD);
 
@@ -1312,6 +1383,8 @@ function openVideoOptions(it) {
       { ic: 'link', label: t('Copiar enlace'), fn: () => copyLink(it) },
       { ic: 'bookmark', label: it.saved ? t('Quitar de Favoritos') : t('Agregar a Favoritos'), fn: () => favorite(it) },
       { ic: 'repost', label: it.reposted ? t('Quitar republicación') : t('Republicar'), fn: () => repost(it) },
+      { ic: 'grid', label: t('Videos relacionados'), fn: () => openRelated(it) },
+      it.reposts > 0 && { ic: 'repost', label: t('Republicado por ({0})', fmt(it.reposts)), fn: () => openReposters(it) },
       { ic: 'user', label: t('Ver perfil de {0}', it.nick || it.author), fn: () => openProfile(it) },
       { ic: 'globe', label: t('Abrir en el navegador'), fn: () => send({ t: 'open', url: linkOf(it) }) },
       { ic: 'keyboard', label: t('Atajos de teclado'), fn: openHelp },
@@ -1834,9 +1907,9 @@ function updateProfileFollow(it) {
   $('#pfEdit').style.display = 'none';
   $('#pfPen').classList.toggle('show', !!mine);
   $('#pfMsg').style.display = mine ? 'none' : '';
-  b.innerHTML = it.followed ? ICON.usercheck : t('Seguir');
-  b.title = it.followed ? t('Dejar de seguir') : '';
-  b.classList.toggle('following', !!it.followed);
+  b.innerHTML = it.blocked ? t('Desbloquear') : it.followed ? ICON.usercheck : t('Seguir');
+  b.title = it.followed && !it.blocked ? t('Dejar de seguir') : '';
+  b.classList.toggle('following', !!it.followed && !it.blocked);
 }
 
 async function openProfile(it) {
@@ -1858,6 +1931,7 @@ async function openProfile(it) {
   $('#pfTitle').textContent = it.nick || it.author;
   $('#pfName').textContent = it.nick || it.author;
   $('#pfAvatar').src = it.avatar || '';
+  $('#pfAvatar').classList.toggle('story', it.storyStatus === 1);
   $('#pfHandle').textContent = t('@') + it.author;
   $('#pfBio').textContent = it.signature || '';
   const s = it.authorStats || {};
@@ -1888,6 +1962,9 @@ async function openProfile(it) {
       if (state.profileFor === it) setProfileTabs(false, has);
     });
   }
+  it.blocked = u.relation === 4;
+  if (u.UserStoryStatus != null) it.storyStatus = u.UserStoryStatus;
+  $('#pfAvatar').classList.toggle('story', it.storyStatus === 1);
   if (u.relation != null) { setFollowed(it.authorId, followedOf(it.authorId, u.relation === 1 || u.relation === 2)); it.followed = followedOf(it.authorId, u.relation === 1 || u.relation === 2); updateProfileFollow(it); }
 }
 
@@ -1992,7 +2069,7 @@ function openCollection(id, name) {
   if (!f.items.length) f.load(f);
 }
 
-$('#pfFollow').addEventListener('click', () => { const it = state.profileFor; if (it) follow(it, !it.followed); });
+$('#pfFollow').addEventListener('click', () => { const it = state.profileFor; if (it) it.blocked ? block(it, false) : follow(it, !it.followed); });
 $('#pfBack').innerHTML = ICON.back;
 $('#pfPen').innerHTML = ICON.pencil;
 $('#pfMsg').innerHTML = ICON.plane + `<span>${t('Mensajes')}</span>`;
@@ -2103,7 +2180,32 @@ function editSend(msg) {
 new MutationObserver(() => {
   if (editOpen && !$('#opts').classList.contains('open')) { editOpen = false; send({ t: 'editclose' }); }
 }).observe($('#opts'), { attributes: true, attributeFilter: ['class'] });
-$('#pfOpen').addEventListener('click', () => { const it = state.profileFor; if (it) send({ t: 'open', url: 'https://www.tiktok.com/@' + it.author, browser: true }); });
+// Menú «⋯» del perfil, como en la app: copiar enlace, abrir en el navegador y bloquear
+$('#pfOpen').addEventListener('click', () => {
+  const it = state.profileFor;
+  if (!it) return;
+  const url = 'https://www.tiktok.com/@' + it.author;
+  openOptions([[
+    { ic: 'link', label: t('Copiar enlace del perfil'), fn: () => navigator.clipboard.writeText(url).then(() => toast(t('Enlace copiado'))) },
+    { ic: 'globe', label: t('Abrir en el navegador'), fn: () => send({ t: 'open', url, browser: true }) },
+  ], isMine(it) ? [] : [
+    { ic: 'block', label: it.blocked ? t('Desbloquear') : t('Bloquear'), danger: !it.blocked, fn: () => it.blocked ? block(it, false) : setTimeout(() => openOptions([[
+      { label: t('¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.', it.nick || it.author), fn: () => {} },
+      { ic: 'block', label: t('Bloquear'), danger: true, fn: () => block(it, true) },
+      { label: t('Cancelar'), fn: () => {} },
+    ]]), 300) },
+  ]]);
+});
+
+// Bloquear: deja de seguirse mutuamente y no puede verte ni escribirte
+async function block(it, on) {
+  const ok = await act('/api/user/block/', { user_id: it.authorId, secUid: it.secUid, block_type: on ? 1 : 0, source: 3 });
+  if (!ok) return;
+  it.blocked = on;
+  if (on) { setFollowed(it.authorId, false); it.followed = false; followOverride.set(it.authorId, false); }
+  updateProfileFollow(it);
+  toast(on ? t('Bloqueaste a {0}', it.nick || it.author) : t('Desbloqueaste a {0}', it.nick || it.author));
+}
 $('#pfBody').addEventListener('scroll', (e) => {
   const l = e.currentTarget;
   const f = state.profileKey && feeds.get(state.profileKey);
@@ -2211,16 +2313,66 @@ $('#searchForm').addEventListener('submit', (e) => {
   renderGrid($('#searchGrid'), $('#searchMore'), f);
   f.load(f);
   searchUsers(kw);
+  $('#searchSounds').innerHTML = ''; $('#searchLive').innerHTML = '';
+  const tab = $('#searchTabs button.on').dataset.st;
+  if (tab === 'sounds') searchSounds(kw);
+  if (tab === 'live') searchLive(kw);
 });
 
+// Pestañas de resultados como en la app: Videos, Usuarios, Sonidos y LIVE (estas dos se piden al abrirlas)
 $$('#searchTabs button').forEach((b) => b.addEventListener('click', () => {
   $$('#searchTabs button').forEach((x) => x.classList.toggle('on', x === b));
-  const users = b.dataset.st === 'users';
-  $('#searchGrid').style.display = users ? 'none' : '';
-  $('#searchMore').style.display = users ? 'none' : '';
-  $('#searchUsers').style.display = users ? '' : 'none';
+  const st = b.dataset.st;
+  $('#searchGrid').style.display = st === 'videos' ? '' : 'none';
+  $('#searchMore').style.display = st === 'videos' ? '' : 'none';
+  $('#searchUsers').style.display = st === 'users' ? '' : 'none';
+  $('#searchSounds').style.display = st === 'sounds' ? '' : 'none';
+  $('#searchLive').style.display = st === 'live' ? '' : 'none';
+  if (st === 'sounds' && state.searchKw && !$('#searchSounds').childElementCount) searchSounds(state.searchKw);
+  if (st === 'live' && state.searchKw && !$('#searchLive').childElementCount) searchLive(state.searchKw);
 }));
-$('#searchUsers').style.display = 'none';
+for (const id of ['searchUsers', 'searchSounds', 'searchLive']) $('#' + id).style.display = 'none';
+
+const urlOf = (img) => img && img.url_list && img.url_list[0];
+const mmss = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+async function searchSounds(kw) {
+  const box = $('#searchSounds');
+  box.innerHTML = '<div class="sheet-msg"><div class="spinner"></div></div>';
+  const r = await api('GET', '/api/search/music/full/', { keyword: kw, offset: 0, count: 20 });
+  if (state.searchKw !== kw) return;
+  const list = ((r.data && r.data.data) || []).map((x) => x.music_info).filter(Boolean);
+  if (!list.length) { box.innerHTML = `<div class="sheet-msg">${t('No se encontraron sonidos.')}</div>`; return; }
+  box.innerHTML = list.map((m, i) => `<button class="ib-item snd" data-i="${i}">
+      <img class="av sq" alt="" src="${esc(urlOf(m.cover_thumb) || urlOf(m.cover_medium))}">
+      <div class="tx"><div class="nm">${esc(m.title)}</div>
+      <div class="ls">${esc(m.author || m.owner_nickname || '')}</div>
+      <div class="ls">${m.duration ? mmss(m.duration) + ' · ' : ''}${t('{0} videos', fmt(m.user_count || 0))}</div></div></button>`).join('');
+  $$('button.ib-item', box).forEach((b) => b.onclick = () => {
+    const m = list[+b.dataset.i];
+    openSoundPage({ musicId: m.id_str || String(m.id), musicTitle: m.title, music: m.author, musicCover: urlOf(m.cover_large) || urlOf(m.cover_medium) });
+  });
+}
+
+// LIVE: TikTok solo deja ver transmisiones en su web, así que se abren ahí
+async function searchLive(kw) {
+  const box = $('#searchLive');
+  box.innerHTML = '<div class="sheet-msg"><div class="spinner"></div></div>';
+  const r = await api('GET', '/api/search/live/full/', { keyword: kw, offset: 0, count: 20 });
+  if (state.searchKw !== kw) return;
+  const list = ((r.data && r.data.data) || []).map((x) => { try { return JSON.parse(x.live_info.raw_data); } catch { return null; } }).filter((x) => x && x.owner);
+  if (!list.length) { box.innerHTML = `<div class="sheet-msg">${t('No hay transmisiones en vivo.')}</div>`; return; }
+  box.innerHTML = '<div class="live-grid">' + list.map((x, i) => `<button class="live-tile" data-i="${i}">
+      <img alt="" src="${esc(urlOf(x.cover) || urlOf(x.owner.avatar_large))}">
+      <span class="live-tag">LIVE</span>
+      ${x.stats && x.stats.total_user ? `<span class="live-viewers">${ICON.views || ''}${fmt(x.stats.total_user)}</span>` : ''}
+      <div class="live-info"><div class="nm">${esc(x.title || x.owner.nickname)}</div><div class="ls">${esc(x.owner.nickname)}</div></div>
+    </button>`).join('') + '</div>';
+  $$('button.live-tile', box).forEach((b) => b.onclick = () => {
+    const x = list[+b.dataset.i];
+    send({ t: 'open', url: 'https://www.tiktok.com/@' + x.owner.display_id + '/live', browser: true });
+  });
+}
 
 async function searchUsers(kw) {
   const box = $('#searchUsers');
@@ -2667,6 +2819,93 @@ async function openSoundPage(it) {
   if (!mi || state.pageKey !== f.key) return;
   const m = mi.music || {}, st = mi.stats || {};
   fillPage({ name: m.title, sub: m.authorName, cover: m.coverLarge || m.coverMedium || m.coverThumb, count: st.videoCount });
+  if (state.me) {
+    const saved = await savedSounds();
+    if (state.pageKey === f.key) setSoundSaved(saved.has(String(it.musicId)));
+  }
+}
+
+// Sonidos guardados (Favoritos > Sonidos en la app): la web los guarda con action 1 y los quita con action 2
+async function savedSounds() {
+  const ids = new Set();
+  let cursor = 0;
+  for (let i = 0; i < 5; i++) {
+    const r = await api('GET', '/api/user/collect/music_list/', { secUid: state.me.secUid, count: 30, cursor });
+    const d = r.data || {};
+    for (const m of d.musicList || []) ids.add(String(m.id));
+    if (!d.hasMore) break;
+    cursor = d.cursor;
+  }
+  return ids;
+}
+function setSoundSaved(on) {
+  const b = $('#pgSave');
+  b.dataset.on = on ? '1' : '';
+  b.innerHTML = ICON.bookmark + `<span>${on ? t('Quitar de Favoritos') : t('Agregar a Favoritos')}</span>`;
+  b.classList.toggle('on', on);
+}
+$('#pgSave').addEventListener('click', async () => {
+  const key = state.pageKey || '';
+  if (!key.startsWith('music:')) return;
+  const on = !$('#pgSave').dataset.on;
+  setSoundSaved(on);
+  const ok = await act('/api/music/collect/', { musicId: key.slice(6), action: on ? 1 : 2 });
+  if (!ok) { setSoundSaved(!on); return; }
+  toast(on ? t('Sonido agregado a Favoritos') : t('Sonido quitado de Favoritos'));
+});
+
+function openRelated(it) {
+  const f = feedFor('related:' + it.id);
+  showPage(f, { title: t('Videos relacionados'), name: it.desc || t('Video'), sub: '@' + it.author, cover: it.cover });
+}
+
+// Traducir la descripción («Ver traducción» de la app); la ruta de la app sí responde desde la web
+const canTranslate = (it) => !!(it.desc && it.lang && it.lang !== 'un' && it.lang.split('-')[0] !== resolveLang().split('-')[0]);
+async function translateDesc(it, desc, btn) {
+  if (it.descTr && desc.dataset.tr) { delete desc.dataset.tr; desc.innerHTML = richText(it.desc); btn.textContent = t('Ver traducción'); return; }
+  if (!it.descTr) {
+    btn.textContent = t('Traduciendo…');
+    const r = await api('POST', '/aweme/v1/translation/description/', {}, { item_id: it.id, target_lang: resolveLang().split('-')[0], translation_protocol: 2 });
+    const v2 = r.data && r.data.translated_client_text && r.data.translated_client_text.client_text_v2;
+    const mk = v2 && (v2.markup_text || v2.text);
+    if (!mk) { btn.textContent = t('Ver traducción'); toast(t('No se pudo traducir')); return; }
+    const ta = document.createElement('textarea');
+    ta.innerHTML = mk.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+    it.descTr = ta.value.trim();
+  }
+  desc.dataset.tr = '1';
+  desc.innerHTML = richText(it.descTr);
+  btn.textContent = t('Ver original');
+}
+
+// Quién republicó un video (la lista de la app; la web no la muestra)
+async function openReposters(it) {
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(t('Republicado por'))}</div><div class="fl-list"></div><div class="sheet-msg fl-more"><div class="spinner"></div></div>`;
+  setTimeout(() => openPanel('opts', true), 0);
+  const listEl = $('.fl-list', body), moreEl = $('.fl-more', body);
+  const st = { cursor: 0, more: true, busy: false };
+  async function page() {
+    if (st.busy || !st.more) return;
+    st.busy = true;
+    const r = await api('GET', '/tiktok/v1/upvote/list', { item_id: it.id, count: 20, cursor: st.cursor });
+    st.busy = false;
+    const d = (r.data && r.data.upvote_list) || {};
+    const users = (d.upvotes || []).map((x) => x.user_info || x.user || x.author || x).filter((u) => u && (u.sec_uid || u.secUid));
+    if (!users.length && !listEl.children.length) { moreEl.textContent = t('Todavía no hay nadie aquí.'); st.more = false; return; }
+    listEl.insertAdjacentHTML('beforeend', users.map((u) => {
+      const p = { secUid: u.sec_uid || u.secUid, author: u.unique_id || u.uniqueId, nick: u.nickname, authorId: u.uid || u.id,
+        avatar: (u.avatar_thumb && u.avatar_thumb.url_list && u.avatar_thumb.url_list[0]) || u.avatarThumb };
+      return `<button class="ib-item" data-u="${esc(JSON.stringify(p))}"><img class="av" alt="" src="${esc(p.avatar || '')}">
+        <div class="tx"><div class="nm">${esc(p.nick || p.author)}</div><div class="ls">@${esc(p.author)}</div></div></button>`;
+    }).join(''));
+    st.cursor = d.cursor || 0;
+    st.more = !!d.has_more && users.length > 0;
+    moreEl.innerHTML = st.more ? '<div class="spinner"></div>' : '';
+  }
+  listEl.addEventListener('click', (e) => { const b = e.target.closest('.ib-item'); if (b) { closePanel('opts'); openProfile(JSON.parse(b.dataset.u)); } });
+  $('#opts').onscroll = () => { const o = $('#opts'); if (o.scrollTop + o.clientHeight > o.scrollHeight - 300) page(); };
+  page();
 }
 
 async function openTagPage(name) {
@@ -2684,6 +2923,8 @@ function showPage(f, info) {
   state.pageInfo = info;
   $('#pgTitle').textContent = info.title;
   $('#pgName').textContent = ''; $('#pgSub').textContent = ''; $('#pgCount').textContent = '';
+  $('#pgSave').style.display = f.key.startsWith('music:') ? '' : 'none';
+  setSoundSaved(false);
   fillPage(info);
   renderGrid($('#pgGrid'), $('#pgMore'), f);
   openPanel('page');
@@ -2858,7 +3099,17 @@ document.addEventListener('pointerdown', (e) => {
 }, true);
 
 // Foto del perfil ampliable
-$('#pfAvatar').addEventListener('click', () => { const s = $('#pfAvatar').src; if (s) openViewer(s); });
+// Con historias activas la foto tiene anillo y al tocarla se ven (como en la app); si no, se amplía
+$('#pfAvatar').addEventListener('click', () => {
+  const it = state.profileFor;
+  if (it && it.storyStatus === 1) {
+    const f = feedFor('story:' + it.authorId), k = state.profileKey;
+    state.returnTo = { key: f.key, fn: () => reopenProfile(it, k) };
+    openSubFeed(f, 0);
+    return;
+  }
+  const s = $('#pfAvatar').src; if (s) openViewer(s);
+});
 // ---------- Selector de colecciones (como «Guárdalo en la colección» de la app) ----------
 let myCollections = null;
 async function openCollectionPicker(it) {
