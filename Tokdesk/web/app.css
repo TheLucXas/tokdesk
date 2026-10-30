@@ -968,3 +968,13 @@ body.light #cmtSearch { color: rgba(22,24,35,.6); }
 body.light #cmtSearch b, body.light #cmtSearch svg { color: #2b5db9; }
 #sheet .sheet-head:has(#cmtSearch:not([hidden])) { padding-top: 42px; }
 #cmtSearch[hidden] { display: none; }
+#emojiPop { display: none; position: fixed; z-index: 90; width: 264px; padding: 6px; border-radius: 10px; background: #2a2a2a; box-shadow: 0 6px 20px rgba(0,0,0,.45); grid-template-columns: repeat(8, 1fr); gap: 2px; }
+#emojiPop.show { display: grid; }
+#emojiPop button { font-size: 20px; line-height: 1; padding: 5px 0; border-radius: 6px; }
+#emojiPop button:hover { background: rgba(255,255,255,.1); }
+body.light #emojiPop { background: #fff; }
+.emoji-btn { width: 34px; height: 34px; padding: 6px; flex: none; color: rgba(255,255,255,.8); }
+.lv-form { position: relative; align-items: center; background: rgba(0,0,0,.35); border-radius: 20px; }
+.lv-form .lv-input { background: transparent; }
+body.light .emoji-btn { color: rgba(22,24,35,.7); }
+.lv-form .emoji-btn { color: #fff !important; }

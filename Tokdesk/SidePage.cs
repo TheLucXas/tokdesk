@@ -307,16 +307,26 @@ sealed class SidePage
     /// </summary>
     public async Task<string> LiveAct(string url, string js)
     {
-        const string ready = "(() => document.querySelector('[data-e2e=\"room-chat-like-btn\"]') ? 'ok' : null)()";
-        if (!(_locked && _liveUrl == url && (_wv.Source ?? "").EndsWith("/live")))
+        // De a uno: preparar el directo y enviar no deben abrirlo dos veces a la vez
+        await _liveGate.WaitAsync();
+        try
         {
-            _liveUrl = null;
-            if (await OpenLocked(url, ready, "LIVE") == null) return null;
-            _liveUrl = url;
+            // Listo cuando está el corazón; de paso se pausa y silencia su video (ya se ve en Tokdesk; dos directos
+            // decodificándose a la vez trababan la app)
+            const string ready = "(() => { document.querySelectorAll('video').forEach(v => { v.muted = true; v.pause(); }); return document.querySelector('[data-e2e=\"room-chat-like-btn\"]') ? 'ok' : null; })()";
+            if (!(_locked && _liveUrl == url && (_wv.Source ?? "").EndsWith("/live")))
+            {
+                _liveUrl = null;
+                if (await OpenLocked(url, ready, "LIVE") == null) return null;
+                _liveUrl = url;
+            }
+            _lockedAt = DateTime.UtcNow;
+            await Eval(ready);
+            return await Poll(js, 5000);
         }
-        _lockedAt = DateTime.UtcNow;
-        return await Poll(js, 8000);
+        finally { _liveGate.Release(); }
     }
+    readonly SemaphoreSlim _liveGate = new(1, 1);
     string _liveUrl;
     public void LiveRelease() { if (_liveUrl == null) return; _liveUrl = null; _locked = false; }
 

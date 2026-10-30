@@ -65,7 +65,7 @@ function liveOverlay(it) {
     </div>
     ${it.desc ? `<div class="lv-title">${esc(it.desc)}</div>` : ''}
     <div class="lv-chat"></div>
-    <div class="lv-bottom"><form class="lv-form"><input class="lv-input" maxlength="150" autocomplete="off" placeholder="${esc(t('Escribe algo…'))}"></form>
+    <div class="lv-bottom"><form class="lv-form"><input class="lv-input" maxlength="150" autocomplete="off" placeholder="${esc(t('Escribe algo…'))}"><button type="button" class="emoji-btn" title="${esc(t('Emojis'))}">${ICON.smile}</button></form>
       <button class="lv-like" title="${esc(t('Me gusta'))}">${ICON.heart}</button>
       <button class="lv-share" title="${esc(t('Compartir'))}">${ICON.share}</button>
       <button class="livebtn" title="${esc(t('Ver en el navegador'))}">${ICON.globe}</button></div>
@@ -81,6 +81,7 @@ function wireLive(el, it) {
   $('.lv-host img', el).onclick = (e) => { stop(e); openProfile(it); };
   $('.lv-share', el).onclick = (e) => { stop(e); openShare(it); };
   $('.lv-form', el).onclick = stop;
+  $('.lv-form .emoji-btn', el).onclick = (e) => { stop(e); openEmojis(e.currentTarget, $('.lv-input', el)); };
   $('.lv-form', el).onsubmit = (e) => { e.preventDefault(); liveChat(it, el); };
   $('.lv-like', el).onclick = (e) => { stop(e); liveLike(it); };
 }
@@ -115,7 +116,10 @@ async function startLive(el, it) {
   v.muted = state.muted; v.volume = state.volume;
   v.addEventListener('playing', () => el.classList.remove('waiting', 'paused'), { once: true });
   v.play().catch(() => {});
-  if (it.roomId) { pollRoom(el, it); pollChat(el, it); }
+  const gen = el.liveGen = (el.liveGen || 0) + 1;
+  if (it.roomId) { pollRoom(el, it, gen); pollChat(el, it, gen); }
+  // Se deja el directo listo en la página oculta para que escribir y dar me gusta respondan enseguida
+  if (state.me) setTimeout(() => { if (el.livePlayer && currentItem() === it) liveAct(it, "'ok'"); }, 1500);
 }
 
 function stopLive(el) {
@@ -129,8 +133,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const WEBCAST = 'https://webcast.tiktok.com/webcast/';
 
 // Me gusta y espectadores de la sala, cada 15 s mientras se mira
-async function pollRoom(el, it) {
-  while (el.livePlayer && el.isConnected) {
+async function pollRoom(el, it, gen) {
+  while (el.livePlayer && el.isConnected && el.liveGen === gen) {
     const r = await api('GET', WEBCAST + 'room/info/', { room_id: it.roomId });
     const d = r.data && r.data.data;
     if (d) {
@@ -172,10 +176,11 @@ function pbUser(b) {
   return { nick: pbText(pbGet(u, 3)), uid: pbText(pbGet(u, 38)), avatar: pic ? pbText(pbGet(pbFields(pic), 1)) : '' };
 }
 
-async function pollChat(el, it) {
+async function pollChat(el, it, gen) {
   let cursor = '', ext = '';
+  const seen = new Set();
   const box = $('.lv-chat', el);
-  while (el.livePlayer && el.isConnected) {
+  while (el.livePlayer && el.isConnected && el.liveGen === gen) {
     const r = await api('GET', WEBCAST + 'im/fetch/', { room_id: it.roomId, resp_content_type: 'protobuf', fetch_rule: 1, cursor, internal_ext: ext,
       last_rtt: 0, did_rule: 3, live_id: 12, version_code: 180800, __b64: 1 });
     let wait = 2000;
@@ -188,6 +193,8 @@ async function pollChat(el, it) {
       for (const [f, m] of top) {
         if (f !== 1) continue;
         const msg = pbFields(m);
+        const id = pbGet(msg, 3);
+        if (id) { if (seen.has(id)) continue; seen.add(id); if (seen.size > 2000) seen.clear(); }
         const method = pbText(pbGet(msg, 1)), pay = pbFields(pbGet(msg, 2) || new Uint8Array());
         if (method === 'WebcastChatMessage') addChat(box, pbUser(pbGet(pay, 2)), pbText(pbGet(pay, 3)));
         else if (method === 'WebcastMemberMessage') addChat(box, pbUser(pbGet(pay, 2)), t('se unió'), 'join');
@@ -289,21 +296,27 @@ function onLiveAct(m) { const f = liveWait.get(m.rid); liveWait.delete(m.rid); i
 async function liveChat(it, el) {
   const inp = $('.lv-input', el);
   const text = inp.value.trim();
-  if (!text) return;
+  if (!text || el.chatSending) return;
+  // Un solo envío: el campo queda bloqueado hasta que la web lo toma y no se reintenta nunca
+  el.chatSending = true;
   inp.value = '';
   inp.disabled = true;
-  // Se escribe en el campo de la web y se toca su Enviar; listo cuando el campo queda vacío
   const r = await liveAct(it, `(() => {
     const f = document.querySelector('[data-e2e="room-chat-input-field"]'), b = document.querySelector('[data-e2e="room-chat-send-btn"]');
     if (!f || !b) return null;
-    if (!window.__tdSent) { f.focus(); document.execCommand('insertText', false, ${JSON.stringify(text)}); window.__tdSent = 1; setTimeout(() => b.click(), 150); return null; }
-    if ((f.textContent || '').trim()) return null;
-    window.__tdSent = 0;
-    return 'sent';
+    const key = ${JSON.stringify(text)};
+    if (window.__tdLast === key && Date.now() - window.__tdLastAt < 5000) return 'dup';
+    window.__tdLast = key; window.__tdLastAt = Date.now();
+    f.focus();
+    document.execCommand('insertText', false, key);
+    setTimeout(() => b.click(), 120);
+    return 'queued';
   })()`);
+  el.chatSending = false;
   inp.disabled = false;
-  if (r !== 'sent') { inp.value = text; toast(t('No se pudo enviar el mensaje')); return; }
-  addChat($('.lv-chat', el), { nick: state.me.nickname || state.me.uniqueId, avatar: state.me.avatar || '' }, text);
+  inp.focus();
+  // El mensaje propio aparece cuando llega por el chat en vivo (sin eco local, para que no salga repetido)
+  if (r !== 'queued' && r !== 'dup') { inp.value = text; toast(t('No se pudo enviar el mensaje')); }
 }
 
 // Me gusta: se suman los toques y se mandan juntos (como la app, que agrupa los corazones)

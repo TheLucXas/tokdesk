@@ -2941,6 +2941,32 @@ $('#searchInput').addEventListener('input', () => {
   }, 250);
 });
 
+// ---------- Selector de emojis (chat de mensajes y chat del directo, como en la app) ----------
+const EMOJIS = '😀 😂 🤣 😊 😍 🥰 😘 😎 🤩 🥳 😅 😭 😢 😡 🤔 🙄 😴 🤯 😱 🥺 😏 😬 🤗 🙌 👏 👍 👎 🙏 💪 👀 🔥 💯 ❤️ 💔 💕 ✨ 🎉 🌹 🎁 💀 🤡 👻 😈 🐐 ⚽ 🎶 ☕ 🍕'.split(' ');
+$('#emojiPop').innerHTML = EMOJIS.map((x) => `<button type="button">${x}</button>`).join('');
+let emojiTarget = null;
+function openEmojis(btn, input) {
+  const pop = $('#emojiPop');
+  if (pop.classList.contains('show') && emojiTarget === input) { pop.classList.remove('show'); return; }
+  emojiTarget = input;
+  const r = btn.getBoundingClientRect();
+  pop.classList.add('show');
+  pop.style.left = Math.max(8, Math.min(innerWidth - pop.offsetWidth - 8, r.right - pop.offsetWidth)) + 'px';
+  pop.style.top = Math.max(8, r.top - pop.offsetHeight - 8) + 'px';
+}
+$('#emojiPop').addEventListener('pointerdown', (e) => e.stopPropagation());
+$('#emojiPop').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || !emojiTarget) return;
+  const i = emojiTarget, a = i.selectionStart ?? i.value.length, z = i.selectionEnd ?? a;
+  i.value = i.value.slice(0, a) + b.textContent + i.value.slice(z);
+  i.focus(); i.setSelectionRange(a + b.textContent.length, a + b.textContent.length);
+  i.dispatchEvent(new Event('input', { bubbles: true }));
+});
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#emojiPop, .emoji-btn')) $('#emojiPop').classList.remove('show'); });
+$('#chatEmoji').innerHTML = ICON.smile;
+$('#chatEmoji').addEventListener('click', (e) => openEmojis(e.currentTarget, $('#chatInput')));
+
 // ---------- Reacciones rápidas en el chat ----------
 for (const emo of ['❤️', '😂', '👍', '😮', '😢', '🔥']) {
   const b = document.createElement('button');
