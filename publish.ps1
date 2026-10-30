@@ -41,6 +41,9 @@ if (-not $Release) { return }
 
 # Publica con gh (sesión de GitHub iniciada con "gh auth login")
 $cfg = Get-Content (Join-Path $root "Tokdesk\update.json") -Raw | ConvertFrom-Json
-gh release create "v$version" (Join-Path $dist "Tokdesk.exe") --repo $cfg.repo --title "Tokdesk $version" --notes $(if ($Notes) { $Notes } else { "Tokdesk $version" })
+# Las notas van por archivo: PowerShell 5.1 parte los argumentos con comillas al pasarlos a gh
+$notesFile = Join-Path $env:TEMP "tokdesk-notes.md"
+[IO.File]::WriteAllText($notesFile, $(if ($Notes) { $Notes } else { "Tokdesk $version" }), (New-Object Text.UTF8Encoding $false))
+gh release create "v$version" (Join-Path $dist "Tokdesk.exe") --repo $cfg.repo --title "Tokdesk $version" --notes-file $notesFile
 if ($LASTEXITCODE -ne 0) { throw "No se pudo publicar la release" }
 Write-Host "Release v$version publicada en $($cfg.repo)"
