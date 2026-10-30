@@ -1661,7 +1661,68 @@ $('#ibSearchBtn').addEventListener('click', () => {
 });
 $('#ibFilter').addEventListener('input', renderInbox);
 
-function openActivity(kind) {
+// Actividad por grupos, como el menú «Todas las actividades» de la app (/api/notice/multi/ de la web)
+const ACT_GROUPS = [['all', 'Todas las actividades', [0, 2, 6, 7, 1, 12]], ['likes', 'Me gusta', [0]], ['comments', 'Comentarios', [2]],
+  ['mentions', 'Menciones y etiquetas', [6]], ['follows', 'Seguidores', [7]], ['tiktok', 'De TikTok', [1, 12]]];
+const avOf = (u) => u && ((u.avatar_thumb && u.avatar_thumb.url_list && u.avatar_thumb.url_list[0]) || u.avatarThumb || '');
+const userOf = (u) => u && u.sec_uid ? { secUid: u.sec_uid, author: u.unique_id, nick: u.nickname, avatar: avOf(u), authorId: u.uid } : null;
+function coverOf(aw) {
+  if (!aw) return '';
+  const v = aw.video || {};
+  const im = aw.image_post_info && aw.image_post_info.images && aw.image_post_info.images[0];
+  return urlOf(v.cover) || urlOf(v.origin_cover) || (im && urlOf(im.display_image)) || '';
+}
+function noticeRow(n) {
+  const row = { time: n.create_time || 0 };
+  if (n.digg) {
+    const d = n.digg, u = (d.from_user || [])[0];
+    row.user = userOf(u); row.avatar = avOf(u);
+    row.title = d.merge_count > 1 ? t('{0} y {1} más', (u && u.nickname) || '', d.merge_count - 1) : (u && u.nickname) || '';
+    row.text = d.comment && d.comment.text ? t('le gustó tu comentario: {0}', d.comment.text) : t('le gustó tu video.');
+    row.thumb = coverOf(d.aweme); row.video = d.aweme && d.aweme.aweme_id;
+  } else if (n.comment) {
+    const c = n.comment.comment || {}, u = c.user;
+    row.user = userOf(u); row.avatar = avOf(u); row.title = (u && u.nickname) || '';
+    row.text = c.reply_id && c.reply_id !== '0' ? t('respondió a tu comentario: {0}', c.text || '') : t('comentó: {0}', c.text || '');
+    row.thumb = coverOf(n.comment.aweme); row.video = n.comment.aweme && n.comment.aweme.aweme_id;
+  } else if (n.at) {
+    const a = n.at, c = a.comment || {}, u = a.user_info || c.user;
+    row.user = userOf(u); row.avatar = avOf(u); row.title = (u && u.nickname) || '';
+    row.text = c.text ? t('te mencionó en un comentario: {0}', c.text) : t('te mencionó en un video.');
+    row.thumb = coverOf(a.aweme); row.video = a.aweme && a.aweme.aweme_id;
+  } else if (n.follow || n.follow_request_approve) {
+    const u = (n.follow || n.follow_request_approve).from_user;
+    row.user = userOf(u); row.avatar = avOf(u); row.title = (u && u.nickname) || '';
+    row.text = n.follow ? t('comenzó a seguirte.') : t('aceptó tu solicitud para seguirle.');
+  } else if (n.text || n.announcement) {
+    const x = n.text || n.announcement;
+    row.title = x.title || 'TikTok'; row.text = x.content || ''; row.avatar = 'logo.png';
+  } else return null;
+  return row;
+}
+async function openActivity(kind) {
+  const g = ACT_GROUPS.find((x) => x[0] === kind) || ACT_GROUPS[0];
+  state.actKind = g[0];
+  $('#actTitle').innerHTML = `<button id="actPick">${esc(t(g[1]))} <span class="caret">▾</span></button>`;
+  $('#actPick').onclick = () => openOptions([ACT_GROUPS.map(([k, label]) => ({ ic: k === g[0] ? 'check' : '', label: t(label), fn: () => openActivity(k) }))], true);
+  $('#actBody').innerHTML = '<div class="sheet-msg"><div class="spinner"></div></div>';
+  $('#activity').classList.add('open');
+  const r = await api('GET', '/api/notice/multi/', { group_list: JSON.stringify(g[2].map((group) => ({ count: 20, group, max_time: 0, min_time: 0, is_mark_read: 0 }))), scene: 0 });
+  if (state.actKind !== g[0]) return;
+  const rows = ((r.data && r.data.notice_lists) || []).flatMap((l) => l.notice_list || []).map(noticeRow).filter(Boolean).sort((a, b) => b.time - a.time);
+  if (!rows.length && !r.data) return openActivityScraped(kind);
+  $('#actBody').innerHTML = rows.length ? rows.map((a, i) => `<div class="act-row" data-i="${i}"><img class="av" alt="" src="${esc(a.avatar)}">
+      <div class="tx"><b>${esc(a.title)}</b> ${esc(a.text)} ${a.time ? `<span class="dt">${esc(ago(a.time))}</span>` : ''}</div>
+      ${a.thumb ? `<img class="th" alt="" src="${esc(a.thumb)}">` : ''}</div>`).join('') : `<div class="sheet-msg">${t('No hay actividad reciente.')}</div>`;
+  $$('.act-row', $('#actBody')).forEach((el) => el.onclick = (e) => {
+    const a = rows[+el.dataset.i];
+    if (a.user && e.target.closest('img.av, b')) openProfile(a.user);
+    else if (a.video) openVideoLink('https://www.tiktok.com/video/' + a.video);
+    else if (a.user) openProfile(a.user);
+  });
+}
+// Si la web no responde, queda la actividad que se lee de la página de mensajes
+function openActivityScraped(kind) {
   const acts = (inboxData && inboxData.activity) || [];
   const list = kind === 'follows' ? acts.filter(isFollowActivity) : acts;
   $('#actTitle').textContent = kind === 'follows' ? t('Nuevos seguidores') : t('Actividad');
