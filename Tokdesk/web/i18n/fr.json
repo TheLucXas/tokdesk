@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "t'a mentionné dans un commentaire : {0}",
   "te mencionó en un video.": "t'a mentionné dans une vidéo.",
   "{0} y {1} más": "{0} et {1} autres",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Bloquer {0} ? Cette personne ne pourra plus t'envoyer de messages ni voir tes vidéos."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Bloquer {0} ? Cette personne ne pourra plus t'envoyer de messages ni voir tes vidéos.",
+  "La transmisión terminó": "Le LIVE est terminé",
+  "Traducir": "Traduire",
+  "¿Abrir el enlace copiado?": "Ouvrir le lien copié ?",
+  "Abrir": "Ouvrir"
 }

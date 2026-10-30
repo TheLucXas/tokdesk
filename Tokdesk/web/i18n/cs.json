@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "tě zmínil(a) v komentáři: {0}",
   "te mencionó en un video.": "tě zmínil(a) ve videu.",
   "{0} y {1} más": "{0} a {1} dalších",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Zablokovat uživatele {0}? Nebude ti moct psát ani vidět tvá videa."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Zablokovat uživatele {0}? Nebude ti moct psát ani vidět tvá videa.",
+  "La transmisión terminó": "LIVE skončilo",
+  "Traducir": "Přeložit",
+  "¿Abrir el enlace copiado?": "Otevřít zkopírovaný odkaz?",
+  "Abrir": "Otevřít"
 }

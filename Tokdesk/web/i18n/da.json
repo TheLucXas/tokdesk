@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "nævnte dig i en kommentar: {0}",
   "te mencionó en un video.": "nævnte dig i en video.",
   "{0} y {1} más": "{0} og {1} andre",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Vil du blokere {0}? Vedkommende kan ikke sende dig beskeder eller se dine videoer."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Vil du blokere {0}? Vedkommende kan ikke sende dig beskeder eller se dine videoer.",
+  "La transmisión terminó": "LIVE er slut",
+  "Traducir": "Oversæt",
+  "¿Abrir el enlace copiado?": "Åbn det kopierede link?",
+  "Abrir": "Åbn"
 }

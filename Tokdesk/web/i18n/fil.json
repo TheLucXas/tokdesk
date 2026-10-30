@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "nag-mention sa iyo sa isang komento: {0}",
   "te mencionó en un video.": "nag-mention sa iyo sa isang video.",
   "{0} y {1} más": "{0} at {1} pa",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "I-block si {0}? Hindi na siya makakapag-message sa iyo o makakakita ng mga video mo."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "I-block si {0}? Hindi na siya makakapag-message sa iyo o makakakita ng mga video mo.",
+  "La transmisión terminó": "Tapos na ang LIVE",
+  "Traducir": "Isalin",
+  "¿Abrir el enlace copiado?": "Buksan ang kinopyang link?",
+  "Abrir": "Buksan"
 }

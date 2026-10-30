@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "упомянул(а) вас в комментарии: {0}",
   "te mencionó en un video.": "упомянул(а) вас в видео.",
   "{0} y {1} más": "{0} и ещё {1}",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Заблокировать {0}? Пользователь не сможет писать вам и смотреть ваши видео."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Заблокировать {0}? Пользователь не сможет писать вам и смотреть ваши видео.",
+  "La transmisión terminó": "Прямой эфир завершён",
+  "Traducir": "Перевести",
+  "¿Abrir el enlace copiado?": "Открыть скопированную ссылку?",
+  "Abrir": "Открыть"
 }

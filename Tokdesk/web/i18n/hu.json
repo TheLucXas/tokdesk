@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "megemlített egy hozzászólásban: {0}",
   "te mencionó en un video.": "megemlített egy videóban.",
   "{0} y {1} más": "{0} és {1} másik",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Letiltod {0} felhasználót? Nem tud majd üzenetet küldeni neked, és nem látja a videóidat."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Letiltod {0} felhasználót? Nem tud majd üzenetet küldeni neked, és nem látja a videóidat.",
+  "La transmisión terminó": "Az ÉLŐ adás véget ért",
+  "Traducir": "Fordítás",
+  "¿Abrir el enlace copiado?": "Megnyitod a másolt linket?",
+  "Abrir": "Megnyitás"
 }

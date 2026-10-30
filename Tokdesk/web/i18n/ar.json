@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "أشار إليك في تعليق: {0}",
   "te mencionó en un video.": "أشار إليك في فيديو.",
   "{0} y {1} más": "{0} و{1} آخرين",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "هل تريد حظر {0}؟ لن يتمكن من مراسلتك أو مشاهدة فيديوهاتك."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "هل تريد حظر {0}؟ لن يتمكن من مراسلتك أو مشاهدة فيديوهاتك.",
+  "La transmisión terminó": "انتهى البث المباشر",
+  "Traducir": "ترجمة",
+  "¿Abrir el enlace copiado?": "هل تريد فتح الرابط المنسوخ؟",
+  "Abrir": "فتح"
 }

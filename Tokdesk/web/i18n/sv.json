@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "nämnde dig i en kommentar: {0}",
   "te mencionó en un video.": "nämnde dig i en video.",
   "{0} y {1} más": "{0} och {1} till",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Blockera {0}? Personen kan inte skicka meddelanden till dig eller se dina videor."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Blockera {0}? Personen kan inte skicka meddelanden till dig eller se dina videor.",
+  "La transmisión terminó": "LIVE har avslutats",
+  "Traducir": "Översätt",
+  "¿Abrir el enlace copiado?": "Öppna den kopierade länken?",
+  "Abrir": "Öppna"
 }

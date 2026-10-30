@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "ने एक टिप्पणी में आपका उल्लेख किया: {0}",
   "te mencionó en un video.": "ने एक वीडियो में आपका उल्लेख किया।",
   "{0} y {1} más": "{0} और {1} अन्य",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0} को ब्लॉक करें? वे आपको संदेश नहीं भेज पाएँगे और आपके वीडियो नहीं देख पाएँगे।"
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0} को ब्लॉक करें? वे आपको संदेश नहीं भेज पाएँगे और आपके वीडियो नहीं देख पाएँगे।",
+  "La transmisión terminó": "LIVE समाप्त हो गया",
+  "Traducir": "अनुवाद करें",
+  "¿Abrir el enlace copiado?": "कॉपी किया गया लिंक खोलें?",
+  "Abrir": "खोलें"
 }

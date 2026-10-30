@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "σε ανέφερε σε ένα σχόλιο: {0}",
   "te mencionó en un video.": "σε ανέφερε σε ένα βίντεο.",
   "{0} y {1} más": "{0} και {1} ακόμη",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Αποκλεισμός του {0}; Δεν θα μπορεί να σου στέλνει μηνύματα ούτε να βλέπει τα βίντεό σου."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Αποκλεισμός του {0}; Δεν θα μπορεί να σου στέλνει μηνύματα ούτε να βλέπει τα βίντεό σου.",
+  "La transmisión terminó": "Το LIVE τελείωσε",
+  "Traducir": "Μετάφραση",
+  "¿Abrir el enlace copiado?": "Άνοιγμα του αντιγραμμένου συνδέσμου;",
+  "Abrir": "Άνοιγμα"
 }

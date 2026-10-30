@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "mainitsi sinut kommentissa: {0}",
   "te mencionó en un video.": "mainitsi sinut videossa.",
   "{0} y {1} más": "{0} ja {1} muuta",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Estetäänkö {0}? Hän ei voi lähettää sinulle viestejä eikä nähdä videoitasi."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "Estetäänkö {0}? Hän ei voi lähettää sinulle viestejä eikä nähdä videoitasi.",
+  "La transmisión terminó": "LIVE on päättynyt",
+  "Traducir": "Käännä",
+  "¿Abrir el enlace copiado?": "Avataanko kopioitu linkki?",
+  "Abrir": "Avaa"
 }

@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "กล่าวถึงคุณในความคิดเห็น: {0}",
   "te mencionó en un video.": "กล่าวถึงคุณในวิดีโอ",
   "{0} y {1} más": "{0} และอีก {1} คน",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "บล็อก {0} ไหม เขาจะส่งข้อความหาคุณหรือดูวิดีโอของคุณไม่ได้"
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "บล็อก {0} ไหม เขาจะส่งข้อความหาคุณหรือดูวิดีโอของคุณไม่ได้",
+  "La transmisión terminó": "LIVE จบแล้ว",
+  "Traducir": "แปล",
+  "¿Abrir el enlace copiado?": "เปิดลิงก์ที่คัดลอกไว้ไหม",
+  "Abrir": "เปิด"
 }

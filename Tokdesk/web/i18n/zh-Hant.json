@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "在留言中提到了你：{0}",
   "te mencionó en un video.": "在影片中提到了你。",
   "{0} y {1} más": "{0}等{1}人",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "要封鎖{0}嗎？對方將無法傳訊息給你或觀看你的影片。"
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "要封鎖{0}嗎？對方將無法傳訊息給你或觀看你的影片。",
+  "La transmisión terminó": "直播已結束",
+  "Traducir": "翻譯",
+  "¿Abrir el enlace copiado?": "開啟複製的連結？",
+  "Abrir": "開啟"
 }

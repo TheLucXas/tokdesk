@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "একটি মন্তব্যে আপনাকে উল্লেখ করেছেন: {0}",
   "te mencionó en un video.": "একটি ভিডিওতে আপনাকে উল্লেখ করেছেন।",
   "{0} y {1} más": "{0} এবং আরও {1} জন",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0}-কে ব্লক করবেন? তিনি আপনাকে মেসেজ পাঠাতে বা আপনার ভিডিও দেখতে পারবেন না।"
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0}-কে ব্লক করবেন? তিনি আপনাকে মেসেজ পাঠাতে বা আপনার ভিডিও দেখতে পারবেন না।",
+  "La transmisión terminó": "LIVE শেষ হয়েছে",
+  "Traducir": "অনুবাদ করুন",
+  "¿Abrir el enlace copiado?": "কপি করা লিঙ্কটি খুলবেন?",
+  "Abrir": "খুলুন"
 }

@@ -485,5 +485,9 @@
   "te mencionó en un comentario: {0}": "님이 댓글에서 회원님을 언급했습니다: {0}",
   "te mencionó en un video.": "님이 동영상에서 회원님을 언급했습니다.",
   "{0} y {1} más": "{0}님 외 {1}명",
-  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0}님을 차단할까요? 차단하면 메시지를 보내거나 내 동영상을 볼 수 없습니다."
+  "¿Bloquear a {0}? No podrá enviarte mensajes ni ver tus videos.": "{0}님을 차단할까요? 차단하면 메시지를 보내거나 내 동영상을 볼 수 없습니다.",
+  "La transmisión terminó": "LIVE가 종료되었습니다",
+  "Traducir": "번역",
+  "¿Abrir el enlace copiado?": "복사한 링크를 열까요?",
+  "Abrir": "열기"
 }
