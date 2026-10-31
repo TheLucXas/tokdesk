@@ -2124,7 +2124,15 @@ async function openChatVideos(startId) {
   const conv = chatConv; if (!conv) return;
   const ids = $$('#chatList .vthumb[data-id]').map((v) => v.dataset.id).filter(Boolean);
   if (!ids.length) return;
-  toast(t('Abriendo video…'));
+  // La vista de video se abre enseguida («Cargando videos…» y la barra de carga) y el video aparece cuando
+  // llegan sus datos: así no parece colgado ni se pide dos veces el mismo
+  const key = 'chat:' + conv.id;
+  feeds.delete(key);
+  const f = makeFeed(key, { title: conv.name, hasMore: true, load() { } });
+  const scroll = $('#chatList').scrollTop;
+  state.returnTo = { key, fn: () => { state.chatRestoreScroll = scroll; openInbox(); openChat(conv); } };
+  openSubFeed(f, 0);
+  busy(1);
   const details = new Map();
   // El video elegido se asegura (si la API no responde se lee de su página); los demás, si se puede
   details.set(startId, await fetchItemSure(startId));
@@ -2139,15 +2147,12 @@ async function openChatVideos(startId) {
     }
   };
   await Promise.all([worker(), worker(), worker(), worker()]);
-  const key = 'chat:' + conv.id;
-  feeds.delete(key);
-  const f = makeFeed(key, { title: conv.name, hasMore: false, load() { } });
+  busy(-1);
+  f.hasMore = false;
   addItems(f, ids.map((id) => details.get(id)).filter(Boolean));
-  const idx = Math.max(0, f.items.findIndex((x) => x.id === startId));
-  if (!f.items.length) { toast(t('No se pudo abrir el video')); return; }
-  const scroll = $('#chatList').scrollTop;
-  state.returnTo = { key, fn: () => { state.chatRestoreScroll = scroll; openInbox(); openChat(conv); } };
-  openSubFeed(f, idx);
+  if (state.feed !== f) return; // el usuario ya volvió
+  if (!f.items.length) { toast(t('No se pudo abrir el video')); back(); return; }
+  setFeed(f, Math.max(0, f.items.findIndex((x) => x.id === startId)));
 }
 // Abre en la app un video a partir de su enlace (p. ej. compartido en un chat)
 // Enlaces de TikTok (desde la app, otra ventana o el navegador) se abren aquí, como en la app de Android
@@ -2168,13 +2173,20 @@ function openTikTokLink(url) {
 async function openVideoLink(url) {
   const m = /\/(?:video|photo)\/(\d+)/.exec(url || '');
   if (!m) { send({ t: 'open', url, browser: true }); return; }
-  toast(t('Abriendo video…'));
-  const raw = await fetchItemSure(m[1]);
+  // Igual que en los chats: la vista de video se abre ya y el video aparece al llegar sus datos
   const f = feedFor('single:' + m[1]);
-  if (!f.items.length && raw) addItems(f, [raw]);
-  if (!f.items.length) { send({ t: 'open', url, browser: true }); return; }
   closeChat();
+  if (f.items.length) { openSubFeed(f, 0); return; }
+  f.hasMore = true;
   openSubFeed(f, 0);
+  busy(1);
+  const raw = await fetchItemSure(m[1]);
+  busy(-1);
+  f.hasMore = false;
+  if (raw) addItems(f, [raw]);
+  if (state.feed !== f) return;
+  if (!f.items.length) { back(); send({ t: 'open', url, browser: true }); return; }
+  setFeed(f, 0);
 }
 
 // ---------- Perfil ----------
