@@ -354,6 +354,9 @@ public partial class MainWindow : Window
             "--disable-backgrounding-occluded-windows" +
             // H.265 por hardware: TikTok suele dar el 1080p solo en H.265
             " --enable-features=PlatformHEVCDecoderSupport,PlatformHEVCEncoderSupport" +
+            // El sonido sale del proceso principal de WebView2 (hijo directo de Tokdesk) y no de un proceso de
+            // audio aparte: así Discord y OBS, que capturan el audio de la ventana y sus hijos, lo incluyen
+            " --disable-features=AudioServiceOutOfProcess" +
             (_settings.HardwareAcceleration ? "" : " --disable-gpu"));
         _env = await CoreWebView2Environment.CreateAsync(null, profile, options);
 
