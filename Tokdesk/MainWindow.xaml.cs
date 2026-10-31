@@ -636,7 +636,7 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "inbox", data = await _side.LoadInbox() });
                     break;
                 case "conv":
-                    PostToUi(new { t = "conv", id = S("id"), data = await _side.ReadConv(S("id")) });
+                    PostToUi(new { t = "conv", id = S("id"), prefetch = m.TryGetProperty("prefetch", out _), data = await _side.ReadConv(S("id")) });
                     break;
                 case "openshared":
                     PostToUi(new { t = "sharedurl", url = await _side.OpenShared(S("id"), m.GetProperty("n").GetInt32()) });

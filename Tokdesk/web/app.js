@@ -1707,6 +1707,7 @@ function onInbox(m) {
   if (m.more && state.chats.length <= before) inboxNoMore = true;
   renderFriends();
   renderInbox();
+  prefetchConvs();
   const unread = state.chats.reduce((n, c) => n + (c.unread || 0), 0);
   const badge = $('#inboxBadge');
   badge.textContent = unread > 99 ? '99+' : unread || '';
@@ -1867,6 +1868,33 @@ $('#ibBody').addEventListener('scroll', (e) => {
 $('#ibRefresh').addEventListener('click', () => { inboxData = null; renderInbox(); loadInbox(); });
 
 let chatConv = null, chatTimer = null, chatCount = -1;
+// Caché de chats: al abrir uno se muestra al instante lo último guardado y luego se actualiza
+const CONV_CACHE_MAX = 20;
+let convCache = null;
+function convCacheGet() { return convCache || (convCache = pref.get('convCache', {})); }
+function cacheConv(id, data) {
+  const c = convCacheGet();
+  c[id] = { data, at: Date.now() };
+  const ids = Object.keys(c).sort((a, b) => c[b].at - c[a].at);
+  for (const k of ids.slice(CONV_CACHE_MAX)) delete c[k];
+  clearTimeout(cacheConv.t); cacheConv.t = setTimeout(() => pref.set('convCache', c), 1500);
+}
+// Al cargar la bandeja se precargan los primeros chats, solo los sin mensajes nuevos:
+// abrir uno en la web lo marca como visto, y eso no se hace sin que el usuario lo abra
+let convPrefetched = false;
+function prefetchConvs() {
+  if (convPrefetched || !Array.isArray(state.chats)) return;
+  convPrefetched = true;
+  const fresh = (id) => { const e = convCacheGet()[id]; return e && Date.now() - e.at < 10 * 60e3; };
+  const todo = state.chats.slice(0, 6).filter((c) => !c.unread && !fresh(c.id));
+  const next = () => {
+    if (!todo.length) return;
+    if (chatConv || dmQueue.length) { setTimeout(next, 5000); return; }
+    send({ t: 'conv', id: todo.shift().id, prefetch: true });
+    setTimeout(next, 3000);
+  };
+  setTimeout(next, 2000);
+}
 function openChat(c) {
   chatConv = c; chatCount = -1; olderLoading = false; noOlder = false; olderMisses = 0;
   $('#chatName').textContent = c.name;
@@ -1877,6 +1905,8 @@ function openChat(c) {
   $('#chat').classList.add('open');
   send({ t: 'chatvis', on: true });
   busy(1); state.convBusy = true;
+  const cached = convCacheGet()[c.id];
+  if (cached) onConv({ id: c.id, data: cached.data, cached: true });
   send({ t: 'conv', id: c.id });
   clearInterval(chatTimer);
   chatTimer = setInterval(() => { if (chatConv && !dmQueue.length && !state.openingShared) send({ t: 'conv', id: chatConv.id }); }, 6000);
@@ -1890,7 +1920,9 @@ function closeChat() {
 $('#chatBack').addEventListener('click', () => { closeChat(); openInbox(); });
 
 function onConv(m) {
-  if (state.convBusy) { state.convBusy = false; busy(-1); }
+  if (m.data && !m.older && !m.cached) cacheConv(m.id, m.data);
+  if (m.prefetch) return;
+  if (!m.cached && state.convBusy) { state.convBusy = false; busy(-1); }
   if (!chatConv || m.id !== chatConv.id) return;
   let d = null;
   try { d = m.data ? JSON.parse(m.data) : null; } catch { }
@@ -1927,9 +1959,10 @@ function onConv(m) {
     let inner = '';
     if (x.refVideo) {
       // Respuesta a un video: su portada (la del video compartido en este chat si está cargado) en vez de «Video no disponible»
+      // (si no está, suele ser un video borrado: queda el texto de la web, «Video no disponible»)
       const sv = d.messages.find((y) => y.itemId === x.refVideo && y.image);
-      const img = (sv && sv.image) || x.refThumb;
-      inner += `<div class="ref rvid" data-ref="v:${esc(x.refVideo)}" title="${esc(t('Ir al mensaje'))}">${img ? `<img alt="" src="${esc(img)}">` : ''}<span>${ICON.play}${esc(t('Video'))}</span></div>`;
+      if (sv) inner += `<div class="ref rvid" data-ref="v:${esc(x.refVideo)}" title="${esc(t('Ir al mensaje'))}"><img alt="" src="${esc(sv.image)}"><span>${ICON.play}${esc(t('Video'))}</span></div>`;
+      else if (x.ref) inner += `<div class="ref">${esc(x.ref)}</div>`;
     } else if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
@@ -3112,6 +3145,8 @@ host && host.addEventListener('message', (e) => {
       const was = !!state.me;
       try { state.me = m.user ? JSON.parse(m.user) : null; } catch { state.me = null; }
       state.meKnown = true;
+      // La bandeja se carga enseguida (antes al minuto) para el contador y para precargar los chats
+      if (state.me && !was) setTimeout(() => { if (state.chats == null && !chatConv) loadInbox(); }, 5000);
       if (m.user && !state.notifySent) { state.notifySent = true; sendNotifyStrings(); }
       if (m.lang && m.lang !== tiktokLang) { tiktokLang = m.lang; if (opt.lang === 'auto' && resolveLang() !== uiLang) applyLang(); }
       if (!!state.me !== was && state.feed) updateEmpty();
@@ -3355,7 +3390,8 @@ $('#chatList').addEventListener('contextmenu', (e) => {
   const text = row.dataset.text || '';
   openOptions([[
     { ic: 'heartline', label: t('Reaccionar con ❤️'), fn: () => reactToMessage(row) },
-    { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text, hint: msgHint(row) }) },
+    // La web de TikTok muestra «respondiendo a [video]» pero envía el mensaje sin la cita: no se ofrece
+    !card && { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text, hint: msgHint(row) }) },
     text && { ic: 'link', label: t('Copiar'), fn: () => navigator.clipboard.writeText(text).then(() => toast(t('Copiado'))) },
     card && card.dataset.id && { ic: 'play', label: t('Abrir video'), fn: () => openChatVideos(card.dataset.id) },
     card && card.dataset.id && { ic: 'user', label: t('Ver perfil del creador'), fn: () => openCreatorOf(card.dataset.id) },

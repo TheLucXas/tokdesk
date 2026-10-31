@@ -146,7 +146,10 @@ sealed class SidePage
         for (var t = 0; t < 45000 && Busy; t += 300) await Task.Delay(300);
         return !Busy;
     }
-    bool Busy => _visible || _locked;
+    bool Busy => _visible || _locked || _composing;
+    // Mientras se responde o reacciona, las lecturas periódicas del chat esperan: recargar la conversación
+    // en medio borraba la cita pendiente y la respuesta salía sin citar
+    bool _composing;
 
     // Estado del formulario oficial de denuncia, para mostrarlo en la interfaz propia
     const string ReportStateJs = """
@@ -881,7 +884,13 @@ sealed class SidePage
                 ? same.sort((a, b) => score(b) - score(a) || Math.abs(a[1] - want) - Math.abs(b[1] - want))[0][0]
                 : items[want];
               if (!el) return null;
-              ['mouseover', 'mouseenter', 'mousemove'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true })));
+              // La web recuerda el último mensaje bajo el mouse para «responder»: se simula el paso del mouse
+              // sobre el contenido (texto o video) y sus contenedores, no solo sobre la fila
+              const inner = el.querySelector('[data-e2e="dm-new-shared-video"], [data-e2e="dm-new-message-text"]') || el;
+              const chain = []; for (let n = inner; n && n !== el.parentElement; n = n.parentElement) chain.push(n);
+              const r = inner.getBoundingClientRect(), at = { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+              chain.reverse().forEach(n => ['pointerover', 'pointerenter', 'mouseover', 'mouseenter', 'mousemove'].forEach(t =>
+                n.dispatchEvent(t.startsWith('pointer') ? new PointerEvent(t, at) : new MouseEvent(t, at))));
               const b = el.querySelector('[data-e2e="{{e2e}}"]');
               if (!b) return null;
               b.click();
@@ -895,6 +904,12 @@ sealed class SidePage
     public async Task<bool> React(string convId, int index, string emoji, string hint = null)
     {
         if (!await Idle()) return false;
+        _composing = true;
+        try { return await ReactCore(convId, index, emoji, hint); }
+        finally { _composing = false; }
+    }
+    async Task<bool> ReactCore(string convId, int index, string emoji, string hint)
+    {
         if (!await MessageButton(convId, index, "dm-new-reaction-btn", hint)) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
@@ -915,14 +930,25 @@ sealed class SidePage
     public async Task<bool> Reply(string convId, int index, string text, string hint = null)
     {
         if (!await Idle()) return false;
-        if (!await MessageButton(convId, index, "dm-new-reply-btn", hint)) return false;
-        await Task.Delay(300);
-        return await SendText(convId, text);
+        _composing = true;
+        try
+        {
+            if (!await MessageButton(convId, index, "dm-new-reply-btn", hint)) return false;
+            await Task.Delay(300);
+            return await SendTextCore(convId, text);
+        }
+        finally { _composing = false; }
     }
     /// <summary>Escribe y envía un mensaje de texto en la conversación indicada.</summary>
     public async Task<bool> SendText(string convId, string text)
     {
         if (!await Idle()) return false;
+        _composing = true;
+        try { return await SendTextCore(convId, text); }
+        finally { _composing = false; }
+    }
+    async Task<bool> SendTextCore(string convId, string text)
+    {
         if (!await SelectConv(convId)) return false;
         var found = await Poll("""
             (() => {
