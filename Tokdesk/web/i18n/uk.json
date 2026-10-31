@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "Не вдалося підтвердити надсилання повідомлення",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Ваше повідомлення не з’явилося в чаті трансляції: можливо, автор обмежує коментарі",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Повідомляє про нову версію, коли застосунок згорнуто або в треї",
-  "Actualizaciones de Tokdesk": "Оновлення Tokdesk"
+  "Actualizaciones de Tokdesk": "Оновлення Tokdesk",
+  "más": "ще",
+  "menos": "згорнути"
 }

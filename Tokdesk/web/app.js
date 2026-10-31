@@ -569,7 +569,7 @@ function back() {
 // ---------- Slides ----------
 function buildSlide(it) {
   const el = document.createElement('div');
-  el.className = 'slide paused waiting' + (it.live ? ' is-live' : '');
+  el.className = 'slide paused waiting' + (it.live ? ' is-live' : '') + (it.photos.length > 1 ? ' is-photo' : '');
   const photoHtml = it.photos.length
     ? `<div class="photos"><div class="ptrack">${it.photos.map((p, i) => `<img alt="" class="${i ? '' : 'on'}" src="${esc(p)}" draggable="false">`).join('')}</div></div>
        ${it.photos.length > 1 ? `<div class="pcount">1/${it.photos.length}</div><button class="photonav prev">‹</button><button class="photonav next">›</button>
@@ -593,7 +593,7 @@ function buildSlide(it) {
     </div>
     <div class="meta">
       <div class="user">${esc(it.nick || it.author)}${it.created ? `<span class="when"> · ${/\d-/.test(ago(it.created)) ? ago(it.created) : t('hace {0}', ago(it.created))}</span>` : ''}${it.ad ? '<span class="badge">Publicidad</span>' : ''}</div>
-      <div class="desc">${richText(it.desc)}</div>
+      <div class="desc">${richText(it.desc)}</div><button class="more" hidden>${t('más')}</button>
       ${canTranslate(it) ? `<button class="trbtn">${t('Ver traducción')}</button>` : ''}
       ${it.music ? `<div class="musicline">${ICON.music}<span>${esc(it.music)}</span></div>` : ''}${duetLine(it)}
     </div>
@@ -709,21 +709,16 @@ function buildSlide(it) {
     el.classList.remove('waiting');
     el.photo = 0;
     // Las fotos van en fila y se deslizan de lado, como en la app. Si el usuario las pasa a mano
-    // (arrastrando o con las flechas), deja de avanzar sola y aparece el contador «n/N» arriba
+    // (arrastrando, con las flechas o los puntos), deja de avanzar sola; el contador «n/N» queda arriba
     const track = $('.ptrack', el), count = $('.pcount', el);
-    let countTimer = 0;
     const show = (n, manual) => {
       const last = it.photos.length - 1;
       el.photo = manual ? Math.max(0, Math.min(last, n)) : (n + it.photos.length) % it.photos.length;
       track.style.transform = `translateX(${-el.photo * 100}%)`;
       $$('.photos img', el).forEach((im, i) => im.classList.toggle('on', i === el.photo));
       $$('.dots i', el).forEach((d, i) => d.classList.toggle('on', i === el.photo));
-      if (manual && count) {
-        el.photoManual = true;
-        count.textContent = `${el.photo + 1}/${it.photos.length}`;
-        count.classList.add('show'); clearTimeout(countTimer);
-        countTimer = setTimeout(() => count.classList.remove('show'), 1500);
-      }
+      if (count) count.textContent = `${el.photo + 1}/${it.photos.length}`;
+      if (manual) el.photoManual = true;
     };
     el.showPhoto = show;
     el.dragPhoto = (dx) => {
@@ -732,6 +727,19 @@ function buildSlide(it) {
       const edge = (el.photo === 0 && dx > 0) || (el.photo === last && dx < 0);
       track.style.transform = `translateX(calc(${-el.photo * 100}% + ${edge ? dx / 3 : dx}px))`;
     };
+    // Como en la app: mantener apretado sobre los puntos y moverse pasa las fotos al instante, sin animación
+    const dots = $('.dots', el);
+    if (dots) {
+      const at = (e) => { const r = dots.getBoundingClientRect(); return Math.floor(Math.max(0, Math.min(.999, (e.clientX - r.left) / r.width)) * it.photos.length); };
+      dots.addEventListener('pointerdown', (e) => {
+        e.stopPropagation(); try { dots.setPointerCapture(e.pointerId); } catch { }
+        track.style.transition = 'none'; dots.classList.add('scrub'); show(at(e), true);
+      });
+      dots.addEventListener('pointermove', (e) => { if (dots.classList.contains('scrub') && at(e) !== el.photo) show(at(e), true); });
+      const end = () => { track.style.transition = ''; dots.classList.remove('scrub'); };
+      dots.addEventListener('pointerup', end); dots.addEventListener('pointercancel', end);
+      dots.addEventListener('click', (e) => e.stopPropagation());
+    }
     $$('.photonav', el).forEach((b) => b.addEventListener('click', (e) => {
       e.stopPropagation(); show(el.photo + (b.classList.contains('next') ? 1 : -1), true);
     }));
@@ -753,8 +761,19 @@ function buildSlide(it) {
     e.stopPropagation();
     const tag = e.target.closest('.tag, .mention');
     if (tag) { tag.classList.contains('tag') ? openTag(tag.dataset.v) : openUserByName(tag.dataset.v); return; }
-    desc.classList.toggle('open');
+    if (desc.classList.contains('open')) toggleDesc(false);
   });
+  // Como en la app: la descripción ocupa dos líneas y «más» la despliega sobre el video;
+  // si es tan larga que no entraría, se abre en una hoja
+  const more = $('.more', el);
+  const toggleDesc = (open) => {
+    if (open) { desc.classList.add('open'); if (desc.scrollHeight > el.clientHeight * 0.4) { desc.classList.remove('open'); openDescSheet(it); return; } }
+    desc.classList.toggle('open', open); more.textContent = open ? t('menos') : t('más');
+    el.classList.toggle('desc-open', open);
+  };
+  more.addEventListener('click', (e) => { e.stopPropagation(); toggleDesc(!desc.classList.contains('open')); });
+  el.fitDesc = () => { if (!desc.classList.contains('open')) more.hidden = desc.scrollHeight <= desc.clientHeight + 1; };
+  requestAnimationFrame(el.fitDesc);
   const tr = $('.trbtn', el);
   if (tr) tr.addEventListener('click', (e) => { e.stopPropagation(); translateDesc(it, desc, tr); });
   const ml = $('.musicline', el);
@@ -948,6 +967,7 @@ function togglePause() {
   const m = el.media;
   if (el.dataset.userPaused || m.paused) {
     delete el.dataset.userPaused; el.classList.remove('paused', 'upaused');
+    el.photoManual = false; // en un carrusel, reanudar vuelve a pasar las fotos solas
     if (m.getAttribute('src')) m.play();
   } else {
     el.dataset.userPaused = '1'; m.pause(); el.classList.add('paused', 'upaused');
@@ -2871,6 +2891,17 @@ $('#cmtForm').addEventListener('submit', async (e) => {
   renderComments();
   toast(t('Comentario publicado'));
 });
+
+// Descripción larga entera en una hoja, como la app cuando no entra sobre el video
+function openDescSheet(it) {
+  const body = $('#optsBody');
+  body.innerHTML = `<div class="cp-title">${esc(it.nick || it.author)}</div><div class="desc-full">${richText(it.desc)}</div>`;
+  body.querySelector('.desc-full').onclick = (e) => {
+    const tag = e.target.closest('.tag, .mention'); if (!tag) return;
+    closePanels(); tag.classList.contains('tag') ? openTag(tag.dataset.v) : openUserByName(tag.dataset.v);
+  };
+  openPanel('opts');
+}
 
 function openComments(it) {
   if (!it) return;

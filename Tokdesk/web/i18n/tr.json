@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "Mesajın gönderildiği doğrulanamadı",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Mesajın canlı yayın sohbetinde görünmüyor: yayıncı yorumları sınırlıyor olabilir",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Uygulama simge durumundayken veya tepsideyken yeni sürümü bildirir",
-  "Actualizaciones de Tokdesk": "Tokdesk güncellemeleri"
+  "Actualizaciones de Tokdesk": "Tokdesk güncellemeleri",
+  "más": "daha fazla",
+  "menos": "daha az"
 }

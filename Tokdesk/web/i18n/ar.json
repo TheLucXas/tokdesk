@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "تعذر تأكيد إرسال الرسالة",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "رسالتك لا تظهر في دردشة البث: قد يكون المنشئ يقيّد التعليقات",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "ينبهك إلى إصدار جديد عندما يكون التطبيق مصغرًا أو في الشريط",
-  "Actualizaciones de Tokdesk": "تحديثات Tokdesk"
+  "Actualizaciones de Tokdesk": "تحديثات Tokdesk",
+  "más": "المزيد",
+  "menos": "أقل"
 }

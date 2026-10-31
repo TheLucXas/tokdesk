@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "Kunne ikke bekræfte, at beskeden blev sendt",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Din besked vises ikke i livechatten: skaberen begrænser måske kommentarer",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Giver besked om en ny version, når appen er minimeret eller i systembakken",
-  "Actualizaciones de Tokdesk": "Tokdesk-opdateringer"
+  "Actualizaciones de Tokdesk": "Tokdesk-opdateringer",
+  "más": "mere",
+  "menos": "mindre"
 }

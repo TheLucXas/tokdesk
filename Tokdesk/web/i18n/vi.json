@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "Không thể xác nhận tin nhắn đã được gửi",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Tin nhắn của bạn không xuất hiện trong khung trò chuyện của live: có thể nhà sáng tạo đang hạn chế bình luận",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Báo phiên bản mới khi ứng dụng được thu nhỏ hoặc ở khay hệ thống",
-  "Actualizaciones de Tokdesk": "Cập nhật Tokdesk"
+  "Actualizaciones de Tokdesk": "Cập nhật Tokdesk",
+  "más": "thêm",
+  "menos": "ẩn bớt"
 }

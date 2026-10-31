@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "לא ניתן היה לאשר את שליחת ההודעה",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "ההודעה שלך לא מופיעה בצ'אט של הלייב: ייתכן שהיוצר מגביל תגובות",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "מודיע על גרסה חדשה כשהאפליקציה ממוזערת או במגש המערכת",
-  "Actualizaciones de Tokdesk": "עדכוני Tokdesk"
+  "Actualizaciones de Tokdesk": "עדכוני Tokdesk",
+  "más": "עוד",
+  "menos": "פחות"
 }

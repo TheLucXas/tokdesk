@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "メッセージが送信されたか確認できませんでした",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "メッセージがライブのチャットに表示されません。クリエイターがコメントを制限している可能性があります",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "アプリを最小化中やトレイにあるときに新しいバージョンを通知します",
-  "Actualizaciones de Tokdesk": "Tokdesk のアップデート"
+  "Actualizaciones de Tokdesk": "Tokdesk のアップデート",
+  "más": "もっと見る",
+  "menos": "閉じる"
 }

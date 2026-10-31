@@ -465,6 +465,7 @@ public partial class MainWindow : Window
                     SendWinState();
                     WatchForeground();
                     OpenPendingLink();
+                    OfferCopiedLink(); // también al abrir, no solo al volver a la ventana
                     // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
                     _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });
                     break;

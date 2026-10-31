@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "មិនអាចបញ្ជាក់ថាសារត្រូវបានផ្ញើទេ",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "សាររបស់អ្នកមិនបង្ហាញក្នុងជជែកផ្ទាល់ទេ៖ ប្រហែលអ្នកបង្កើតកំពុងកំណត់មតិ",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "ជូនដំណឹងអំពីកំណែថ្មី ពេលកម្មវិធីត្រូវបានបង្រួម ឬនៅក្នុងថាស",
-  "Actualizaciones de Tokdesk": "ការអាប់ដេត Tokdesk"
+  "Actualizaciones de Tokdesk": "ការអាប់ដេត Tokdesk",
+  "más": "ច្រើនទៀត",
+  "menos": "តិច"
 }

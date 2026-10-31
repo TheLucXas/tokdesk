@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "Das Senden der Nachricht konnte nicht bestätigt werden",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "Deine Nachricht erscheint nicht im Live-Chat: Möglicherweise schränkt der Creator Kommentare ein",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Meldet eine neue Version, wenn die App minimiert oder im Infobereich ist",
-  "Actualizaciones de Tokdesk": "Tokdesk-Updates"
+  "Actualizaciones de Tokdesk": "Tokdesk-Updates",
+  "más": "mehr",
+  "menos": "weniger"
 }

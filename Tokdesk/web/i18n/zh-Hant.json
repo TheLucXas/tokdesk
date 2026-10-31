@@ -508,5 +508,7 @@
   "No se pudo confirmar el envío del mensaje": "無法確認訊息是否已傳送",
   "Tu mensaje no aparece en el chat del directo: puede que el creador limite los comentarios": "你的訊息未顯示在直播聊天中：創作者可能限制了留言",
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "應用程式最小化或在系統匣中時提醒新版本",
-  "Actualizaciones de Tokdesk": "Tokdesk 更新"
+  "Actualizaciones de Tokdesk": "Tokdesk 更新",
+  "más": "更多",
+  "menos": "收起"
 }

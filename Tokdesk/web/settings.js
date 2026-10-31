@@ -87,7 +87,7 @@ function applyLook() {
   document.body.classList.toggle('progress-always', opt.progressAlways);
   document.body.classList.toggle('reduce-motion', opt.reduceMotion);
   // En una hoja propia antes del tema del usuario, para que su CSS pueda sobrescribirlas
-  $('#uiVars').textContent = `:root { --text-scale: ${opt.textScale / 100}; --chat-font: ${opt.chatFont}px; --live-chat-font: ${opt.liveChatFont}px;
+  $('#uiVars').textContent = `:root { --text-scale: ${Math.min(150, Math.max(80, +opt.textScale || 100)) / 100}; --chat-font: ${opt.chatFont}px; --live-chat-font: ${opt.liveChatFont}px;
     --live-chat-opacity: ${opt.liveChatOpacity / 100}; --live-chat-width: ${opt.liveChatWidth}px; --panel-width: ${opt.panelWidth}px; }`;
   const th = opt.themes.find((x) => x.name === opt.activeTheme);
   $('#userTheme').textContent = th ? th.css : '';
