@@ -839,7 +839,19 @@ sealed class SidePage
               const box = document.querySelector('[data-e2e="dm-new-chatbox"]');
               const uid = ((box && box.querySelector('[data-e2e="chat-uniqueid"]')) || {}).textContent || '';
               const other = '/' + uid.trim().replace(/^\/?/, '');
-              const textOf = (x) => { const t = x && x.querySelector('[data-e2e="dm-new-message-text"]'); return t ? t.textContent.trim().slice(0, 120) : ''; };
+              // Clave del mensaje: su texto, o el id del video si es un video compartido (está en las props de React)
+              const textOf = (x) => {
+                if (!x) return '';
+                const t = x.querySelector('[data-e2e="dm-new-message-text"]');
+                if (t) return t.textContent.trim().slice(0, 120);
+                const sv = x.querySelector('[data-e2e="dm-new-shared-video"]');
+                const fk = sv && Object.keys(sv).find(k => k.startsWith('__reactFiber'));
+                for (let f = fk && sv[fk], i = 0; f && i < 12; f = f.return, i++) {
+                  const p = f.memoizedProps;
+                  if (p && /^\d{15,20}$/.test(String(p.itemId || ''))) return 'v:' + p.itemId;
+                }
+                return '';
+              };
               const mineOf = (x) => { const a = x.querySelector('[data-e2e="chat-avatar"]'); const l = a && a.closest('a'); const href = l ? l.getAttribute('href') : ''; return !!href && href !== other; };
               const text = (h.text || '').trim();
               const same = text ? items.map((x, i) => [x, i]).filter(([x]) => textOf(x) === text) : [];

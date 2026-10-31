@@ -3322,9 +3322,11 @@ function reactToMessage(row) {
 function msgHint(row) {
   const rows = $$('#chatList .msg[data-idx]').filter((r) => r.dataset.idx !== 'undefined');
   const i = rows.indexOf(row);
+  // Un video compartido no tiene texto: se reconoce por el id del video
+  const key = (r) => { const v = r.querySelector('.vthumb[data-id]'); return v && v.dataset.id ? 'v:' + v.dataset.id : r.dataset.text || ''; };
   return {
-    text: row.dataset.text || '', mine: row.classList.contains('mine'),
-    prev: i > 0 ? rows[i - 1].dataset.text || '' : null, next: i >= 0 && i < rows.length - 1 ? rows[i + 1].dataset.text || '' : null,
+    text: key(row), mine: row.classList.contains('mine'),
+    prev: i > 0 ? key(rows[i - 1]) : null, next: i >= 0 && i < rows.length - 1 ? key(rows[i + 1]) : null,
     n: Math.max(-1, ...rows.map((r) => +r.dataset.idx + 1).filter((n) => n > 0)),
   };
 }
