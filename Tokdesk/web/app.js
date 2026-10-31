@@ -124,7 +124,10 @@ function onApi(msg) {
   resolve({ status: msg.status, data });
 }
 
+setTimeout(() => { state.meKnown = true; }, 15000); // por si la sesión nunca llega a informarse
 function askLogin() {
+  // Recién abierta la app todavía no se sabe si hay sesión: no se manda a la web a iniciarla
+  if (!state.meKnown) { toast(t('Cargando tu sesión…')); return; }
   toast(t('Inicia sesión para usar esta función'));
   setTimeout(() => send({ t: 'login' }), 700);
 }
@@ -1922,7 +1925,12 @@ function onConv(m) {
   list.innerHTML = d.messages.map((x) => {
     if (x.sep != null) return `<div class="sep">${esc(x.sep)}</div>`;
     let inner = '';
-    if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
+    if (x.refVideo) {
+      // Respuesta a un video: su portada (la del video compartido en este chat si está cargado) en vez de «Video no disponible»
+      const sv = d.messages.find((y) => y.itemId === x.refVideo && y.image);
+      const img = (sv && sv.image) || x.refThumb;
+      inner += `<div class="ref rvid" data-ref="v:${esc(x.refVideo)}" title="${esc(t('Ir al mensaje'))}">${img ? `<img alt="" src="${esc(img)}">` : ''}<span>${ICON.play}${esc(t('Video'))}</span></div>`;
+    } else if (x.ref) inner += `<div class="ref" data-ref="${esc(x.ref.slice(0, 60))}" title="${esc(t('Ir al mensaje'))}">${esc(x.ref)}</div>`;
     if (x.text) inner += esc(x.text);
     // Video compartido: tarjeta con portada como en la app
     if (x.shared >= 0) inner += `<div class="vthumb" data-n="${x.shared}" data-id="${esc(x.itemId || '')}">${x.image ? `<img alt="" src="${esc(x.image)}">` : '<div style="aspect-ratio:3/4"></div>'}<span class="pl">${ICON.play}</span><div class="ft">${esc(x.sharedBy || 'Video')}</div></div>`;
@@ -3103,6 +3111,7 @@ host && host.addEventListener('message', (e) => {
     case 'me': {
       const was = !!state.me;
       try { state.me = m.user ? JSON.parse(m.user) : null; } catch { state.me = null; }
+      state.meKnown = true;
       if (m.user && !state.notifySent) { state.notifySent = true; sendNotifyStrings(); }
       if (m.lang && m.lang !== tiktokLang) { tiktokLang = m.lang; if (opt.lang === 'auto' && resolveLang() !== uiLang) applyLang(); }
       if (!!state.me !== was && state.feed) updateEmpty();
@@ -3381,7 +3390,9 @@ const avatarOf = (c) => (c && (c.avatar || avatarStore.get(c.id))) || '';
 let jumpTries = 0;
 function jumpToMessage(ref) {
   const key = ref.replace(/\s+/g, ' ').trim().slice(0, 40);
-  const target = $$('#chatList .msg').find((m) => (m.dataset.text || '').replace(/\s+/g, ' ').trim().startsWith(key));
+  const vid = ref.startsWith('v:') && ref.slice(2);
+  const target = vid ? $$('#chatList .msg').find((m) => m.querySelector(`.vthumb[data-id="${vid}"]`))
+    : $$('#chatList .msg').find((m) => (m.dataset.text || '').replace(/\s+/g, ' ').trim().startsWith(key));
   if (target) {
     jumpTries = 0;
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });

@@ -361,6 +361,8 @@ public partial class MainWindow : Window
         _env = await CoreWebView2Environment.CreateAsync(null, profile, options);
 
         await Ui.EnsureCoreWebView2Async(_env);
+        // El modo de pruebas arranca sin sonido (corre al lado de la app normal y no debe molestar)
+        if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") Ui.CoreWebView2.IsMuted = true;
         var ui = Ui.CoreWebView2;
         if (!_settings.ImageCacheFixed)
         {
@@ -467,7 +469,7 @@ public partial class MainWindow : Window
                     OpenPendingLink();
                     OfferCopiedLink(); // también al abrir, no solo al volver a la ventana
                     // La página oculta se precarga para que denunciar o editar el perfil abran rápido la primera vez
-                    _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(8000); await _side.Warm(); });
+                    _ = Dispatcher.InvokeAsync(async () => { await Task.Delay(3000); await _side.Warm(); }); // antes 8 s: abrir un chat apenas iniciada la app esperaba a que cargara Mensajes
                     break;
                 case "more": await _engine.LoadMore(); break;
                 case "api":
@@ -761,6 +763,15 @@ public partial class MainWindow : Window
         static string Session(string cookies) =>
             System.Text.RegularExpressions.Regex.Match(cookies ?? "", @"(?:^|;\s*)sessionid=([^;]*)").Groups[1].Value;
         var before = Session(await _engine.CookieHeader());
+        // Si ya había sesión (se pidió iniciar sesión antes de que la app la detectara), la web dice
+        // «You're already logged in» y no crea otra: se vuelve a la app enseguida
+        if (before.Length > 0)
+        {
+            Log.Write("Ya había sesión: se vuelve a la app");
+            await Task.Delay(1200);
+            if (_panel == _engine && LoginBar.Visibility == Visibility.Visible) DoneButton_Click(null, null);
+            return;
+        }
         while (_panel == _engine && LoginBar.Visibility == Visibility.Visible)
         {
             await Task.Delay(1500);

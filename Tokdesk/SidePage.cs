@@ -702,6 +702,21 @@ sealed class SidePage
               sharedBy,
               itemId,
               ref: ref ? ref.textContent.trim() : '',
+              // Una respuesta a un video: la web solo muestra «Video no disponible.», pero guarda el id del video citado
+              ...(() => {
+                if (!ref) return {};
+                const fk = Object.keys(ref).find(k => k.startsWith('__reactFiber'));
+                for (let f = fk && ref[fk], i = 0; f && i < 15; f = f.return, i++) {
+                  const p = f.memoizedProps;
+                  if (!p || !p.referenceInfo) continue;
+                  try {
+                    const c = JSON.parse(JSON.parse(p.referenceInfo.hint).refmsg_content || '{}');
+                    if (!/^\d{15,20}$/.test(String(c.itemId || ''))) return {};
+                    return { refVideo: String(c.itemId), refThumb: ((c.cover_url || {}).url_list || (c.content_thumb || {}).url_list || [])[0] || '' };
+                  } catch { return {}; }
+                }
+                return {};
+              })(),
               reaction: (() => { const r = el.querySelector('[data-e2e="dm-new-reaction-display"]'); return r ? ([...r.querySelectorAll('img')].map(i => i.alt).join('') || r.textContent.trim()) : ''; })(),
               other: !txt && !vid && !shared && !imgs.length ? (el.textContent || '').trim().slice(0, 200) : ''
             });
@@ -746,7 +761,11 @@ sealed class SidePage
     {
         if (!await Idle()) return null;
         if (!await SelectConv(convId)) return null;
-        await Task.Delay(300);
+        // Recién elegido, la web muestra la lista vacía mientras pide los mensajes: se espera a que lleguen
+        // (si no, la interfaz mostraba un chat vacío y los mensajes aparecían en la siguiente actualización)
+        var t0 = Environment.TickCount64;
+        await Poll("document.querySelector('[data-e2e=\"dm-new-message-list\"] [data-e2e=\"dm-new-chat-item\"]') ? 'ok' : null", 5000);
+        Log.Write($"Chat: mensajes en {Environment.TickCount64 - t0} ms");
         return await Poll(ConvJs, 6000);
     }
 
