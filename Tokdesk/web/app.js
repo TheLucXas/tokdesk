@@ -2510,10 +2510,26 @@ $('#cmtSearch').addEventListener('click', () => {
   $('#searchInput').value = q;
   $('#searchForm').requestSubmit();
 });
+// Un enlace de TikTok pegado en el buscador no se busca: se cierra el buscador y se abre directo
+// (los cortos vm./vt. los resuelve la app antes de abrirlos)
+function searchLink(text) {
+  let u;
+  try { u = new URL(text.trim()); } catch { return false; }
+  const host = u.hostname.toLowerCase();
+  if (!/^https?:$/.test(u.protocol) || !/^((www|m|us)\.)?tiktok\.com$|^(vm|vt|t)\.tiktok\.com$/.test(host)) return false;
+  if (!/^(vm|vt|t)\./.test(host) && !/\/(video|photo)\/\d+|^\/@[^/]+|^\/tag\/|^\/music\//.test(decodeURIComponent(u.pathname))) return false;
+  $('#searchInput').value = ''; $('#searchInput').blur();
+  closePanels(); send({ t: 'open', url: u.href });
+  return true;
+}
+$('#searchInput').addEventListener('paste', (e) => {
+  const text = (e.clipboardData && e.clipboardData.getData('text')) || '';
+  if (searchLink(text)) e.preventDefault();
+});
 $('#searchForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const kw = $('#searchInput').value.trim();
-  if (!kw) return;
+  if (!kw || searchLink(kw)) return;
   $('#searchInput').blur();
   addSearchHistory(kw);
   $('#search').classList.add('searching');
