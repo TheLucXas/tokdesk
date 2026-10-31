@@ -571,8 +571,8 @@ function buildSlide(it) {
   const el = document.createElement('div');
   el.className = 'slide paused waiting' + (it.live ? ' is-live' : '');
   const photoHtml = it.photos.length
-    ? `<div class="photos">${it.photos.map((p, i) => `<img alt="" class="${i ? '' : 'on'}" src="${esc(p)}">`).join('')}</div>
-       ${it.photos.length > 1 ? `<button class="photonav prev">‹</button><button class="photonav next">›</button>
+    ? `<div class="photos"><div class="ptrack">${it.photos.map((p, i) => `<img alt="" class="${i ? '' : 'on'}" src="${esc(p)}" draggable="false">`).join('')}</div></div>
+       ${it.photos.length > 1 ? `<div class="pcount">1/${it.photos.length}</div><button class="photonav prev">‹</button><button class="photonav next">›</button>
        <div class="dots">${it.photos.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}
        <audio loop preload="none"></audio>`
     : `<video playsinline loop preload="none" ${it.cover ? `poster="${esc(it.cover)}"` : ''}></video>`;
@@ -707,14 +707,32 @@ function buildSlide(it) {
   if (it.photos.length) {
     el.classList.remove('waiting');
     el.photo = 0;
-    const show = (n) => {
-      el.photo = (n + it.photos.length) % it.photos.length;
+    // Las fotos van en fila y se deslizan de lado, como en la app. Si el usuario las pasa a mano
+    // (arrastrando o con las flechas), deja de avanzar sola y aparece el contador «n/N» arriba
+    const track = $('.ptrack', el), count = $('.pcount', el);
+    let countTimer = 0;
+    const show = (n, manual) => {
+      const last = it.photos.length - 1;
+      el.photo = manual ? Math.max(0, Math.min(last, n)) : (n + it.photos.length) % it.photos.length;
+      track.style.transform = `translateX(${-el.photo * 100}%)`;
       $$('.photos img', el).forEach((im, i) => im.classList.toggle('on', i === el.photo));
       $$('.dots i', el).forEach((d, i) => d.classList.toggle('on', i === el.photo));
+      if (manual && count) {
+        el.photoManual = true;
+        count.textContent = `${el.photo + 1}/${it.photos.length}`;
+        count.classList.add('show'); clearTimeout(countTimer);
+        countTimer = setTimeout(() => count.classList.remove('show'), 1500);
+      }
     };
     el.showPhoto = show;
+    el.dragPhoto = (dx) => {
+      // Al principio y al final se frena, como un tope elástico
+      const last = it.photos.length - 1;
+      const edge = (el.photo === 0 && dx > 0) || (el.photo === last && dx < 0);
+      track.style.transform = `translateX(calc(${-el.photo * 100}% + ${edge ? dx / 3 : dx}px))`;
+    };
     $$('.photonav', el).forEach((b) => b.addEventListener('click', (e) => {
-      e.stopPropagation(); show(el.photo + (b.classList.contains('next') ? 1 : -1));
+      e.stopPropagation(); show(el.photo + (b.classList.contains('next') ? 1 : -1), true);
     }));
   }
 
@@ -891,12 +909,13 @@ function render() {
       if (state.cc) loadCaptions(el);
       if (m.paused && !el.dataset.userPaused && m.getAttribute('src')) m.play().catch((e) => log('play: ' + e.message));
       if (it.photos.length > 1 && !el.photoTimer) {
-        el.photoTimer = setInterval(() => { if (!el.dataset.userPaused) el.showPhoto(el.photo + 1); }, 3500);
+        el.photoTimer = setInterval(() => { if (!el.dataset.userPaused && !el.photoManual) el.showPhoto(el.photo + 1); }, 3500);
       }
       if (it.photos.length && !src) el.classList.remove('paused');
     } else {
       if (!m.paused) m.pause();
       clearInterval(el.photoTimer); el.photoTimer = null;
+      el.photoManual = false;
       delete el.dataset.userPaused;
       if (m.currentTime > 0) m.currentTime = 0;
     }
@@ -1311,6 +1330,16 @@ window.addEventListener('pointermove', (e) => {
   drag.dy = e.clientY - drag.y;
   drag.dx = e.clientX - drag.x;
   if (Math.abs(drag.dx) > 12) clearTimeout(drag.hold);
+  // Arrastre de lado sobre una publicación de varias fotos: pasa las fotos con el dedo (mouse)
+  if (!drag.moved && !drag.photo && Math.abs(drag.dx) > 8 && Math.abs(drag.dx) > Math.abs(drag.dy)) {
+    const el = current();
+    if (el && el.item.photos.length > 1 && el.dragPhoto) {
+      clearTimeout(drag.hold);
+      drag.photo = el; try { pager.setPointerCapture(drag.id); } catch { }
+      $('.ptrack', el).style.transition = 'none';
+    }
+  }
+  if (drag.photo) { drag.photo.dragPhoto(drag.dx); return; }
   if (!drag.moved && Math.abs(drag.dy) > 8) {
     clearTimeout(drag.hold);
     drag.moved = true; pager.setPointerCapture(drag.id);
@@ -1323,6 +1352,13 @@ window.addEventListener('pointerup', (e) => {
   const d = drag; drag = null;
   clearTimeout(d.hold);
   if (d.long) return;
+  if (d.photo) {
+    const el = d.photo, w = el.clientWidth || 1, last = el.item.photos.length - 1;
+    $('.ptrack', el).style.transition = '';
+    if (d.dx < -w * 0.18 && el.photo === last) { el.showPhoto(el.photo, true); const it = currentItem(); if (it) openProfile(it); return; }
+    el.showPhoto(el.photo + (d.dx < -w * 0.18 ? 1 : d.dx > w * 0.18 ? -1 : 0), true);
+    return;
+  }
   // Deslizar hacia la izquierda abre el perfil del autor, como en la app
   if (!d.moved && d.dx < -80 && Math.abs(d.dx) > Math.abs(d.dy) * 1.5) { const it = currentItem(); if (it) openProfile(it); return; }
   if (!d.moved && Math.abs(d.dx) > 12) return;
