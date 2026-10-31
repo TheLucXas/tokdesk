@@ -3422,7 +3422,9 @@ function normalizeLive(it) {
 // ---------- Clic afuera de un menú lo cierra (regla común a todos los menús) ----------
 document.addEventListener('pointerdown', (e) => {
   const opts = $('#opts');
-  if (opts.classList.contains('open') && !opts.contains(e.target)) {
+  if (opts.classList.contains('open')) {
+    // Tocar una opción del menú no es un clic afuera de la hoja de abajo (el chat se cerraba al «Responder»)
+    if (opts.contains(e.target)) return;
     e.preventDefault(); e.stopPropagation();
     closePanel('opts');
     return;
