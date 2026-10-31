@@ -520,5 +520,7 @@
   "Mostrar nombre de usuario": "Show username",
   "Mostrar descripción": "Show description",
   "Mostrar nombre de la música": "Show music name",
-  "Cargando tu sesión…": "Loading your session…"
+  "Cargando tu sesión…": "Loading your session…",
+  "Pausar el video detrás de los paneles": "Pause video behind panels",
+  "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "When opening a profile, messages, search or settings (not comments)"
 }

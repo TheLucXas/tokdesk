@@ -520,5 +520,7 @@
   "Mostrar nombre de usuario": "यूज़रनेम दिखाएँ",
   "Mostrar descripción": "विवरण दिखाएँ",
   "Mostrar nombre de la música": "संगीत का नाम दिखाएँ",
-  "Cargando tu sesión…": "आपका सत्र लोड हो रहा है…"
+  "Cargando tu sesión…": "आपका सत्र लोड हो रहा है…",
+  "Pausar el video detrás de los paneles": "पैनल के पीछे वीडियो रोकें",
+  "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "प्रोफ़ाइल, मैसेज, खोज या सेटिंग खोलने पर (कमेंट नहीं)"
 }

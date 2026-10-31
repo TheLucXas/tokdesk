@@ -45,7 +45,7 @@ const opt = Object.assign({
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
-  hide: {}, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
+  hide: {}, pauseUnder: false, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -1300,6 +1300,20 @@ function anyPanelOpen() { return !!$('.panel.open'); }
 function anyOtherOpen(id) { return $$('.panel.open').some((p) => p.id !== id); }
 
 // Cierra solo un panel; si no queda ninguno abierto, hace la limpieza completa
+// Opción «Pausar el video detrás de los paneles»: los paneles que tapan el video (no los comentarios,
+// compartir ni los menús) lo pausan, y al cerrarlos sigue solo si no lo había pausado el usuario
+const COVERING = ['profile', 'search', 'inbox', 'activity', 'chat', 'settings', 'help', 'page'];
+let coverPaused = null;
+new MutationObserver(() => {
+  const covered = COVERING.some((id) => { const p = document.getElementById(id); return p && p.classList.contains('open'); });
+  const el = current(), m = el && el.media;
+  if (covered && opt.pauseUnder && !coverPaused && m && !m.paused) { coverPaused = el; m.pause(); }
+  else if (!covered && coverPaused) {
+    const was = coverPaused; coverPaused = null;
+    if (was === current() && !was.dataset.userPaused && was.media.getAttribute('src')) was.media.play().catch(() => { });
+  }
+}).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+
 function closePanel(id) {
   const el = $('#' + id);
   if (!el) return;
@@ -1449,6 +1463,16 @@ function openOptions(groups, keep) {
         sw.className = 'sw' + (x.on ? ' on' : '');
         b.appendChild(sw);
         b.onclick = () => { const on = !sw.classList.contains('on'); sw.classList.toggle('on', on); x.fn(on); };
+      } else if (x.emojis) {
+        // Fila de emojis (reacciones): elegir uno cierra el menú
+        b.classList.add('emojirow');
+        b.innerHTML = '';
+        for (const em of x.emojis) {
+          const eb = document.createElement('span');
+          eb.className = 'em'; eb.textContent = em;
+          eb.onclick = (e) => { e.stopPropagation(); if (keep) $('#opts').classList.remove('open'); else closePanels(); x.fn(em); };
+          b.appendChild(eb);
+        }
       } else if (x.seg) {
         const seg = document.createElement('span');
         seg.className = 'seg';
@@ -1707,6 +1731,7 @@ function onInbox(m) {
   if (m.more && state.chats.length <= before) inboxNoMore = true;
   renderFriends();
   renderInbox();
+  inboxFill();
   prefetchConvs();
   const unread = state.chats.reduce((n, c) => n + (c.unread || 0), 0);
   const badge = $('#inboxBadge');
@@ -1857,14 +1882,17 @@ $('#actBack').addEventListener('click', () => $('#activity').classList.remove('o
 
 // Al llegar al final de la lista se piden conversaciones más antiguas
 let inboxMoreBusy = false, inboxNoMore = false;
-$('#ibBody').addEventListener('scroll', (e) => {
-  const l = e.currentTarget;
+$('#ibBody').addEventListener('scroll', inboxLoadMore);
+// Si la lista no llena el panel no hay barra para bajar: se piden más chats solos
+function inboxFill() { setTimeout(() => { if ($('#inbox').classList.contains('open')) inboxLoadMore(); }, 300); }
+function inboxLoadMore() {
+  const l = $('#ibBody');
   if (inboxMoreBusy || inboxNoMore || !inboxData || l.scrollTop + l.clientHeight < l.scrollHeight - 200) return;
   inboxMoreBusy = true;
   busy(1);
   l.insertAdjacentHTML('beforeend', '<div class="sheet-msg" id="ibMore"><div class="spinner"></div></div>');
   send({ t: 'inboxmore' });
-});
+}
 $('#ibRefresh').addEventListener('click', () => { inboxData = null; renderInbox(); loadInbox(); });
 
 let chatConv = null, chatTimer = null, chatCount = -1;
@@ -1919,8 +1947,16 @@ function closeChat() {
 }
 $('#chatBack').addEventListener('click', () => { closeChat(); openInbox(); });
 
+// Clave del último mensaje: sirve para notar una lectura parcial (solo los últimos) del mismo chat
+const convLastKey = (d) => { const x = d && d.messages && [...d.messages].reverse().find((y) => y.sep == null); return x ? (x.mine ? 1 : 0) + '|' + (x.text || x.itemId || x.image || '') : ''; };
 function onConv(m) {
-  if (m.data && !m.older && !m.cached) cacheConv(m.id, m.data);
+  if (!m.older && !m.cached && m.data) {
+    // Si la web devolvió solo los últimos mensajes de un chat que ya teníamos completo, no se pisa nada
+    let d = null, old = null;
+    try { d = JSON.parse(m.data); const c = convCacheGet()[m.id]; old = c && JSON.parse(c.data); } catch { }
+    if (d && old && d.messages.length < old.messages.length && convLastKey(d) === convLastKey(old)) m = { ...m, data: convCacheGet()[m.id].data, partial: true };
+    else cacheConv(m.id, m.data);
+  }
   if (m.prefetch) return;
   if (!m.cached && state.convBusy) { state.convBusy = false; busy(-1); }
   if (!chatConv || m.id !== chatConv.id) return;
@@ -3373,12 +3409,16 @@ function setChatReply(r) {
 }
 $('#chatReplyX').addEventListener('click', () => setChatReply(null));
 
-function reactToMessage(row) {
+// Las reacciones que ofrece la web de TikTok en los mensajes
+const REACTIONS = ['❤️', '😂', '😡', '😭', '👍', '🤔', '🎉', '🤗', '😳', '😱', '🤪', '🙈'];
+function reactToMessage(row, emoji = '❤️') {
   if (!chatConv || !row) return;
   const idx = +row.dataset.idx;
   const wrap = row.querySelector('.mwrap') || row;
-  if (!row.querySelector('.react')) { wrap.insertAdjacentHTML('beforeend', '<span class="react">❤️</span>'); row.classList.add('reacted'); }
-  send({ t: 'dmreact', id: chatConv.id, i: idx, emoji: '❤️', hint: msgHint(row) });
+  const shown = row.querySelector('.react');
+  if (shown) shown.textContent = emoji;
+  else { wrap.insertAdjacentHTML('beforeend', `<span class="react">${emoji}</span>`); row.classList.add('reacted'); }
+  send({ t: 'dmreact', id: chatConv.id, i: idx, emoji, hint: msgHint(row) });
 }
 // Datos para que la página oculta encuentre el mismo mensaje aunque la web haya cargado otros:
 // su texto, quién lo envió, el texto de los de al lado y cuántos mensajes había (cuenta desde el final)
@@ -3408,7 +3448,7 @@ $('#chatList').addEventListener('contextmenu', (e) => {
   const card = row.querySelector('.vthumb');
   const text = row.dataset.text || '';
   openOptions([[
-    { ic: 'heartline', label: t('Reaccionar con ❤️'), fn: () => reactToMessage(row) },
+    { emojis: REACTIONS, fn: (em) => reactToMessage(row, em) },
     // La web de TikTok muestra «respondiendo a [video]» pero envía el mensaje sin la cita: no se ofrece
     !card && { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text, hint: msgHint(row) }) },
     text && { ic: 'link', label: t('Copiar'), fn: () => navigator.clipboard.writeText(text).then(() => toast(t('Copiado'))) },

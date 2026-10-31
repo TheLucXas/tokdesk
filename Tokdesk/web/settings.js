@@ -145,6 +145,7 @@ function renderSettings() {
       ]],
       [t('Reproducción'), [
         row({ type: 'seg', label: t('Velocidad predeterminada'), value: state.speed, options: SPEEDS.map((s) => [s, s + '×']), fn: (v) => setSpeed(v) }),
+        row({ type: 'toggle', label: t('Pausar el video detrás de los paneles'), hint: t('Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)'), value: opt.pauseUnder, fn: (v) => { opt.pauseUnder = v; } }),
         row({ type: 'range', label: t('Volumen'), min: 0, max: 100, step: 1, value: Math.round(state.volume * 100), unit: '%', fn: (v) => setVolume(v / 100) }),
         row({ type: 'toggle', label: t('Empezar silenciado'), value: opt.startMuted, fn: (v) => { opt.startMuted = v; } }),
         row({ type: 'toggle', label: t('Pasar automáticamente'), value: state.auto, fn: (v) => setAuto(v) }),

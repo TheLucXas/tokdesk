@@ -520,5 +520,7 @@
   "Mostrar nombre de usuario": "Zobrazit uživatelské jméno",
   "Mostrar descripción": "Zobrazit popis",
   "Mostrar nombre de la música": "Zobrazit název hudby",
-  "Cargando tu sesión…": "Načítání relace…"
+  "Cargando tu sesión…": "Načítání relace…",
+  "Pausar el video detrás de los paneles": "Pozastavit video za panely",
+  "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "Při otevření profilu, zpráv, hledání nebo nastavení (komentáře ne)"
 }

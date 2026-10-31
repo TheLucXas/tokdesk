@@ -364,6 +364,9 @@ body.cmt-open .rail, body.cmt-open .meta, body.cmt-open .shade, body.cmt-open .c
 #friends .chip img { width: 56px; height: 56px; }
 
 /* Hoja de opciones (mantener presionado / clic derecho) */
+#opts .oi.emojirow { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px; cursor: default; }
+#opts .oi.emojirow .em { font-size: 24px; padding: 4px; border-radius: 8px; cursor: pointer; transition: transform .12s; }
+#opts .oi.emojirow .em:hover { transform: scale(1.25); background: rgba(255,255,255,.08); }
 #opts { height: auto; max-height: 85%; padding: 6px 12px 12px; overflow-y: auto; }
 #opts .grab { width: 36px; height: 4px; border-radius: 2px; background: #555; margin: 4px auto 10px; }
 .og { background: #2a2a2a; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }

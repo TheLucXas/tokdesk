@@ -520,5 +520,7 @@
   "Mostrar nombre de usuario": "ইউজারনেম দেখান",
   "Mostrar descripción": "বিবরণ দেখান",
   "Mostrar nombre de la música": "গানের নাম দেখান",
-  "Cargando tu sesión…": "আপনার সেশন লোড হচ্ছে…"
+  "Cargando tu sesión…": "আপনার সেশন লোড হচ্ছে…",
+  "Pausar el video detrás de los paneles": "প্যানেলের পেছনে ভিডিও থামান",
+  "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "প্রোফাইল, মেসেজ, সার্চ বা সেটিংস খুললে (কমেন্ট নয়)"
 }

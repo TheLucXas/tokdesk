@@ -520,5 +520,7 @@
   "Mostrar nombre de usuario": "사용자 이름 표시",
   "Mostrar descripción": "설명 표시",
   "Mostrar nombre de la música": "음악 이름 표시",
-  "Cargando tu sesión…": "세션 불러오는 중…"
+  "Cargando tu sesión…": "세션 불러오는 중…",
+  "Pausar el video detrás de los paneles": "패널 뒤 동영상 일시정지",
+  "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "프로필, 메시지, 검색, 설정을 열 때 (댓글 제외)"
 }

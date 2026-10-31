@@ -747,6 +747,17 @@ sealed class SidePage
             })()
             """);
         await Poll("document.querySelector('[data-e2e=\"inbox-list-item\"]') ? 'ok' : null", 5000);
+        // Las conversaciones llegan de a tandas: se espera a que la cantidad deje de crecer (si no, la bandeja
+        // quedaba con las primeras 10 o 12)
+        const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-conversation-item\"]').length)";
+        var last = await Eval(countJs);
+        for (int stable = 0, t = 0; stable < 6 && t < 4000; t += 250)
+        {
+            await Task.Delay(250);
+            var now = await Eval(countJs);
+            if (now == last) stable++; else { stable = 0; last = now; }
+        }
+        Log.Write("Bandeja: " + last + " chats");
         return await Eval(InboxJs);
     }
 
@@ -772,11 +783,14 @@ sealed class SidePage
         // (si no, el chat y la caché quedaban solo con los últimos mensajes)
         const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-message-list\"] [data-e2e=\"dm-new-chat-item\"]').length)";
         string last = await Eval(countJs);
-        for (int stable = 0, t = 0; stable < 3 && t < 3000; t += 250)
+        // Con pocos mensajes (la primera tanda) se espera más: la segunda puede tardar un par de segundos
+        for (int stable = 0, t = 0; t < 4000; t += 250)
         {
             await Task.Delay(250);
             var now = await Eval(countJs);
             if (now == last) stable++; else { stable = 0; last = now; }
+            var few = int.TryParse((last ?? "").Trim('"'), out var n) && n <= 6;
+            if (stable >= (few ? 10 : 3)) break;
         }
         Log.Write($"Chat: {last} mensajes en {Environment.TickCount64 - t0} ms");
         return await Poll(ConvJs, 6000);
