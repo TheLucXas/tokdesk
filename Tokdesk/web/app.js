@@ -581,6 +581,7 @@ function buildSlide(it) {
     ${photoHtml}
     ${it.live ? liveOverlay(it) : ''}
     <div class="loading spinner"></div>
+    <svg class="playicon" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l10-6.4a1 1 0 0 0 0-1.6l-10-6.4c-.7-.5-1.6 0-1.6.8z"/></svg>
     <div class="shade"></div>
     <div class="rail">
       <div class="avatar ${it.followed ? 'followed' : ''}" title="${t('Ver perfil')}"><img alt="" src="${esc(it.avatar)}"><div class="follow" title="${t('Seguir')}">+</div></div>
@@ -916,7 +917,7 @@ function render() {
       if (!m.paused) m.pause();
       clearInterval(el.photoTimer); el.photoTimer = null;
       el.photoManual = false;
-      delete el.dataset.userPaused;
+      delete el.dataset.userPaused; el.classList.remove('upaused');
       if (m.currentTime > 0) m.currentTime = 0;
     }
   }
@@ -946,10 +947,10 @@ function togglePause() {
   const el = current(); if (!el) return;
   const m = el.media;
   if (el.dataset.userPaused || m.paused) {
-    delete el.dataset.userPaused; el.classList.remove('paused');
+    delete el.dataset.userPaused; el.classList.remove('paused', 'upaused');
     if (m.getAttribute('src')) m.play();
   } else {
-    el.dataset.userPaused = '1'; m.pause(); el.classList.add('paused');
+    el.dataset.userPaused = '1'; m.pause(); el.classList.add('paused', 'upaused');
   }
 }
 
