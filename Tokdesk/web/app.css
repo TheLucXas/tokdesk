@@ -712,6 +712,7 @@ body.liverow:not(.sub) #pager, body.liverow:not(.sub) #empty { top: 180px; }
 /* Con la fila de LIVE el visor empieza más abajo: lo que se desliza no debe dibujarse sobre la barra de arriba */
 body.liverow:not(.sub) #pager { overflow: hidden; }
 #liveRow .ring.story { border-color: #20d5ec; }
+#liveRow .ring.story.seen { border-color: #555; }
 #livePill { display: none; position: absolute; top: 76px; left: 50%; transform: translateX(-50%); z-index: 6; padding: 6px 14px; border-radius: 18px;
   border: 1.5px solid rgba(255,255,255,.35); background: rgba(0,0,0,.35); color: #fff; font-weight: 700; font-size: calc(14px * var(--text-scale, 1)); white-space: nowrap; }
 body.liverow.liverow-min:not(.sub) #liveRow { display: none; }

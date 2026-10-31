@@ -951,6 +951,7 @@ function render() {
     if (i === f.idx) {
       m.muted = state.muted; m.volume = state.volume;
       if (typeof markSeen === 'function') { markSeen(it.id); recordHistory(it); }
+      if (f.key.startsWith('story:') && typeof reportStory === 'function') reportStory(f, it);
       if (typeof applyWinState === 'function') { delete el.dataset.autoMuted; applyWinState(); }
       if (state.cc) loadCaptions(el);
       if (m.paused && !el.dataset.userPaused && m.getAttribute('src')) m.play().catch((e) => log('play: ' + e.message));

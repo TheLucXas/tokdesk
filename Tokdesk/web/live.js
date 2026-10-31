@@ -303,21 +303,45 @@ async function refreshFollowStories() {
   followStories = d.storyUsers.map((x) => x.user).filter((u) => u && u.id);
   followStoriesTotal = followStories.length; // totalCount cuenta más de lo que muestra la app
 }
+// Historias vistas: se avisa a TikTok como la web (story_id) y la cuenta queda con anillo gris 24 h.
+// La web deja de listar a quien ya viste, así que Tokdesk la recuerda para seguir mostrándola en gris
+const storyReported = new Set();
+function storySeenMap() {
+  const m = pref.get('storySeen', {});
+  for (const k in m) if (Date.now() - m[k].at > 24 * 3600e3) delete m[k];
+  return m;
+}
+function reportStory(f, it) {
+  if (!it || storyReported.has(it.id)) return;
+  storyReported.add(it.id);
+  api('POST', '/tiktok/story/view/report/v1', { story_id: it.id }, null, true);
+  if (f.items.every((x) => storyReported.has(x.id)) && !f.hasMore) {
+    const id = f.key.slice('story:'.length), m = storySeenMap();
+    m[id] = { at: Date.now(), nickname: it.nick || it.author, uniqueId: it.author, avatarThumb: it.avatar };
+    pref.set('storySeen', m);
+    renderLiveRow();
+  }
+}
 // En el primer video de Siguiendo la fila se ve entera; desde el segundo queda una píldora
 // «N transmisiones LIVE | M Story ▾» que al tocarla vuelve a abrir la fila (como en la app)
 let liveRowOpen = false;
 function renderLiveRow() {
-  const show = !!(state.feed && state.feed.key === 'following' && !state.stack.length && (followLive.length || followStories.length));
+  const show = !!(state.feed && state.feed.key === 'following' && !state.stack.length && (followLive.length || followStories.length || Object.keys(storySeenMap()).length));
   document.body.classList.toggle('liverow', show);
   if (!show) { document.body.classList.remove('liverow-min'); return; }
   document.body.classList.toggle('liverow-min', state.feed.idx > 0 && !liveRowOpen);
+  // Las vistas van en gris después de las nuevas (las que la web ya no lista salen de lo recordado)
+  const seen = storySeenMap();
+  const fresh = followStories.filter((u) => !seen[u.id]);
+  const stories = [...fresh.map((u) => ({ ...u, seen: false })),
+    ...Object.entries(seen).map(([id, u]) => ({ ...u, id, seen: true }))];
   const parts = [];
   if (followLive.length) parts.push(t('{0} transmisiones LIVE', followLive.length));
-  if (followStoriesTotal) parts.push(t('{0} Story', followStoriesTotal));
+  if (stories.length) parts.push(t('{0} Story', stories.length));
   $('#livePill').textContent = parts.join(' | ') + ' ▾';
   $('#liveRow').innerHTML = followLive.map((it, i) => `<button data-i="${i}"><span class="ring"><img alt="" src="${esc(it.avatar || '')}"></span>
     <span class="live-tag">LIVE</span><span class="nm">${esc(it.nick || it.author)}</span></button>`).join('')
-    + followStories.map((u) => `<button data-story="${esc(u.id)}"><span class="ring story"><img alt="" src="${esc(u.avatarThumb || u.avatarMedium || '')}"></span>
+    + stories.map((u) => `<button data-story="${esc(u.id)}"><span class="ring story${u.seen ? ' seen' : ''}"><img alt="" src="${esc(u.avatarThumb || u.avatarMedium || '')}"></span>
     <span class="nm">${esc(u.nickname || u.uniqueId)}</span></button>`).join('');
   $$('#liveRow button').forEach((b) => b.onclick = () => b.dataset.story
     ? openSubFeed(feedFor('story:' + b.dataset.story), 0)
