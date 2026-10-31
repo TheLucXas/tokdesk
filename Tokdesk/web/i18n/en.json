@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Notifies you about a new version while the app is minimized or in the tray",
   "Actualizaciones de Tokdesk": "Tokdesk updates",
   "más": "more",
-  "menos": "less"
+  "menos": "less",
+  "Elementos del video": "Video elements",
+  "Mostrar botón de me gusta": "Show like button",
+  "Mostrar botón de comentarios": "Show comments button",
+  "Mostrar botón de favoritos": "Show favorites button",
+  "Mostrar botón de compartir": "Show share button",
+  "Mostrar foto del autor": "Show author photo",
+  "Mostrar nombre de usuario": "Show username",
+  "Mostrar descripción": "Show description",
+  "Mostrar nombre de la música": "Show music name"
 }

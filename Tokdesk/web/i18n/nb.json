@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Varsler om en ny versjon når appen er minimert eller i systemkurven",
   "Actualizaciones de Tokdesk": "Tokdesk-oppdateringer",
   "más": "mer",
-  "menos": "mindre"
+  "menos": "mindre",
+  "Elementos del video": "Videoelementer",
+  "Mostrar botón de me gusta": "Vis liker-knapp",
+  "Mostrar botón de comentarios": "Vis kommentarknapp",
+  "Mostrar botón de favoritos": "Vis favorittknapp",
+  "Mostrar botón de compartir": "Vis delingsknapp",
+  "Mostrar foto del autor": "Vis skaperens bilde",
+  "Mostrar nombre de usuario": "Vis brukernavn",
+  "Mostrar descripción": "Vis beskrivelse",
+  "Mostrar nombre de la música": "Vis musikknavn"
 }

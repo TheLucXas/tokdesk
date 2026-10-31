@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "แจ้งเวอร์ชันใหม่เมื่อย่อแอปหรือแอปอยู่ในถาดระบบ",
   "Actualizaciones de Tokdesk": "อัปเดต Tokdesk",
   "más": "เพิ่มเติม",
-  "menos": "น้อยลง"
+  "menos": "น้อยลง",
+  "Elementos del video": "องค์ประกอบของวิดีโอ",
+  "Mostrar botón de me gusta": "แสดงปุ่มถูกใจ",
+  "Mostrar botón de comentarios": "แสดงปุ่มความคิดเห็น",
+  "Mostrar botón de favoritos": "แสดงปุ่มรายการโปรด",
+  "Mostrar botón de compartir": "แสดงปุ่มแชร์",
+  "Mostrar foto del autor": "แสดงรูปผู้สร้าง",
+  "Mostrar nombre de usuario": "แสดงชื่อผู้ใช้",
+  "Mostrar descripción": "แสดงคำอธิบาย",
+  "Mostrar nombre de la música": "แสดงชื่อเพลง"
 }

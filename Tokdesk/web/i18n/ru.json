@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Сообщает о новой версии, когда приложение свёрнуто или в трее",
   "Actualizaciones de Tokdesk": "Обновления Tokdesk",
   "más": "ещё",
-  "menos": "свернуть"
+  "menos": "свернуть",
+  "Elementos del video": "Элементы видео",
+  "Mostrar botón de me gusta": "Показывать кнопку «Нравится»",
+  "Mostrar botón de comentarios": "Показывать кнопку комментариев",
+  "Mostrar botón de favoritos": "Показывать кнопку «Избранное»",
+  "Mostrar botón de compartir": "Показывать кнопку «Поделиться»",
+  "Mostrar foto del autor": "Показывать фото автора",
+  "Mostrar nombre de usuario": "Показывать имя пользователя",
+  "Mostrar descripción": "Показывать описание",
+  "Mostrar nombre de la música": "Показывать название музыки"
 }

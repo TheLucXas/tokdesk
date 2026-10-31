@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "အက်ပ်ကို ချုံ့ထားချိန် သို့မဟုတ် ထရေးတွင်ရှိချိန် ဗားရှင်းအသစ်ကို အသိပေးသည်",
   "Actualizaciones de Tokdesk": "Tokdesk အပ်ဒိတ်များ",
   "más": "ပိုမို",
-  "menos": "လျှော့"
+  "menos": "လျှော့",
+  "Elementos del video": "ဗီဒီယိုအစိတ်အပိုင်းများ",
+  "Mostrar botón de me gusta": "လိုက်ခ်ခလုတ်ကို ပြပါ",
+  "Mostrar botón de comentarios": "မှတ်ချက်ခလုတ်ကို ပြပါ",
+  "Mostrar botón de favoritos": "အကြိုက်ဆုံးခလုတ်ကို ပြပါ",
+  "Mostrar botón de compartir": "မျှဝေခလုတ်ကို ပြပါ",
+  "Mostrar foto del autor": "ဖန်တီးသူ၏ ဓာတ်ပုံကို ပြပါ",
+  "Mostrar nombre de usuario": "အသုံးပြုသူအမည်ကို ပြပါ",
+  "Mostrar descripción": "ဖော်ပြချက်ကို ပြပါ",
+  "Mostrar nombre de la música": "တေးဂီတအမည်ကို ပြပါ"
 }

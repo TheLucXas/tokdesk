@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "מודיע על גרסה חדשה כשהאפליקציה ממוזערת או במגש המערכת",
   "Actualizaciones de Tokdesk": "עדכוני Tokdesk",
   "más": "עוד",
-  "menos": "פחות"
+  "menos": "פחות",
+  "Elementos del video": "רכיבי הסרטון",
+  "Mostrar botón de me gusta": "הצג כפתור לייק",
+  "Mostrar botón de comentarios": "הצג כפתור תגובות",
+  "Mostrar botón de favoritos": "הצג כפתור מועדפים",
+  "Mostrar botón de compartir": "הצג כפתור שיתוף",
+  "Mostrar foto del autor": "הצג תמונת יוצר",
+  "Mostrar nombre de usuario": "הצג שם משתמש",
+  "Mostrar descripción": "הצג תיאור",
+  "Mostrar nombre de la música": "הצג שם מוזיקה"
 }

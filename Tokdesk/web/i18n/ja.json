@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "アプリを最小化中やトレイにあるときに新しいバージョンを通知します",
   "Actualizaciones de Tokdesk": "Tokdesk のアップデート",
   "más": "もっと見る",
-  "menos": "閉じる"
+  "menos": "閉じる",
+  "Elementos del video": "動画の要素",
+  "Mostrar botón de me gusta": "「いいね」ボタンを表示",
+  "Mostrar botón de comentarios": "コメントボタンを表示",
+  "Mostrar botón de favoritos": "お気に入りボタンを表示",
+  "Mostrar botón de compartir": "シェアボタンを表示",
+  "Mostrar foto del autor": "投稿者の写真を表示",
+  "Mostrar nombre de usuario": "ユーザー名を表示",
+  "Mostrar descripción": "説明を表示",
+  "Mostrar nombre de la música": "音楽名を表示"
 }

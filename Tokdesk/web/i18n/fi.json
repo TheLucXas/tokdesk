@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Ilmoittaa uudesta versiosta, kun sovellus on pienennettynä tai ilmaisinalueella",
   "Actualizaciones de Tokdesk": "Tokdeskin päivitykset",
   "más": "lisää",
-  "menos": "vähemmän"
+  "menos": "vähemmän",
+  "Elementos del video": "Videon elementit",
+  "Mostrar botón de me gusta": "Näytä tykkäyspainike",
+  "Mostrar botón de comentarios": "Näytä kommenttipainike",
+  "Mostrar botón de favoritos": "Näytä suosikkipainike",
+  "Mostrar botón de compartir": "Näytä jakopainike",
+  "Mostrar foto del autor": "Näytä tekijän kuva",
+  "Mostrar nombre de usuario": "Näytä käyttäjänimi",
+  "Mostrar descripción": "Näytä kuvaus",
+  "Mostrar nombre de la música": "Näytä musiikin nimi"
 }

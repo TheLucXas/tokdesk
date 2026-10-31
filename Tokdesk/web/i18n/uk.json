@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Повідомляє про нову версію, коли застосунок згорнуто або в треї",
   "Actualizaciones de Tokdesk": "Оновлення Tokdesk",
   "más": "ще",
-  "menos": "згорнути"
+  "menos": "згорнути",
+  "Elementos del video": "Елементи відео",
+  "Mostrar botón de me gusta": "Показувати кнопку «Подобається»",
+  "Mostrar botón de comentarios": "Показувати кнопку коментарів",
+  "Mostrar botón de favoritos": "Показувати кнопку «Обране»",
+  "Mostrar botón de compartir": "Показувати кнопку «Поділитися»",
+  "Mostrar foto del autor": "Показувати фото автора",
+  "Mostrar nombre de usuario": "Показувати ім'я користувача",
+  "Mostrar descripción": "Показувати опис",
+  "Mostrar nombre de la música": "Показувати назву музики"
 }

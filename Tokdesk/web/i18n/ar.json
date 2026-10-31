@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "ينبهك إلى إصدار جديد عندما يكون التطبيق مصغرًا أو في الشريط",
   "Actualizaciones de Tokdesk": "تحديثات Tokdesk",
   "más": "المزيد",
-  "menos": "أقل"
+  "menos": "أقل",
+  "Elementos del video": "عناصر الفيديو",
+  "Mostrar botón de me gusta": "إظهار زر الإعجاب",
+  "Mostrar botón de comentarios": "إظهار زر التعليقات",
+  "Mostrar botón de favoritos": "إظهار زر المفضلة",
+  "Mostrar botón de compartir": "إظهار زر المشاركة",
+  "Mostrar foto del autor": "إظهار صورة صاحب الفيديو",
+  "Mostrar nombre de usuario": "إظهار اسم المستخدم",
+  "Mostrar descripción": "إظهار الوصف",
+  "Mostrar nombre de la música": "إظهار اسم الموسيقى"
 }

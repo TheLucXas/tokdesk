@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Mopahibalo sa bag-ong bersyon kung na-minimize ang app o naa sa tray",
   "Actualizaciones de Tokdesk": "Mga update sa Tokdesk",
   "más": "dugang pa",
-  "menos": "gamay ra"
+  "menos": "gamay ra",
+  "Elementos del video": "Mga elemento sa video",
+  "Mostrar botón de me gusta": "Ipakita ang button sa like",
+  "Mostrar botón de comentarios": "Ipakita ang button sa mga komento",
+  "Mostrar botón de favoritos": "Ipakita ang button sa mga paborito",
+  "Mostrar botón de compartir": "Ipakita ang button sa pagpaambit",
+  "Mostrar foto del autor": "Ipakita ang litrato sa creator",
+  "Mostrar nombre de usuario": "Ipakita ang username",
+  "Mostrar descripción": "Ipakita ang deskripsyon",
+  "Mostrar nombre de la música": "Ipakita ang ngalan sa musika"
 }

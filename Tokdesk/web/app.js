@@ -45,7 +45,7 @@ const opt = Object.assign({
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
-  textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
+  hide: {}, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -541,6 +541,7 @@ function renderCards(grid, more, f, open, withDate) {
     : f.error ? esc(t('No se pudieron cargar los videos.')) : !f.items.length && !f.hasMore ? esc(t('Sin videos.')) : '';
 }
 window.addEventListener('resize', () => {
+  state.slides.forEach((el) => el.fitMeta && el.fitMeta());
   const grid = $('#exGrid');
   if (document.body.classList.contains('exgrid') && grid.children.length !== colsFor(grid)) renderExplore();
   const sg = $('#searchGrid'), sf = state.searchKey && feeds.get(state.searchKey);
@@ -584,7 +585,7 @@ function buildSlide(it) {
     <svg class="playicon" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l10-6.4a1 1 0 0 0 0-1.6l-10-6.4c-.7-.5-1.6 0-1.6.8z"/></svg>
     <div class="shade"></div>
     <div class="rail">
-      <div class="avatar ${it.followed ? 'followed' : ''}" title="${t('Ver perfil')}"><img alt="" src="${esc(it.avatar)}"><div class="follow" title="${t('Seguir')}">+</div></div>
+      <div class="avatar ${it.followed ? 'followed' : ''} ${it.storyStatus === 1 ? 'story' : ''}" title="${t('Ver perfil')}"><img alt="" src="${esc(it.avatar)}"><div class="follow" title="${t('Seguir')}">+</div></div>
       <button class="act like ${it.liked ? 'liked' : ''}" title="${t('Me gusta')}"><span class="ico">${ICON.heart}</span><span class="n">${fmt(it.likes)}</span></button>
       <button class="act cmts" title="${t('Comentarios')}"><span class="ico">${ICON.comment}</span><span>${fmt(it.comments)}</span></button>
       <button class="act save ${it.saved ? 'saved' : ''}" title="${t('Favoritos')}"><span class="ico">${ICON.save}</span><span class="n">${fmt(it.saves)}</span></button>
@@ -745,7 +746,29 @@ function buildSlide(it) {
     }));
   }
 
-  $('.avatar img', el).addEventListener('click', (e) => { e.stopPropagation(); if (it.authorLive && !it.live) openLiveOf(it.author); else openProfile(it); });
+  // Como en la app: el LIVE tiene prioridad sobre las historias para el anillo y el toque
+  $('.avatar img', el).addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (it.authorLive && !it.live) openLiveOf(it.author);
+    else if (it.storyStatus === 1 && it.authorId) openSubFeed(feedFor('story:' + it.authorId), 0);
+    else openProfile(it);
+  });
+  // Con franjas a los costados (video vertical en ventana ancha) la descripción va en la franja izquierda,
+  // sin tapar el video, recortada a dos líneas con «más»; si la franja es angosta (video horizontal) queda como siempre
+  const meta = $('.meta', el);
+  el.fitMeta = () => {
+    const W = el.clientWidth, H = el.clientHeight;
+    const m = el.media, im = $('.photos img', el);
+    const ratio = m && m.videoWidth ? m.videoHeight / m.videoWidth : im && im.naturalWidth ? im.naturalHeight / im.naturalWidth : it.ratio;
+    const side = document.body.classList.contains('fit-cover') || !W || !ratio ? 0 : Math.max(0, (W - H / ratio) / 2);
+    const band = side >= 200;
+    meta.style.right = band ? W - side + 12 + 'px' : '';
+    el.classList.toggle('meta-side', band);
+    if (el.fitDesc) el.fitDesc();
+  };
+  requestAnimationFrame(el.fitMeta);
+  if (el.media) el.media.addEventListener('loadedmetadata', el.fitMeta);
+  const im0 = $('.photos img', el); if (im0) im0.addEventListener('load', el.fitMeta, { once: true });
   if (!it.live && typeof checkAuthorLive === 'function') checkAuthorLive(it, el);
   $('.follow', el).addEventListener('click', (e) => {
     e.stopPropagation();

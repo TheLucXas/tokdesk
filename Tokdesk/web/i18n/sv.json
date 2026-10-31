@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Meddelar om en ny version när appen är minimerad eller i systemfältet",
   "Actualizaciones de Tokdesk": "Tokdesk-uppdateringar",
   "más": "mer",
-  "menos": "mindre"
+  "menos": "mindre",
+  "Elementos del video": "Videoelement",
+  "Mostrar botón de me gusta": "Visa gilla-knappen",
+  "Mostrar botón de comentarios": "Visa kommentarsknappen",
+  "Mostrar botón de favoritos": "Visa favoritknappen",
+  "Mostrar botón de compartir": "Visa delningsknappen",
+  "Mostrar foto del autor": "Visa skaparens foto",
+  "Mostrar nombre de usuario": "Visa användarnamn",
+  "Mostrar descripción": "Visa beskrivning",
+  "Mostrar nombre de la música": "Visa musikens namn"
 }

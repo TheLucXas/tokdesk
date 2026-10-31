@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Értesít az új verzióról, ha az alkalmazás kis méretben vagy a tálcán van",
   "Actualizaciones de Tokdesk": "Tokdesk-frissítések",
   "más": "több",
-  "menos": "kevesebb"
+  "menos": "kevesebb",
+  "Elementos del video": "Videóelemek",
+  "Mostrar botón de me gusta": "Tetszik gomb megjelenítése",
+  "Mostrar botón de comentarios": "Megjegyzések gomb megjelenítése",
+  "Mostrar botón de favoritos": "Kedvencek gomb megjelenítése",
+  "Mostrar botón de compartir": "Megosztás gomb megjelenítése",
+  "Mostrar foto del autor": "Szerző fotójának megjelenítése",
+  "Mostrar nombre de usuario": "Felhasználónév megjelenítése",
+  "Mostrar descripción": "Leírás megjelenítése",
+  "Mostrar nombre de la música": "Zene nevének megjelenítése"
 }

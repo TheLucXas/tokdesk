@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Uygulama simge durumundayken veya tepsideyken yeni sürümü bildirir",
   "Actualizaciones de Tokdesk": "Tokdesk güncellemeleri",
   "más": "daha fazla",
-  "menos": "daha az"
+  "menos": "daha az",
+  "Elementos del video": "Video öğeleri",
+  "Mostrar botón de me gusta": "Beğen düğmesini göster",
+  "Mostrar botón de comentarios": "Yorumlar düğmesini göster",
+  "Mostrar botón de favoritos": "Favoriler düğmesini göster",
+  "Mostrar botón de compartir": "Paylaş düğmesini göster",
+  "Mostrar foto del autor": "Yazarın fotoğrafını göster",
+  "Mostrar nombre de usuario": "Kullanıcı adını göster",
+  "Mostrar descripción": "Açıklamayı göster",
+  "Mostrar nombre de la música": "Müzik adını göster"
 }

@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Powiadamia o nowej wersji, gdy aplikacja jest zminimalizowana lub w zasobniku",
   "Actualizaciones de Tokdesk": "Aktualizacje Tokdesk",
   "más": "więcej",
-  "menos": "mniej"
+  "menos": "mniej",
+  "Elementos del video": "Elementy filmu",
+  "Mostrar botón de me gusta": "Pokaż przycisk polubienia",
+  "Mostrar botón de comentarios": "Pokaż przycisk komentarzy",
+  "Mostrar botón de favoritos": "Pokaż przycisk ulubionych",
+  "Mostrar botón de compartir": "Pokaż przycisk udostępniania",
+  "Mostrar foto del autor": "Pokaż zdjęcie autora",
+  "Mostrar nombre de usuario": "Pokaż nazwę użytkownika",
+  "Mostrar descripción": "Pokaż opis",
+  "Mostrar nombre de la música": "Pokaż nazwę muzyki"
 }

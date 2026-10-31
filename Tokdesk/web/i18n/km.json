@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "ជូនដំណឹងអំពីកំណែថ្មី ពេលកម្មវិធីត្រូវបានបង្រួម ឬនៅក្នុងថាស",
   "Actualizaciones de Tokdesk": "ការអាប់ដេត Tokdesk",
   "más": "ច្រើនទៀត",
-  "menos": "តិច"
+  "menos": "តិច",
+  "Elementos del video": "ធាតុវីដេអូ",
+  "Mostrar botón de me gusta": "បង្ហាញប៊ូតុងចូលចិត្ត",
+  "Mostrar botón de comentarios": "បង្ហាញប៊ូតុងមតិយោបល់",
+  "Mostrar botón de favoritos": "បង្ហាញប៊ូតុងចំណូលចិត្ត",
+  "Mostrar botón de compartir": "បង្ហាញប៊ូតុងចែករំលែក",
+  "Mostrar foto del autor": "បង្ហាញរូបថតអ្នកបង្កើត",
+  "Mostrar nombre de usuario": "បង្ហាញឈ្មោះអ្នកប្រើ",
+  "Mostrar descripción": "បង្ហាញការពិពណ៌នា",
+  "Mostrar nombre de la música": "បង្ហាញឈ្មោះតន្ត្រី"
 }

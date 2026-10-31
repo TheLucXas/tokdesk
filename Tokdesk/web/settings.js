@@ -77,6 +77,10 @@ function captureHotkey(e) {
 const ACCENTS = ['#fe2c55', '#25f4ee', '#2a72f5', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#ffffff'];
 const sysDark = window.matchMedia('(prefers-color-scheme: dark)');
 
+// Elementos que se pueden ocultar en todos los videos (no es «despejar pantalla»: queda fijo)
+const HIDEABLE = [['like', 'Mostrar botón de me gusta'], ['cmts', 'Mostrar botón de comentarios'], ['save', 'Mostrar botón de favoritos'],
+  ['share', 'Mostrar botón de compartir'], ['avatar', 'Mostrar foto del autor'], ['user', 'Mostrar nombre de usuario'],
+  ['desc', 'Mostrar descripción'], ['music', 'Mostrar nombre de la música']];
 function applyLook() {
   const light = opt.theme === 'light' || (opt.theme === 'system' && !sysDark.matches);
   document.body.classList.toggle('light', light);
@@ -84,6 +88,7 @@ function applyLook() {
   document.body.classList.toggle('fit-cover', opt.fit === 'cover');
   document.body.classList.toggle('no-counts', !opt.showCounts);
   document.body.classList.toggle('no-disc', !opt.showDisc);
+  for (const k of HIDEABLE) document.body.classList.toggle('hide-' + k[0], !!(opt.hide || {})[k[0]]);
   document.body.classList.toggle('progress-always', opt.progressAlways);
   document.body.classList.toggle('reduce-motion', opt.reduceMotion);
   // En una hoja propia antes del tema del usuario, para que su CSS pueda sobrescribirlas
@@ -130,10 +135,13 @@ function renderSettings() {
         row({ type: 'range', label: t('Ancho del chat del LIVE'), min: 240, max: 640, step: 20, value: opt.liveChatWidth, unit: ' px', fn: (v) => { opt.liveChatWidth = v; } }),
         row({ type: 'range', label: t('Ancho de los paneles'), hint: t('Comentarios, perfil, búsqueda y mensajes en ventanas anchas'), min: 480, max: 1000, step: 20, value: opt.panelWidth, unit: ' px', fn: (v) => { opt.panelWidth = v; } }),
         row({ type: 'seg', label: t('Ajuste del video'), value: opt.fit, options: [['contain', t('Completo')], ['cover', t('Llenar')]], fn: (v) => { opt.fit = v; } }),
-        row({ type: 'toggle', label: t('Mostrar contadores (me gusta, comentarios…)'), value: opt.showCounts, fn: (v) => { opt.showCounts = v; } }),
-        row({ type: 'toggle', label: t('Mostrar disco de música'), value: opt.showDisc, fn: (v) => { opt.showDisc = v; } }),
         row({ type: 'toggle', label: t('Barra de progreso siempre gruesa'), value: opt.progressAlways, fn: (v) => { opt.progressAlways = v; } }),
         row({ type: 'toggle', label: t('Reducir animaciones'), value: opt.reduceMotion, fn: (v) => { opt.reduceMotion = v; } }),
+      ]],
+      [t('Elementos del video'), [
+        row({ type: 'toggle', label: t('Mostrar contadores (me gusta, comentarios…)'), value: opt.showCounts, fn: (v) => { opt.showCounts = v; } }),
+        row({ type: 'toggle', label: t('Mostrar disco de música'), value: opt.showDisc, fn: (v) => { opt.showDisc = v; } }),
+        ...HIDEABLE.map(([k, label]) => row({ type: 'toggle', label: t(label), value: !(opt.hide || {})[k], fn: (v) => { opt.hide = { ...(opt.hide || {}), [k]: !v }; } })),
       ]],
       [t('Reproducción'), [
         row({ type: 'seg', label: t('Velocidad predeterminada'), value: state.speed, options: SPEEDS.map((s) => [s, s + '×']), fn: (v) => setSpeed(v) }),

@@ -690,6 +690,10 @@ body.light .lessreplies { color: rgba(22,24,35,.55); }
 .livebtn { width: 28px; height: 28px; padding: 5px; border-radius: 50%; background: rgba(0,0,0,.35); color: #fff; }
 .live-end { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; background: rgba(0,0,0,.6); color: #fff; padding: 10px 16px; border-radius: 6px; font-weight: 600; }
 .slide.live-ended .live-end { display: block; }
+.avatar.story:not(.living) img { border: 2px solid #20d5ec; padding: 2px; }
+body.hide-like .rail .like, body.hide-cmts .rail .cmts, body.hide-save .rail .save, body.hide-share .rail .share,
+body.hide-avatar .rail .avatar, body.hide-user .meta .user, body.hide-desc .meta .desc, body.hide-desc .meta .more,
+body.hide-music .meta .musicline { display: none !important; }
 .avatar.living img { border: 2px solid #fe2c55; padding: 2px; animation: livepulse 1.2s ease-in-out infinite; }
 .avatar.living::after { content: 'LIVE'; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); background: #fe2c55; color: #fff; font-size: calc(8px * var(--text-scale, 1)); font-weight: 800; padding: 1px 4px; border-radius: 3px; }
 .avatar.living .follow { display: none; }

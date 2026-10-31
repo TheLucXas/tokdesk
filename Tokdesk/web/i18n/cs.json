@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Upozorní na novou verzi, když je aplikace minimalizovaná nebo v oznamovací oblasti",
   "Actualizaciones de Tokdesk": "Aktualizace Tokdesku",
   "más": "více",
-  "menos": "méně"
+  "menos": "méně",
+  "Elementos del video": "Prvky videa",
+  "Mostrar botón de me gusta": "Zobrazit tlačítko To se mi líbí",
+  "Mostrar botón de comentarios": "Zobrazit tlačítko komentářů",
+  "Mostrar botón de favoritos": "Zobrazit tlačítko oblíbených",
+  "Mostrar botón de compartir": "Zobrazit tlačítko sdílení",
+  "Mostrar foto del autor": "Zobrazit fotku autora",
+  "Mostrar nombre de usuario": "Zobrazit uživatelské jméno",
+  "Mostrar descripción": "Zobrazit popis",
+  "Mostrar nombre de la música": "Zobrazit název hudby"
 }

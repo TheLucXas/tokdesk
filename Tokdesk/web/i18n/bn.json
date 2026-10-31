@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "অ্যাপ মিনিমাইজ বা ট্রেতে থাকলে নতুন সংস্করণের খবর দেয়",
   "Actualizaciones de Tokdesk": "Tokdesk আপডেট",
   "más": "আরও",
-  "menos": "কম"
+  "menos": "কম",
+  "Elementos del video": "ভিডিওর উপাদান",
+  "Mostrar botón de me gusta": "লাইক বোতাম দেখান",
+  "Mostrar botón de comentarios": "মন্তব্য বোতাম দেখান",
+  "Mostrar botón de favoritos": "পছন্দের বোতাম দেখান",
+  "Mostrar botón de compartir": "শেয়ার বোতাম দেখান",
+  "Mostrar foto del autor": "নির্মাতার ছবি দেখান",
+  "Mostrar nombre de usuario": "ইউজারনেম দেখান",
+  "Mostrar descripción": "বিবরণ দেখান",
+  "Mostrar nombre de la música": "গানের নাম দেখান"
 }

@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Te prévient d\u0027une nouvelle version quand l\u0027appli est réduite ou dans la barre d\u0027état",
   "Actualizaciones de Tokdesk": "Mises à jour de Tokdesk",
   "más": "plus",
-  "menos": "moins"
+  "menos": "moins",
+  "Elementos del video": "Éléments de la vidéo",
+  "Mostrar botón de me gusta": "Afficher le bouton J'aime",
+  "Mostrar botón de comentarios": "Afficher le bouton Commentaires",
+  "Mostrar botón de favoritos": "Afficher le bouton Favoris",
+  "Mostrar botón de compartir": "Afficher le bouton Partager",
+  "Mostrar foto del autor": "Afficher la photo de l'auteur",
+  "Mostrar nombre de usuario": "Afficher le nom d'utilisateur",
+  "Mostrar descripción": "Afficher la description",
+  "Mostrar nombre de la música": "Afficher le nom de la musique"
 }

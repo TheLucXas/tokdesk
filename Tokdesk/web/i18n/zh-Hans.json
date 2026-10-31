@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "应用最小化或在托盘中时提醒新版本",
   "Actualizaciones de Tokdesk": "Tokdesk 更新",
   "más": "更多",
-  "menos": "收起"
+  "menos": "收起",
+  "Elementos del video": "视频元素",
+  "Mostrar botón de me gusta": "显示点赞按钮",
+  "Mostrar botón de comentarios": "显示评论按钮",
+  "Mostrar botón de favoritos": "显示收藏按钮",
+  "Mostrar botón de compartir": "显示分享按钮",
+  "Mostrar foto del autor": "显示作者头像",
+  "Mostrar nombre de usuario": "显示用户名",
+  "Mostrar descripción": "显示描述",
+  "Mostrar nombre de la música": "显示音乐名称"
 }

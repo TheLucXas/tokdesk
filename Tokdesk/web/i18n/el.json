@@ -510,5 +510,14 @@
   "Avisa si hay una versión nueva con la app minimizada o en la bandeja": "Σε ειδοποιεί για νέα έκδοση όταν η εφαρμογή είναι ελαχιστοποιημένη ή στην περιοχή ειδοποιήσεων",
   "Actualizaciones de Tokdesk": "Ενημερώσεις Tokdesk",
   "más": "περισσότερα",
-  "menos": "λιγότερα"
+  "menos": "λιγότερα",
+  "Elementos del video": "Στοιχεία του βίντεο",
+  "Mostrar botón de me gusta": "Εμφάνιση κουμπιού «Μου αρέσει»",
+  "Mostrar botón de comentarios": "Εμφάνιση κουμπιού σχολίων",
+  "Mostrar botón de favoritos": "Εμφάνιση κουμπιού αγαπημένων",
+  "Mostrar botón de compartir": "Εμφάνιση κουμπιού κοινοποίησης",
+  "Mostrar foto del autor": "Εμφάνιση φωτογραφίας δημιουργού",
+  "Mostrar nombre de usuario": "Εμφάνιση ονόματος χρήστη",
+  "Mostrar descripción": "Εμφάνιση περιγραφής",
+  "Mostrar nombre de la música": "Εμφάνιση ονόματος μουσικής"
 }
