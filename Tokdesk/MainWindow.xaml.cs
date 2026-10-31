@@ -479,6 +479,12 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "api", rid = m.GetProperty("rid").GetInt32(), status, body });
                     break;
                 }
+                case "itempage": // detalle de un video desde su página, cuando la API responde vacío
+                {
+                    var body = await _side.ItemData(S("id"));
+                    PostToUi(new { t = "api", rid = m.GetProperty("rid").GetInt32(), status = body != null ? 200 : 0, body });
+                    break;
+                }
                 case "offsave":
                     {
                         var kind = S("kind"); var id = S("id");

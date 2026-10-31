@@ -2048,6 +2048,24 @@ $('#chatForm').addEventListener('submit', (e) => {
 
 // Datos completos de un video por id (con caché; los usan los chats)
 const itemCache = new Map();
+// Si TikTok responde vacío al detalle (su muro anti bots), la app abre la página del video por detrás y lo lee de ahí.
+// Es más lento, así que solo se usa para el video que el usuario quiere abrir, no para portadas
+function itemPage(id) {
+  return new Promise((resolve) => {
+    const r = ++rid;
+    busy(1);
+    waiting.set(r, (v) => { busy(-1); resolve((v.data && v.data.itemInfo && v.data.itemInfo.itemStruct) || null); });
+    send({ t: 'itempage', rid: r, id });
+    setTimeout(() => { if (waiting.delete(r)) { busy(-1); resolve(null); } }, 40000);
+  });
+}
+async function fetchItemSure(id) {
+  const it = await fetchItem(id);
+  if (it) return it;
+  const p = await itemPage(id);
+  if (p) itemCache.set(id, Promise.resolve(p));
+  return p;
+}
 function fetchItem(id) {
   if (!itemCache.has(id)) {
     itemCache.set(id, api('GET', '/api/item/detail/', { itemId: id })
@@ -2063,7 +2081,9 @@ async function openChatVideos(startId) {
   if (!ids.length) return;
   toast(t('Abriendo video…'));
   const details = new Map();
-  const queue = [startId, ...ids.filter((x) => x !== startId)];
+  // El video elegido se asegura (si la API no responde se lee de su página); los demás, si se puede
+  details.set(startId, await fetchItemSure(startId));
+  const queue = ids.filter((x) => x !== startId);
   const worker = async () => {
     while (queue.length) {
       const id = queue.shift();
@@ -2103,8 +2123,7 @@ async function openVideoLink(url) {
   const m = /\/(?:video|photo)\/(\d+)/.exec(url || '');
   if (!m) { send({ t: 'open', url, browser: true }); return; }
   toast(t('Abriendo video…'));
-  const r = await api('GET', '/api/item/detail/', { itemId: m[1] });
-  const raw = r.data && r.data.itemInfo && r.data.itemInfo.itemStruct;
+  const raw = await fetchItemSure(m[1]);
   const f = feedFor('single:' + m[1]);
   if (!f.items.length && raw) addItems(f, [raw]);
   if (!f.items.length) { send({ t: 'open', url, browser: true }); return; }

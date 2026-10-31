@@ -768,8 +768,51 @@ sealed class SidePage
         // (si no, la interfaz mostraba un chat vacío y los mensajes aparecían en la siguiente actualización)
         var t0 = Environment.TickCount64;
         await Poll("document.querySelector('[data-e2e=\"dm-new-message-list\"] [data-e2e=\"dm-new-chat-item\"]') ? 'ok' : null", 5000);
-        Log.Write($"Chat: mensajes en {Environment.TickCount64 - t0} ms");
+        // La web trae primero los últimos ~5 y enseguida el resto: se espera a que la cantidad deje de crecer
+        // (si no, el chat y la caché quedaban solo con los últimos mensajes)
+        const string countJs = "String(document.querySelectorAll('[data-e2e=\"dm-new-message-list\"] [data-e2e=\"dm-new-chat-item\"]').length)";
+        string last = await Eval(countJs);
+        for (int stable = 0, t = 0; stable < 3 && t < 3000; t += 250)
+        {
+            await Task.Delay(250);
+            var now = await Eval(countJs);
+            if (now == last) stable++; else { stable = 0; last = now; }
+        }
+        Log.Write($"Chat: {last} mensajes en {Environment.TickCount64 - t0} ms");
         return await Poll(ConvJs, 6000);
+    }
+
+    /// <summary>
+    /// Datos de un video abriendo su página: cuando TikTok responde vacío al detalle (muro anti bots),
+    /// una navegación real sí lo pasa. Devuelve la respuesta con el formato de /api/item/detail/ y vuelve a Mensajes.
+    /// </summary>
+    public async Task<string> ItemData(string id)
+    {
+        if (!await Idle()) return null;
+        _composing = true;
+        try
+        {
+            await Ensure();
+            _nav = new TaskCompletionSource<bool>();
+            _wv.Navigate("https://www.tiktok.com/@i/video/" + id);
+            await Task.WhenAny(_nav.Task, Task.Delay(15000));
+            var json = await Poll("""
+                (() => {
+                  const el = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
+                  if (!el) return null;
+                  try {
+                    const it = JSON.parse(el.textContent).__DEFAULT_SCOPE__['webapp.video-detail'].itemInfo.itemStruct;
+                    return it && it.id ? JSON.stringify({ statusCode: 0, itemInfo: { itemStruct: it } }) : null;
+                  } catch { return null; }
+                })()
+                """, 8000);
+            Log.Write("Video " + id + (json != null ? ": datos desde su página" : ": su página no trajo datos"));
+            _nav = new TaskCompletionSource<bool>();
+            _wv.Navigate(Messages);
+            await Task.WhenAny(_nav.Task, Task.Delay(15000));
+            return json;
+        }
+        finally { _composing = false; }
     }
 
     /// <summary>Abre el video compartido número <paramref name="n"/> del chat y devuelve su enlace.</summary>
