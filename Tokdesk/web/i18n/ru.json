@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "Загрузка сеанса…",
   "Pausar el video detrás de los paneles": "Ставить видео на паузу под панелями",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "При открытии профиля, сообщений, поиска или настроек (кроме комментариев)",
-  "Incluir los comentarios": "Включая комментарии"
+  "Incluir los comentarios": "Включая комментарии",
+  "{0} transmisiones LIVE": "LIVE-трансляций: {0}",
+  "{0} Story": "Историй: {0}"
 }

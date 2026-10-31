@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "Loading your session…",
   "Pausar el video detrás de los paneles": "Pause video behind panels",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "When opening a profile, messages, search or settings (not comments)",
-  "Incluir los comentarios": "Include comments"
+  "Incluir los comentarios": "Include comments",
+  "{0} transmisiones LIVE": "{0} LIVE streams",
+  "{0} Story": "{0} Stories"
 }

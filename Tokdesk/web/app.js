@@ -983,6 +983,7 @@ function go(step) {
   f.idx = next;
   closePanels();
   render();
+  if (typeof renderLiveRow === 'function') { liveRowOpen = false; renderLiveRow(); }
 }
 
 function current() { return state.slides.get(state.feed.idx); }

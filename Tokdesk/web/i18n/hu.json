@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "Munkamenet betöltése…",
   "Pausar el video detrás de los paneles": "Videó szüneteltetése a panelek mögött",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "Profil, üzenetek, keresés vagy beállítások megnyitásakor (a hozzászólásoknál nem)",
-  "Incluir los comentarios": "Hozzászólásoknál is"
+  "Incluir los comentarios": "Hozzászólásoknál is",
+  "{0} transmisiones LIVE": "{0} LIVE közvetítés",
+  "{0} Story": "{0} történet"
 }

@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "Завантаження сеансу…",
   "Pausar el video detrás de los paneles": "Ставити відео на паузу під панелями",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "Під час відкриття профілю, повідомлень, пошуку чи налаштувань (крім коментарів)",
-  "Incluir los comentarios": "Разом із коментарями"
+  "Incluir los comentarios": "Разом із коментарями",
+  "{0} transmisiones LIVE": "LIVE-трансляцій: {0}",
+  "{0} Story": "Історій: {0}"
 }

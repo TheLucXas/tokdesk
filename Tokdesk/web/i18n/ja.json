@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "セッションを読み込み中…",
   "Pausar el video detrás de los paneles": "パネルの下の動画を一時停止",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "プロフィール、メッセージ、検索、設定を開いたとき（コメントは除く）",
-  "Incluir los comentarios": "コメントも含める"
+  "Incluir los comentarios": "コメントも含める",
+  "{0} transmisiones LIVE": "{0}件のLIVE",
+  "{0} Story": "{0}件のストーリー"
 }

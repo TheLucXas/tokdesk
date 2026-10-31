@@ -523,5 +523,7 @@
   "Cargando tu sesión…": "กำลังโหลดเซสชันของคุณ…",
   "Pausar el video detrás de los paneles": "หยุดวิดีโอชั่วคราวหลังแผง",
   "Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)": "เมื่อเปิดโปรไฟล์ ข้อความ การค้นหา หรือการตั้งค่า (ไม่รวมความคิดเห็น)",
-  "Incluir los comentarios": "รวมความคิดเห็นด้วย"
+  "Incluir los comentarios": "รวมความคิดเห็นด้วย",
+  "{0} transmisiones LIVE": "LIVE {0} รายการ",
+  "{0} Story": "สตอรี่ {0} รายการ"
 }

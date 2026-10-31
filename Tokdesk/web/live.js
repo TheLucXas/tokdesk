@@ -290,17 +290,40 @@ async function refreshFollowLive() {
   await loadLives(f, 81);
   followLive = f.items;
   for (const it of followLive) liveNow.set(it.author, { at: Date.now(), live: true });
+  await refreshFollowStories();
   renderLiveRow();
   for (const el of state.slides.values()) if (!el.item.live && liveNow.get(el.item.author)?.live) markLiveAvatar(el);
 }
-function renderLiveRow() {
-  const show = !!(state.feed && state.feed.key === 'following' && !state.stack.length && followLive.length);
-  document.body.classList.toggle('liverow', show);
-  if (!show) return;
-  $('#liveRow').innerHTML = followLive.map((it, i) => `<button data-i="${i}"><span class="ring"><img alt="" src="${esc(it.avatar || '')}"></span>
-    <span class="live-tag">LIVE</span><span class="nm">${esc(it.nick || it.author)}</span></button>`).join('');
-  $$('#liveRow button').forEach((b) => b.onclick = () => openSubFeed(feedFor('livefollow'), +b.dataset.i));
+// Historias de las cuentas que sigues: van en la misma fila, después de los LIVE (anillo celeste), como en la app
+let followStories = [], followStoriesTotal = 0;
+async function refreshFollowStories() {
+  const r = await api('GET', '/api/story/user_list/', { count: 20, cursor: 0, storyFeedScene: 3 }, null, true);
+  const d = r.data;
+  if (!d || !Array.isArray(d.storyUsers)) return;
+  followStories = d.storyUsers.map((x) => x.user).filter((u) => u && u.id);
+  followStoriesTotal = followStories.length; // totalCount cuenta más de lo que muestra la app
 }
+// En el primer video de Siguiendo la fila se ve entera; desde el segundo queda una píldora
+// «N transmisiones LIVE | M Story ▾» que al tocarla vuelve a abrir la fila (como en la app)
+let liveRowOpen = false;
+function renderLiveRow() {
+  const show = !!(state.feed && state.feed.key === 'following' && !state.stack.length && (followLive.length || followStories.length));
+  document.body.classList.toggle('liverow', show);
+  if (!show) { document.body.classList.remove('liverow-min'); return; }
+  document.body.classList.toggle('liverow-min', state.feed.idx > 0 && !liveRowOpen);
+  const parts = [];
+  if (followLive.length) parts.push(t('{0} transmisiones LIVE', followLive.length));
+  if (followStoriesTotal) parts.push(t('{0} Story', followStoriesTotal));
+  $('#livePill').textContent = parts.join(' | ') + ' ▾';
+  $('#liveRow').innerHTML = followLive.map((it, i) => `<button data-i="${i}"><span class="ring"><img alt="" src="${esc(it.avatar || '')}"></span>
+    <span class="live-tag">LIVE</span><span class="nm">${esc(it.nick || it.author)}</span></button>`).join('')
+    + followStories.map((u) => `<button data-story="${esc(u.id)}"><span class="ring story"><img alt="" src="${esc(u.avatarThumb || u.avatarMedium || '')}"></span>
+    <span class="nm">${esc(u.nickname || u.uniqueId)}</span></button>`).join('');
+  $$('#liveRow button').forEach((b) => b.onclick = () => b.dataset.story
+    ? openSubFeed(feedFor('story:' + b.dataset.story), 0)
+    : openSubFeed(feedFor('livefollow'), +b.dataset.i));
+}
+$('#livePill').addEventListener('click', () => { liveRowOpen = true; renderLiveRow(); });
 $('#liveRow').addEventListener('wheel', (e) => { if (e.deltaY) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 
 function markLiveAvatar(el) { el.item.authorLive = true; $('.avatar', el).classList.add('living'); }
