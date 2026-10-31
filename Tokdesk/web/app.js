@@ -1663,7 +1663,7 @@ function sendDm(id, text, cb, replyTo) {
 }
 function sendNextDm() {
   const j = dmQueue[0];
-  if (j.replyTo != null) send({ t: 'dmreply', id: j.id, i: j.replyTo, text: j.text });
+  if (j.replyTo != null) send({ t: 'dmreply', id: j.id, i: j.replyTo.idx, ref: j.replyTo.text, n: j.replyTo.n, text: j.text });
   else send({ t: 'dm', id: j.id, text: j.text });
 }
 function onDm(m) {
@@ -1996,7 +1996,7 @@ $('#chatForm').addEventListener('submit', (e) => {
   list.insertAdjacentHTML('beforeend', `<div class="msg mine" style="opacity:.6"><div class="bub">${esc(text)}</div></div>`);
   list.scrollTop = list.scrollHeight;
   const conv = chatConv;
-  const replyTo = state.chatReply ? state.chatReply.idx : null;
+  const replyTo = state.chatReply || null;
   setChatReply(null);
   sendDm(conv.id, text, (ok) => {
     if (!ok) toast(t('No se pudo enviar el mensaje'));
@@ -3315,8 +3315,10 @@ function reactToMessage(row) {
   const idx = +row.dataset.idx;
   const wrap = row.querySelector('.mwrap') || row;
   if (!row.querySelector('.react')) { wrap.insertAdjacentHTML('beforeend', '<span class="react">❤️</span>'); row.classList.add('reacted'); }
-  send({ t: 'dmreact', id: chatConv.id, i: idx, emoji: '❤️' });
+  send({ t: 'dmreact', id: chatConv.id, i: idx, emoji: '❤️', ref: row.dataset.text || '', n: chatMsgCount() });
 }
+// Cuántos mensajes leímos de la web: la página oculta busca el mensaje contando desde el final
+function chatMsgCount() { return Math.max(-1, ...$$('#chatList .msg[data-idx]').map((r) => +r.dataset.idx + 1).filter((n) => n > 0)); }
 
 $('#chatList').addEventListener('dblclick', (e) => {
   const row = e.target.closest('.msg');
@@ -3333,7 +3335,7 @@ $('#chatList').addEventListener('contextmenu', (e) => {
   const text = row.dataset.text || '';
   openOptions([[
     { ic: 'heartline', label: t('Reaccionar con ❤️'), fn: () => reactToMessage(row) },
-    { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text }) },
+    { ic: 'comment', label: t('Responder'), fn: () => setChatReply({ idx: +row.dataset.idx, text, n: chatMsgCount() }) },
     text && { ic: 'link', label: t('Copiar'), fn: () => navigator.clipboard.writeText(text).then(() => toast(t('Copiado'))) },
     card && card.dataset.id && { ic: 'play', label: t('Abrir video'), fn: () => openChatVideos(card.dataset.id) },
     card && card.dataset.id && { ic: 'user', label: t('Ver perfil del creador'), fn: () => openCreatorOf(card.dataset.id) },

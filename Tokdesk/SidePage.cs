@@ -821,14 +821,24 @@ sealed class SidePage
     }
 
     // Pasa el mouse por el mensaje número index (así la web muestra sus botones) y hace clic en uno de ellos
-    async Task<bool> MessageButton(string convId, int index, string e2e)
+    async Task<bool> MessageButton(string convId, int index, string e2e, string text = null, int total = -1)
     {
         if (!await SelectConv(convId)) return false;
+        var hint = JsonSerializer.Serialize(text ?? "");
         var js = $$"""
             (() => {
               // Solo los mensajes de la conversación (no otros elementos de la página con el mismo atributo)
               const list = document.querySelector('[data-e2e="dm-new-message-list"]');
-              const el = list && list.querySelectorAll('[data-e2e="dm-new-chat-item"]')[{{index}}];
+              const items = list ? [...list.querySelectorAll('[data-e2e="dm-new-chat-item"]')] : [];
+              // La web carga o descarta mensajes viejos, así que el número de orden puede no coincidir:
+              // se cuenta desde el final y, si hay texto, se elige el mensaje con ese texto más cercano a esa posición
+              const total = {{total}}, hint = {{hint}}.trim();
+              const want = total > 0 ? items.length - (total - {{index}}) : {{index}};
+              const same = hint ? items.map((x, i) => [x, i]).filter(([x]) => {
+                const t = x.querySelector('[data-e2e="dm-new-message-text"]');
+                return t && t.textContent.trim().slice(0, 120) === hint;
+              }) : [];
+              const el = same.length ? same.sort((a, b) => Math.abs(a[1] - want) - Math.abs(b[1] - want))[0][0] : items[want];
               if (!el) return null;
               ['mouseover', 'mouseenter', 'mousemove'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true })));
               const b = el.querySelector('[data-e2e="{{e2e}}"]');
@@ -841,10 +851,10 @@ sealed class SidePage
     }
 
     /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
-    public async Task<bool> React(string convId, int index, string emoji)
+    public async Task<bool> React(string convId, int index, string emoji, string text = null, int total = -1)
     {
         if (!await Idle()) return false;
-        if (!await MessageButton(convId, index, "dm-new-reaction-btn")) return false;
+        if (!await MessageButton(convId, index, "dm-new-reaction-btn", text, total)) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
             (() => {
@@ -861,10 +871,10 @@ sealed class SidePage
     }
 
     /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
-    public async Task<bool> Reply(string convId, int index, string text)
+    public async Task<bool> Reply(string convId, int index, string text, string target = null, int total = -1)
     {
         if (!await Idle()) return false;
-        if (!await MessageButton(convId, index, "dm-new-reply-btn")) return false;
+        if (!await MessageButton(convId, index, "dm-new-reply-btn", target, total)) return false;
         await Task.Delay(300);
         return await SendText(convId, text);
     }
