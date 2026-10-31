@@ -650,10 +650,10 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "text", rid = m.GetProperty("rid").GetInt32(), body = await FetchText(S("url")) });
                     break;
                 case "dmreact":
-                    PostToUi(new { t = "dmreact", ok = await _side.React(S("id"), m.GetProperty("i").GetInt32(), S("emoji"), S("ref"), m.TryGetProperty("n", out var rn) ? rn.GetInt32() : -1) });
+                    PostToUi(new { t = "dmreact", ok = await _side.React(S("id"), m.GetProperty("i").GetInt32(), S("emoji"), m.TryGetProperty("hint", out var rh) && rh.ValueKind == JsonValueKind.Object ? rh.GetRawText() : null) });
                     break;
                 case "dmreply":
-                    PostToUi(new { t = "dm", id = S("id"), ok = await _side.Reply(S("id"), m.GetProperty("i").GetInt32(), S("text"), S("ref"), m.TryGetProperty("n", out var qn) ? qn.GetInt32() : -1) });
+                    PostToUi(new { t = "dm", id = S("id"), ok = await _side.Reply(S("id"), m.GetProperty("i").GetInt32(), S("text"), m.TryGetProperty("hint", out var qh) && qh.ValueKind == JsonValueKind.Object ? qh.GetRawText() : null) });
                     break;
                 case "dm":
                 {

@@ -821,24 +821,34 @@ sealed class SidePage
     }
 
     // Pasa el mouse por el mensaje número index (así la web muestra sus botones) y hace clic en uno de ellos
-    async Task<bool> MessageButton(string convId, int index, string e2e, string text = null, int total = -1)
+    // hint: JSON de la interfaz con { text, prev, next, mine, n } del mensaje elegido
+    async Task<bool> MessageButton(string convId, int index, string e2e, string hint = null)
     {
         if (!await SelectConv(convId)) return false;
-        var hint = JsonSerializer.Serialize(text ?? "");
+        hint = string.IsNullOrEmpty(hint) ? "{}" : hint;
         var js = $$"""
             (() => {
               // Solo los mensajes de la conversación (no otros elementos de la página con el mismo atributo)
               const list = document.querySelector('[data-e2e="dm-new-message-list"]');
               const items = list ? [...list.querySelectorAll('[data-e2e="dm-new-chat-item"]')] : [];
-              // La web carga o descarta mensajes viejos, así que el número de orden puede no coincidir:
-              // se cuenta desde el final y, si hay texto, se elige el mensaje con ese texto más cercano a esa posición
-              const total = {{total}}, hint = {{hint}}.trim();
+              // La web carga o descarta mensajes viejos, así que el número de orden puede no coincidir.
+              // Se buscan los mensajes con el mismo texto y se elige el que además coincide en quién lo envió
+              // y en los mensajes de al lado; si aún empatan, el más cercano a la posición contada desde el final
+              const h = {{hint}}, total = h.n > 0 ? h.n : -1;
               const want = total > 0 ? items.length - (total - {{index}}) : {{index}};
-              const same = hint ? items.map((x, i) => [x, i]).filter(([x]) => {
-                const t = x.querySelector('[data-e2e="dm-new-message-text"]');
-                return t && t.textContent.trim().slice(0, 120) === hint;
-              }) : [];
-              const el = same.length ? same.sort((a, b) => Math.abs(a[1] - want) - Math.abs(b[1] - want))[0][0] : items[want];
+              const box = document.querySelector('[data-e2e="dm-new-chatbox"]');
+              const uid = ((box && box.querySelector('[data-e2e="chat-uniqueid"]')) || {}).textContent || '';
+              const other = '/' + uid.trim().replace(/^\/?/, '');
+              const textOf = (x) => { const t = x && x.querySelector('[data-e2e="dm-new-message-text"]'); return t ? t.textContent.trim().slice(0, 120) : ''; };
+              const mineOf = (x) => { const a = x.querySelector('[data-e2e="chat-avatar"]'); const l = a && a.closest('a'); const href = l ? l.getAttribute('href') : ''; return !!href && href !== other; };
+              const text = (h.text || '').trim();
+              const same = text ? items.map((x, i) => [x, i]).filter(([x]) => textOf(x) === text) : [];
+              const score = ([x, i]) => (h.mine != null && mineOf(x) === h.mine ? 4 : 0)
+                + (h.prev != null && textOf(items[i - 1]) === h.prev.trim() ? 2 : 0)
+                + (h.next != null && textOf(items[i + 1]) === h.next.trim() ? 2 : 0);
+              const el = same.length
+                ? same.sort((a, b) => score(b) - score(a) || Math.abs(a[1] - want) - Math.abs(b[1] - want))[0][0]
+                : items[want];
               if (!el) return null;
               ['mouseover', 'mouseenter', 'mousemove'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true })));
               const b = el.querySelector('[data-e2e="{{e2e}}"]');
@@ -851,10 +861,10 @@ sealed class SidePage
     }
 
     /// <summary>Reacciona a un mensaje con un emoji, usando el botón de reacciones de la web.</summary>
-    public async Task<bool> React(string convId, int index, string emoji, string text = null, int total = -1)
+    public async Task<bool> React(string convId, int index, string emoji, string hint = null)
     {
         if (!await Idle()) return false;
-        if (!await MessageButton(convId, index, "dm-new-reaction-btn", text, total)) return false;
+        if (!await MessageButton(convId, index, "dm-new-reaction-btn", hint)) return false;
         var e = JsonSerializer.Serialize(emoji);
         var picked = await Poll($$"""
             (() => {
@@ -871,10 +881,10 @@ sealed class SidePage
     }
 
     /// <summary>Responde a un mensaje: activa "responder" en la web y envía el texto.</summary>
-    public async Task<bool> Reply(string convId, int index, string text, string target = null, int total = -1)
+    public async Task<bool> Reply(string convId, int index, string text, string hint = null)
     {
         if (!await Idle()) return false;
-        if (!await MessageButton(convId, index, "dm-new-reply-btn", target, total)) return false;
+        if (!await MessageButton(convId, index, "dm-new-reply-btn", hint)) return false;
         await Task.Delay(300);
         return await SendText(convId, text);
     }
