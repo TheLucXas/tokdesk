@@ -45,7 +45,7 @@ const opt = Object.assign({
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
-  hide: {}, pauseUnder: false, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
+  hide: {}, pauseUnder: false, pauseUnderComments: false, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -1305,7 +1305,8 @@ function anyOtherOpen(id) { return $$('.panel.open').some((p) => p.id !== id); }
 const COVERING = ['profile', 'search', 'inbox', 'activity', 'chat', 'settings', 'help', 'page'];
 let coverPaused = null;
 new MutationObserver(() => {
-  const covered = COVERING.some((id) => { const p = document.getElementById(id); return p && p.classList.contains('open'); });
+  const ids = opt.pauseUnderComments ? [...COVERING, 'sheet'] : COVERING;
+  const covered = ids.some((id) => { const p = document.getElementById(id); return p && p.classList.contains('open'); });
   const el = current(), m = el && el.media;
   if (covered && opt.pauseUnder && !coverPaused && m && !m.paused) { coverPaused = el; m.pause(); }
   else if (!covered && coverPaused) {
@@ -2096,16 +2097,24 @@ function itemPage(id) {
   });
 }
 async function fetchItemSure(id) {
-  const it = await fetchItem(id);
+  const it = itemCache.has(id) || Date.now() > detailDownUntil ? await fetchItem(id) : null;
   if (it) return it;
   const p = await itemPage(id);
   if (p) itemCache.set(id, Promise.resolve(p));
   return p;
 }
+// Si el detalle responde vacío, TikTok lo está bloqueando: durante 10 minutos no se insiste (cada intento
+// fallido costaba varios segundos) y los videos se leen de su página
+let detailDownUntil = 0;
 function fetchItem(id) {
   if (!itemCache.has(id)) {
-    itemCache.set(id, api('GET', '/api/item/detail/', { itemId: id })
-      .then((r) => (r.data && r.data.itemInfo && r.data.itemInfo.itemStruct) || null));
+    if (Date.now() < detailDownUntil) return Promise.resolve(null);
+    const p = api('GET', '/api/item/detail/', { itemId: id }).then((r) => {
+      const it = (r.data && r.data.itemInfo && r.data.itemInfo.itemStruct) || null;
+      if (!it && r.status === 200) { detailDownUntil = Date.now() + 10 * 60e3; itemCache.delete(id); }
+      return it;
+    });
+    itemCache.set(id, p);
   }
   return itemCache.get(id);
 }
@@ -2119,7 +2128,8 @@ async function openChatVideos(startId) {
   const details = new Map();
   // El video elegido se asegura (si la API no responde se lee de su página); los demás, si se puede
   details.set(startId, await fetchItemSure(startId));
-  const queue = ids.filter((x) => x !== startId);
+  // Con el detalle bloqueado solo se abre el elegido (leer cada video de su página tardaría demasiado)
+  const queue = Date.now() < detailDownUntil ? [] : ids.filter((x) => x !== startId);
   const worker = async () => {
     while (queue.length) {
       const id = queue.shift();

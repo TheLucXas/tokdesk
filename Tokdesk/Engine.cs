@@ -199,7 +199,9 @@ sealed class Engine
         // Los directos usan webcast.tiktok.com (la web los pide igual, desde la misma página)
         var full = path.StartsWith("https://webcast.tiktok.com/") ? path : "https://www.tiktok.com" + path;
         var result = await PageFetch(Rebuild(_feedUrl, full, false, q), method, form);
-        if (result.status == 200 && string.IsNullOrEmpty(result.body))
+        // El detalle de un video responde vacío aunque la sesión esté bien (bloqueo de TikTok): la interfaz
+        // lo lee de la página del video, así que no se pierde tiempo recargando
+        if (result.status == 200 && string.IsNullOrEmpty(result.body) && path != "/api/item/detail/")
         {
             // TikTok devuelve 200 vacío cuando la sesión de la página quedó vieja (msToken vencido):
             // se recarga la página oficial y se reintenta una vez

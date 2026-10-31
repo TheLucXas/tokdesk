@@ -809,7 +809,7 @@ sealed class SidePage
             await Ensure();
             _nav = new TaskCompletionSource<bool>();
             _wv.Navigate("https://www.tiktok.com/@i/video/" + id);
-            await Task.WhenAny(_nav.Task, Task.Delay(15000));
+            // Los datos vienen en el HTML inicial: se leen apenas aparecen, sin esperar a que cargue toda la página
             var json = await Poll("""
                 (() => {
                   const el = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
@@ -819,12 +819,21 @@ sealed class SidePage
                     return it && it.id ? JSON.stringify({ statusCode: 0, itemInfo: { itemStruct: it } }) : null;
                   } catch { return null; }
                 })()
-                """, 8000);
+                """, 15000);
             Log.Write("Video " + id + (json != null ? ": datos desde su página" : ": su página no trajo datos"));
+            // Se devuelve enseguida; la vuelta a Mensajes sigue por detrás (los chats esperan a que termine)
+            _ = BackToMessages();
+            return json;
+        }
+        catch { _composing = false; throw; }
+    }
+    async Task BackToMessages()
+    {
+        try
+        {
             _nav = new TaskCompletionSource<bool>();
             _wv.Navigate(Messages);
             await Task.WhenAny(_nav.Task, Task.Delay(15000));
-            return json;
         }
         finally { _composing = false; }
     }
