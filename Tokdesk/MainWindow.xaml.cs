@@ -375,7 +375,9 @@ public partial class MainWindow : Window
                 try { System.Diagnostics.Process.Start(Environment.ProcessPath!, "--updated"); } catch { }
                 Application.Current.Shutdown();
             }
-            else if (e.ProcessFailedKind is CoreWebView2ProcessFailedKind.RenderProcessExited or CoreWebView2ProcessFailedKind.RenderProcessUnresponsive)
+            // «Sin respuesta» suele ser una traba pasajera: recargar perdía el estado de la ventana y la dejaba desacomodada.
+            // Solo se recarga si la página realmente se cayó
+            else if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited)
                 try { ui.Reload(); } catch { }
         };
         if (!_settings.ImageCacheFixed)
