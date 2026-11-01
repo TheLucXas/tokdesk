@@ -75,6 +75,7 @@ sealed class SidePage
         _ctl.IsVisible = false;
         _wv = _ctl.CoreWebView2;
         _wv.IsMuted = true;
+        _wv.ProcessFailed += (_, e) => { Log.Write($"ERROR página oculta: {e.ProcessFailedKind} motivo={e.Reason} código={e.ExitCode}"); if (e.ProcessFailedKind != CoreWebView2ProcessFailedKind.BrowserProcessExited) try { _wv.Reload(); } catch { } };
         _wv.Settings.IsStatusBarEnabled = false;
         foreach (var ctx in new[] { CoreWebView2WebResourceContext.Media, CoreWebView2WebResourceContext.Image, CoreWebView2WebResourceContext.Font })
             _wv.AddWebResourceRequestedFilter("*", ctx);

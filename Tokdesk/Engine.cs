@@ -47,6 +47,7 @@ sealed class Engine
         _ctl.IsVisible = false;
         _wv = _ctl.CoreWebView2;
         _wv.IsMuted = true;
+        _wv.ProcessFailed += (_, e) => { Log.Write($"ERROR motor: {e.ProcessFailedKind} motivo={e.Reason} código={e.ExitCode}"); if (e.ProcessFailedKind != CoreWebView2ProcessFailedKind.BrowserProcessExited) try { _wv.Reload(); } catch { } };
         _wv.Settings.IsStatusBarEnabled = false;
 
         // Mientras está oculto no hace falta bajar videos, imágenes ni fuentes

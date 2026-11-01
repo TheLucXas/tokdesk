@@ -364,6 +364,20 @@ public partial class MainWindow : Window
         // El modo de pruebas arranca sin sonido (corre al lado de la app normal y no debe molestar)
         if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") Ui.CoreWebView2.IsMuted = true;
         var ui = Ui.CoreWebView2;
+        // Si se cae un proceso del navegador interno, se anota y se recupera: la página se recarga, y si cayó
+        // el navegador entero (la ventana quedaría vacía) se reinicia Tokdesk
+        ui.ProcessFailed += (_, e) =>
+        {
+            Log.Write($"ERROR navegador interno: {e.ProcessFailedKind} motivo={e.Reason} código={e.ExitCode} {e.ProcessDescription}");
+            if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.BrowserProcessExited)
+            {
+                // «--updated» deja arrancar la nueva aunque esta todavía no terminó de cerrarse
+                try { System.Diagnostics.Process.Start(Environment.ProcessPath!, "--updated"); } catch { }
+                Application.Current.Shutdown();
+            }
+            else if (e.ProcessFailedKind is CoreWebView2ProcessFailedKind.RenderProcessExited or CoreWebView2ProcessFailedKind.RenderProcessUnresponsive)
+                try { ui.Reload(); } catch { }
+        };
         if (!_settings.ImageCacheFixed)
         {
             await ui.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.DiskCache);

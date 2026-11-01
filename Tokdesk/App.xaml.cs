@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 
 namespace Tokdesk;
 
@@ -11,6 +11,8 @@ public partial class App : Application
     {
         DispatcherUnhandledException += (_, a) => { Log.Write("ERROR UI: " + a.Exception); a.Handled = true; };
         AppDomain.CurrentDomain.UnhandledException += (_, a) => Log.Write("ERROR: " + a.ExceptionObject);
+        Exit += (_, _) => Log.Closed();
+        TaskScheduler.UnobservedTaskException += (_, a) => { Log.Write("ERROR tarea: " + a.Exception); a.SetObserved(); };
 
         // Una sola instancia: si ya está abierta, se le pide que se muestre y esta se cierra
         // El modo de pruebas (TOKDESK_DUMP=1) usa su propia instancia para poder correr junto a la app normal
