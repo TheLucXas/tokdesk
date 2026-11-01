@@ -86,6 +86,16 @@ sealed class SidePage
         _wv.NavigationCompleted += (_, e) => _nav?.TrySetResult(e.IsSuccess);
         // No hace falta esperar a que termine de cargar toda la página: los scripts esperan sus elementos
         _wv.DOMContentLoaded += (_, _) => _nav?.TrySetResult(true);
+        // Al cargar una página de TikTok se renueva el token de seguridad: se le pasa al motor
+        _wv.NavigationCompleted += async (_, _) =>
+        {
+            try
+            {
+                var t = await _wv.ExecuteScriptAsync("(() => { try { return JSON.parse(document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__').textContent).__DEFAULT_SCOPE__['webapp.app-context'].csrfToken || null; } catch { return null; } })()");
+                if (t != "null") CsrfSeen?.Invoke(JsonSerializer.Deserialize<string>(t));
+            }
+            catch { }
+        };
     }
 
     async Task Go(string url)
@@ -151,6 +161,7 @@ sealed class SidePage
     // Mientras se responde o reacciona, las lecturas periódicas del chat esperan: recargar la conversación
     // en medio borraba la cita pendiente y la respuesta salía sin citar
     bool _composing;
+    public event Action<string> CsrfSeen;
 
     // Estado del formulario oficial de denuncia, para mostrarlo en la interfaz propia
     const string ReportStateJs = """

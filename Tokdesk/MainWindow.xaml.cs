@@ -447,6 +447,7 @@ public partial class MainWindow : Window
 
         var hwnd = new WindowInteropHelper(this).Handle;
         _side = new SidePage(_env, hwnd, this);
+        _side.CsrfSeen += (t) => _ = _engine.SetCsrf(t);
         _engine = new Engine(_env, hwnd, this);
         await _engine.Start();
     }

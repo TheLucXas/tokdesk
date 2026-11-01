@@ -210,6 +210,13 @@ sealed class Engine
             await RefreshSession();
             result = await PageFetch(Rebuild(_feedUrl, full, false, q), method, form);
         }
+        // «invalid csrf token»: el token de la página quedó viejo; se recarga la página oficial y se reintenta una vez
+        if (result.body != null && result.body.Contains("\"status_code\":10402"))
+        {
+            Log.Write($"API {method} {path}: token csrf vencido; se refresca la sesión y se reintenta");
+            await RefreshSession();
+            result = await PageFetch(Rebuild(_feedUrl, full, false, q), method, form);
+        }
         if (result.status != 200 || string.IsNullOrEmpty(result.body))
             Log.Write($"API {method} {path}: status {result.status}, {result.body?.Length ?? 0} bytes");
         else if (Dump)
@@ -278,6 +285,13 @@ sealed class Engine
         catch (Exception ex) { Log.Write("Mensaje del motor falló: " + ex.Message); }
     }
 
+    /// <summary>Token de seguridad más reciente (lo trae cada página de TikTok que carga la página oculta).</summary>
+    public async Task SetCsrf(string token)
+    {
+        if (_wv == null || string.IsNullOrEmpty(token)) return;
+        try { await _wv.ExecuteScriptAsync("window.__tpCsrf = " + JsonSerializer.Serialize(token)); } catch { }
+    }
+
     public async Task<string> CookieHeader()
     {
         var cookies = await _wv.CookieManager.GetCookiesAsync("https://www.tiktok.com");
@@ -310,6 +324,9 @@ sealed class Engine
         (() => {
           if (window.__tp) return;
           const post = (m) => window.chrome && chrome.webview && chrome.webview.postMessage(m);
+          // Cada página de TikTok que se carga renueva el token: si la oculta de mensajes cargó después que esta,
+          // el de esta queda viejo y TikTok rechaza las acciones («invalid csrf token»). La app le pasa el último
+          const csrfNow = () => window.__tpCsrf || appContext().csrfToken;
           const appContext = () => {
             try {
               const el = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
@@ -323,7 +340,7 @@ sealed class Engine
               const headers = {};
               if (method === 'POST') {
                 headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
-                const csrf = appContext().csrfToken;
+                const csrf = csrfNow();
                 if (csrf) headers['tt-csrf-token'] = csrf;
               }
               // Respuestas binarias (protobuf del chat de los directos): se piden con __b64=1 y vuelven en base64
@@ -344,7 +361,7 @@ sealed class Engine
               x.withCredentials = true;
               if (method === 'POST') {
                 x.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-                const csrf = appContext().csrfToken;
+                const csrf = csrfNow();
                 if (csrf) x.setRequestHeader('tt-csrf-token', csrf);
               }
               x.onload = () => post({ id, status: x.status, body: x.responseText || '' });
