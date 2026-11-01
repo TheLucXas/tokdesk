@@ -295,13 +295,20 @@ async function refreshFollowLive() {
   for (const el of state.slides.values()) if (!el.item.live && liveNow.get(el.item.author)?.live) markLiveAvatar(el);
 }
 // Historias de las cuentas que sigues: van en la misma fila, después de los LIVE (anillo celeste), como en la app
-let followStories = [], followStoriesTotal = 0;
-async function refreshFollowStories() {
-  const r = await api('GET', '/api/story/user_list/', { count: 20, cursor: 0, storyFeedScene: 3 }, null, true);
+// La web las da de a 20 (la primera tanda coincide con la app); al llegar al final de la fila se piden más.
+// Tu propia cuenta viene en cada tanda sin historias (estado 0): es el lugar de «Crear», no se muestra
+let followStories = [], storyCursor = 0, storyMore = false, storyLoading = false;
+async function refreshFollowStories(more) {
+  if (storyLoading) return;
+  storyLoading = true;
+  const r = await api('GET', '/api/story/user_list/', { count: 20, cursor: more ? storyCursor : 0, storyFeedScene: 3 }, null, true);
+  storyLoading = false;
   const d = r.data;
   if (!d || !Array.isArray(d.storyUsers)) return;
-  followStories = d.storyUsers.map((x) => x.user).filter((u) => u && u.id);
-  followStoriesTotal = followStories.length; // totalCount cuenta más de lo que muestra la app
+  const me = state.me || {};
+  const list = d.storyUsers.map((x) => x.user).filter((u) => u && u.id && u.UserStoryStatus && u.id !== me.uid && u.uniqueId !== me.uniqueId);
+  followStories = more ? [...followStories, ...list.filter((u) => !followStories.some((x) => x.id === u.id))] : list;
+  storyCursor = d.cursor || 0; storyMore = !!d.hasMore;
 }
 // Historias vistas: se avisa a TikTok como la web (story_id) y la cuenta queda con anillo gris 24 h.
 // La web deja de listar a quien ya viste, así que Tokdesk la recuerda para seguir mostrándola en gris
@@ -337,8 +344,9 @@ function renderLiveRow() {
     ...Object.entries(seen).map(([id, u]) => ({ ...u, id, seen: true }))];
   const parts = [];
   if (followLive.length) parts.push(t('{0} transmisiones LIVE', followLive.length));
-  if (stories.length) parts.push(t('{0} Story', stories.length));
+  if (stories.length) parts.push(t('{0} Story', fresh.length + Object.keys(seen).length));
   $('#livePill').textContent = parts.join(' | ') + ' ▾';
+  const keep = $('#liveRow').scrollLeft;
   $('#liveRow').innerHTML = followLive.map((it, i) => `<button data-i="${i}"><span class="ring"><img alt="" src="${esc(it.avatar || '')}"></span>
     <span class="live-tag">LIVE</span><span class="nm">${esc(it.nick || it.author)}</span></button>`).join('')
     + stories.map((u) => `<button data-story="${esc(u.id)}"><span class="ring story${u.seen ? ' seen' : ''}"><img alt="" src="${esc(u.avatarThumb || u.avatarMedium || '')}"></span>
@@ -346,7 +354,21 @@ function renderLiveRow() {
   $$('#liveRow button').forEach((b) => b.onclick = () => b.dataset.story
     ? openSubFeed(feedFor('story:' + b.dataset.story), 0)
     : openSubFeed(feedFor('livefollow'), +b.dataset.i));
+  $('#liveRow').scrollLeft = keep;
+  liveRowArrows();
 }
+// Flechas a los costados cuando la fila no entra; al llegar al final se piden más historias
+function liveRowArrows() {
+  const r = $('#liveRow');
+  $('#liveRowWrap .prev').classList.toggle('show', r.scrollLeft > 4);
+  $('#liveRowWrap .next').classList.toggle('show', r.scrollLeft + r.clientWidth < r.scrollWidth - 4);
+  if (storyMore && r.scrollLeft + r.clientWidth > r.scrollWidth - 300) refreshFollowStories(true).then(renderLiveRow);
+}
+$('#liveRow').addEventListener('scroll', liveRowArrows);
+$$('#liveRowWrap .lr-arrow').forEach((b) => b.addEventListener('click', () => {
+  const r = $('#liveRow');
+  r.scrollBy({ left: (b.classList.contains('next') ? 1 : -1) * r.clientWidth * 0.8, behavior: 'smooth' });
+}));
 $('#livePill').addEventListener('click', () => { liveRowOpen = true; renderLiveRow(); });
 $('#liveRow').addEventListener('wheel', (e) => { if (e.deltaY) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 

@@ -1345,7 +1345,7 @@ $('#scrim').addEventListener('click', closePanels);
 let wheelLock = 0, wheelAcc = 0, wheelIdle;
 window.addEventListener('wheel', (e) => {
   // Sobre el chat del directo (o el emoji) la rueda desplaza el chat, no cambia de live
-  if (anyPanelOpen() || e.target.closest('.desc.open, #ctx, #volwrap, .lv-chat, #emojiPop')) return;
+  if (anyPanelOpen() || e.target.closest('.desc.open, #ctx, #volwrap, .lv-chat, #emojiPop, #liveRow, #liveRowWrap')) return;
   e.preventDefault();
   clearTimeout(wheelIdle);
   wheelIdle = setTimeout(() => { wheelAcc = 0; }, 160);
