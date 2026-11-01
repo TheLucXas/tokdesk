@@ -308,7 +308,8 @@ async function refreshFollowStories(more) {
   const me = state.me || {};
   const list = d.storyUsers.map((x) => x.user).filter((u) => u && u.id && u.UserStoryStatus && u.id !== me.uid && u.uniqueId !== me.uniqueId);
   followStories = more ? [...followStories, ...list.filter((u) => !followStories.some((x) => x.id === u.id))] : list;
-  storyCursor = d.cursor || 0; storyMore = !!d.hasMore;
+  storyCursor = d.cursor || 0; storyMore = !!d.hasMore && list.length > 0;
+  return true;
 }
 // Historias vistas: se avisa a TikTok como la web (story_id) y la cuenta queda con anillo gris 24 h.
 // La web deja de listar a quien ya viste, así que Tokdesk la recuerda para seguir mostrándola en gris
@@ -362,7 +363,10 @@ function liveRowArrows() {
   const r = $('#liveRow');
   $('#liveRowWrap .prev').classList.toggle('show', r.scrollLeft > 4);
   $('#liveRowWrap .next').classList.toggle('show', r.scrollLeft + r.clientWidth < r.scrollWidth - 4);
-  if (storyMore && r.scrollLeft + r.clientWidth > r.scrollWidth - 300) refreshFollowStories(true).then(renderLiveRow);
+  // Solo con la fila a la vista y sin otra tanda en camino (antes, mientras cargaba, esto volvía a dibujar la
+  // fila al instante y se repetía sin fin: la interfaz quedaba congelada al entrar a Siguiendo)
+  if (storyMore && !storyLoading && r.clientWidth > 0 && r.scrollLeft + r.clientWidth > r.scrollWidth - 300)
+    refreshFollowStories(true).then((got) => { if (got) renderLiveRow(); });
 }
 $('#liveRow').addEventListener('scroll', liveRowArrows);
 $$('#liveRowWrap .lr-arrow').forEach((b) => b.addEventListener('click', () => {
