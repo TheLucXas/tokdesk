@@ -331,12 +331,12 @@ function reportStory(f, it) {
 }
 // En el primer video de Siguiendo la fila se ve entera; desde el segundo queda una píldora
 // «N transmisiones LIVE | M Story ▾» que al tocarla vuelve a abrir la fila (como en la app)
-let liveRowOpen = false;
+let liveRowOpen = false, liveRowClosed = false; // abierta a mano con la píldora / cerrada a mano en el primer video
 function renderLiveRow() {
   const show = !!(state.feed && state.feed.key === 'following' && !state.stack.length && (followLive.length || followStories.length || Object.keys(storySeenMap()).length));
   document.body.classList.toggle('liverow', show);
   if (!show) { document.body.classList.remove('liverow-min'); return; }
-  document.body.classList.toggle('liverow-min', state.feed.idx > 0 && !liveRowOpen);
+  document.body.classList.toggle('liverow-min', liveRowClosed || (state.feed.idx > 0 && !liveRowOpen));
   // Las vistas van en gris después de las nuevas (las que la web ya no lista salen de lo recordado)
   const seen = storySeenMap();
   const fresh = followStories.filter((u) => !seen[u.id]);
@@ -369,7 +369,28 @@ $$('#liveRowWrap .lr-arrow').forEach((b) => b.addEventListener('click', () => {
   const r = $('#liveRow');
   r.scrollBy({ left: (b.classList.contains('next') ? 1 : -1) * r.clientWidth * 0.8, behavior: 'smooth' });
 }));
-$('#livePill').addEventListener('click', () => { liveRowOpen = true; renderLiveRow(); });
+$('#livePill').addEventListener('click', () => { liveRowOpen = true; liveRowClosed = false; renderLiveRow(); });
+// Se oculta con la flechita o arrastrando la fila hacia arriba; arrastrar de lado la recorre
+function closeLiveRow() { liveRowOpen = false; liveRowClosed = true; renderLiveRow(); }
+$('#liveRowClose').addEventListener('click', closeLiveRow);
+{
+  const wrap = $('#liveRowWrap'), row = $('#liveRow');
+  let d = null;
+  wrap.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || e.target.closest('.lr-arrow, #liveRowClose')) return;
+    d = { x: e.clientX, y: e.clientY, left: row.scrollLeft, moved: false, id: e.pointerId };
+  });
+  wrap.addEventListener('pointermove', (e) => {
+    if (!d) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (!d.moved && Math.hypot(dx, dy) > 8) { d.moved = true; try { wrap.setPointerCapture(d.id); } catch { } }
+    if (!d.moved) return;
+    if (dy < -40 && Math.abs(dy) > Math.abs(dx)) { d = null; closeLiveRow(); return; }
+    row.scrollLeft = d.left - dx;
+  });
+  const end = () => { if (d && d.moved) { const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); }; wrap.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => wrap.removeEventListener('click', stop, { capture: true }), 50); } d = null; };
+  wrap.addEventListener('pointerup', end); wrap.addEventListener('pointercancel', () => { d = null; });
+}
 $('#liveRow').addEventListener('wheel', (e) => { if (e.deltaY) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 
 function markLiveAvatar(el) { el.item.authorLive = true; $('.avatar', el).classList.add('living'); }

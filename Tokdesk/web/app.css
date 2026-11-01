@@ -715,6 +715,11 @@ body.liverow:not(.sub) #liveRow { display: flex; }
 #liveRowWrap .lr-arrow.show { display: block; }
 #liveRowWrap .lr-arrow.prev { left: 6px; }
 #liveRowWrap .lr-arrow.next { right: 6px; }
+#liveRowWrap { user-select: none; touch-action: none; }
+#liveRowWrap img { -webkit-user-drag: none; pointer-events: none; }
+#liveRowClose { position: absolute; left: 50%; bottom: -18px; transform: translateX(-50%); width: 52px; height: 20px; line-height: 16px; border-radius: 0 0 12px 12px;
+  background: #000; color: #ddd; font-size: 16px; z-index: 2; }
+#liveRowClose:hover { color: #fff; }
 body.liverow:not(.sub) #pager, body.liverow:not(.sub) #empty { top: 180px; }
 /* Con la fila de LIVE el visor empieza más abajo: lo que se desliza no debe dibujarse sobre la barra de arriba */
 body.liverow:not(.sub) #pager { overflow: hidden; }
