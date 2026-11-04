@@ -319,6 +319,12 @@ function storySeenMap() {
   for (const k in m) if (Date.now() - m[k].at > 24 * 3600e3) delete m[k];
   return m;
 }
+// Al cerrar sesión: la fila de LIVE e historias es de esa cuenta
+function clearFollowRow() {
+  followLive = []; followStories = []; storyCursor = 0; storyMore = false;
+  liveNow.clear(); storyReported.clear();
+  renderLiveRow();
+}
 function reportStory(f, it) {
   if (!it || storyReported.has(it.id)) return;
   storyReported.add(it.id);

@@ -45,7 +45,7 @@ const opt = Object.assign({
   showCounts: true, showDisc: true, progressAlways: false, reduceMotion: false, wheel: 40,
   startMuted: false, bgPlay: true, hotkeys: {}, themes: [], activeTheme: '', lang: 'auto',
   hideAds: true, hideLives: true, hideDisliked: true,
-  hide: {}, pauseUnder: false, pauseUnderComments: false, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
+  hide: {}, rotateBtn: false, normalize: false, pauseUnder: false, pauseUnderComments: false, textScale: 100, chatFont: 14, liveChatFont: 13, liveChatOpacity: 100, liveChatWidth: 380, panelWidth: 640,
 }, pref.get('opt', {}));
 function saveOpt() { pref.set('opt', opt); }
 const state = {
@@ -125,11 +125,47 @@ function onApi(msg) {
 }
 
 setTimeout(() => { state.meKnown = true; }, 15000); // por si la sesión nunca llega a informarse
+// Diálogo de confirmación propio (confirm() del navegador mostraría «app.tokdesk dice»)
+function askConfirm(text, okLabel) {
+  return new Promise((res) => {
+    const d = document.createElement('div');
+    d.id = 'confirmDlg';
+    d.innerHTML = `<div class="box"><p>${esc(text)}</p><div class="btns"><button class="no">${esc(t('Cancelar'))}</button><button class="ok">${esc(okLabel)}</button></div></div>`;
+    const done = (v) => { document.removeEventListener('keydown', key, true); d.remove(); res(v); };
+    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(false); } };
+    document.addEventListener('keydown', key, true);
+    d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('.no')) done(false); else if (e.target.closest('.ok')) done(true); });
+    document.body.appendChild(d);
+    $('.ok', d).focus();
+  });
+}
+
+// Lo que queda guardado de la cuenta se borra al cerrar sesión (el historial local y las búsquedas son del equipo)
+function clearAccountData() {
+  state.me = null; state.notifySent = false; state.chats = null;
+  state.cmtDislikes.clear(); avatarStore.clear(); lastUnread = null;
+  convCache = {}; clearTimeout(cacheConv.t);
+  for (const [k, v] of [['convCache', {}], ['avatars', {}], ['storySeen', {}], ['shareRecent', []], ['cmtDislikes', []]]) pref.set(k, v);
+  const badge = $('#inboxBadge');
+  badge.textContent = ''; badge.classList.remove('show');
+  dropLikeQueue();
+  clearFollowRow();
+}
+
+// «Para ti» depende de la página oculta: si no llega nada se le vuelve a pedir y, si sigue sin llegar, se ofrece reintentar
+let foryouWait = 0;
+setInterval(() => {
+  const f = state.feed;
+  if (!f || f.key !== 'foryou' || f.items.length || f.error || $('#login').classList.contains('open')) { foryouWait = 0; return; }
+  if (++foryouWait >= 6) { f.error = true; updateEmpty(); return; }
+  f.load(f);
+}, 10000);
+
 function askLogin() {
   // Recién abierta la app todavía no se sabe si hay sesión: no se manda a la web a iniciarla
   if (!state.meKnown) { toast(t('Cargando tu sesión…')); return; }
-  toast(t('Inicia sesión para usar esta función'));
-  setTimeout(() => send({ t: 'login' }), 700);
+  // El programa mira si hay cookie de sesión: si la hay, la cuenta todavía está cargando y no se abre la web
+  send({ t: 'login', soft: true });
 }
 
 // Acción con sesión: devuelve la respuesta si status_code es 0, o null
@@ -254,11 +290,53 @@ function onAudioFixed(m) {
   if (f) f(m.url);
 }
 
+// Normalizar audio: TikTok informa el volumen de cada video (Loudness, Peak). Una ganancia interna lo lleva al nivel
+// de referencia sin tocar la barra de volumen, y no sube más de lo que permite el pico para no distorsionar.
+// El audio del video solo se puede procesar si se cargó con crossorigin; sin eso sonaría en silencio.
+const NORM_TARGET = -16;
+let normCtx = null;
+const normWanted = (it) => !!opt.normalize && !it.live && typeof it.loud === 'number' && it.loud < 0;
+function normGain(it) {
+  if (!normWanted(it)) return 1;
+  return Math.min(10 ** ((NORM_TARGET - it.loud) / 20), it.peak > 0 ? 1 / it.peak : 1);
+}
+function attachNorm(it, media) {
+  if (media.normNode || !media.crossOrigin || !normWanted(it)) return;
+  try {
+    normCtx = normCtx || new AudioContext();
+    const src = normCtx.createMediaElementSource(media), gain = normCtx.createGain();
+    gain.gain.value = normGain(it);
+    src.connect(gain).connect(normCtx.destination);
+    media.normNode = { src, gain };
+    if (normCtx.state !== 'running') normCtx.resume().catch(() => { });
+  } catch (e) { log('normalizar: ' + e.message); }
+}
+function detachNorm(media) {
+  if (!media.normNode) return;
+  media.normNode.src.disconnect(); media.normNode.gain.disconnect();
+  media.normNode = null;
+}
+// Al cambiar la opción: los videos ya cargados sin crossorigin se recargan en el mismo punto
+function applyNormalize() {
+  for (const el of state.slides.values()) {
+    const m = el.media, it = el.item;
+    for (const x of [m, el.sideAudio]) if (x && x.normNode) x.normNode.gain.gain.value = normGain(it);
+    if (m.normNode || !normWanted(it)) continue;
+    if (m.crossOrigin) { if (m.readyState >= 1) attachNorm(it, m); continue; }
+    m.crossOrigin = 'anonymous';
+    if (!m.getAttribute('src')) continue;
+    const at = m.currentTime, playing = !m.paused;
+    m.addEventListener('loadedmetadata', () => { if (at) m.currentTime = at; if (playing) m.play().catch(() => { }); }, { once: true });
+    m.load();
+  }
+}
+
 // Audio aparte para un video sin sonido: copia pausa, posición, velocidad, volumen y silencio del video
 function attachSideAudio(el, media, url, onFail) {
   if (el.sideAudio) return;
   const a = new Audio();
   a.preload = 'auto';
+  if (normWanted(el.item)) a.crossOrigin = 'anonymous';
   a.src = url;
   el.sideAudio = a;
   const sync = (force) => {
@@ -275,11 +353,12 @@ function attachSideAudio(el, media, url, onFail) {
     for (const [k, f] of Object.entries(evs)) media.removeEventListener(k, f);
     media.removeEventListener('emptied', stop);
     a.pause(); a.removeAttribute('src'); a.load();
+    detachNorm(a);
     el.sideAudio = null;
   };
   media.addEventListener('emptied', stop);
   a.addEventListener('error', () => { stop(); if (onFail) onFail(); }, { once: true });
-  a.addEventListener('loadedmetadata', () => sync(true), { once: true });
+  a.addEventListener('loadedmetadata', () => { attachNorm(el.item, a); sync(true); }, { once: true });
 }
 
 // Si no se pudo sacar el audio aparte, se pasa a la variante H.264 completa en el mismo punto
@@ -354,6 +433,7 @@ function normalize(it) {
   const mu = it.music || {};
   return {
     id: it.id, src, photos,
+    loud: v.volumeInfo ? v.volumeInfo.Loudness : null, peak: v.volumeInfo ? v.volumeInfo.Peak : null,
     cover: v.cover || v.originCover || v.dynamicCover || photos[0],
     ratio: v.width && v.height ? v.height / v.width : 4 / 3, storyStatus: a.UserStoryStatus || 0,
     author: a.uniqueId, nick: a.nickname, avatar: a.avatarThumb || a.avatarMedium, authorId: a.id, secUid: a.secUid,
@@ -457,7 +537,7 @@ function requestMore() {
 function teardown() {
   for (const el of state.slides.values()) {
     if (typeof stopLive === 'function') stopLive(el);
-    const m = el.media; m.pause(); m.removeAttribute('src'); m.load();
+    const m = el.media; m.pause(); m.removeAttribute('src'); m.load(); detachNorm(m);
     clearInterval(el.photoTimer); el.remove();
   }
   state.slides.clear();
@@ -610,6 +690,9 @@ function buildSlide(it) {
   media.muted = state.muted;
   media.volume = state.volume;
   media.loop = !state.auto;
+  if (normWanted(it)) media.crossOrigin = 'anonymous';
+  media.addEventListener('loadedmetadata', () => attachNorm(it, media));
+  media.addEventListener('play', () => { if (media.normNode && normCtx.state !== 'running') normCtx.resume().catch(() => { }); });
   media.addEventListener('waiting', () => el.classList.add('waiting'));
   media.addEventListener('playing', () => el.classList.remove('waiting', 'paused'));
   // Algunas variantes HEVC de TikTok vienen sin pista de audio: si a poco de empezar no se decodifica sonido
@@ -668,10 +751,18 @@ function buildSlide(it) {
     if (!media.getAttribute('src')) return;
     const err = media.error;
     log(`media ${it.id} error ${err && err.code}`);
+    // El servidor no aceptó la carga para normalizar: este video se reproduce sin normalizar
+    if (media.crossOrigin && !media.normNode && !media.currentSrc.includes('offline.tokdesk')) {
+      media.removeAttribute('crossorigin');
+      media.load();
+      if (el === current()) media.play().catch(() => { });
+      return;
+    }
     // La copia del búfer pudo borrarse o estar dañada: se vuelve a la de internet en vez de quedar trabado
     const net = it.netSrc || (it.src && !it.src.includes('offline.tokdesk') ? it.src : null);
     if (media.currentSrc.includes('offline.tokdesk') && net) {
       offline.buffer.delete(it.id); offline.saved.delete(it.id);
+      it.noBuffer = true; // sin esto se volvería a guardar y a fallar en cada avance del feed
       media.src = net;
       if (el === current()) media.play().catch(() => { });
       return;
@@ -920,6 +1011,8 @@ function refreshSlide(it) {
 function render() {
   const f = state.feed;
   if (!f) return;
+  const shown = f.items[f.idx];
+  document.body.classList.toggle('rot-video', !!shown && !shown.live && !shown.photos.length);
   // En la cuadrícula de Explorar no hay video a la vista
   if (document.body.classList.contains('exgrid')) { teardown(); return; }
   const lo = Math.max(0, f.idx - KEEP_BEHIND);
@@ -927,7 +1020,7 @@ function render() {
 
   for (const [i, el] of state.slides) {
     if (i < lo || i > hi || el.item !== f.items[i]) {
-      const m = el.media; m.pause(); m.removeAttribute('src'); m.load();
+      const m = el.media; m.pause(); m.removeAttribute('src'); m.load(); detachNorm(m);
       clearInterval(el.photoTimer);
       el.remove(); state.slides.delete(i);
     }
@@ -937,6 +1030,7 @@ function render() {
     const it = f.items[i];
     if (!el) {
       el = buildSlide(it);
+      applyRotation(el, it);
       el.classList.add('dragging'); place(el, i); pager.appendChild(el);
       void el.offsetHeight; el.classList.remove('dragging');
       state.slides.set(i, el);
@@ -965,6 +1059,7 @@ function render() {
       el.photoManual = false;
       delete el.dataset.userPaused; el.classList.remove('upaused');
       if (m.currentTime > 0) m.currentTime = 0;
+      if (it.rot) { it.rot = 0; applyRotation(el, it); } // la rotación es solo del video actual
     }
   }
 
@@ -990,6 +1085,23 @@ function go(step) {
 function current() { return state.slides.get(state.feed.idx); }
 function currentItem() { return state.feed && state.feed.items[state.feed.idx]; }
 
+// Rotar el video actual para los filmados de costado. it.rot se acumula (450° y no 90°) para que siempre gire hacia el mismo lado
+function applyRotation(el, it) {
+  const r = it.rot || 0;
+  el.style.setProperty('--rot', r + 'deg');
+  el.classList.toggle('rotated', !!r);
+  el.classList.toggle('rot-side', r % 180 !== 0);
+}
+function rotateVideo(dir) {
+  const el = current(), it = currentItem();
+  if (!opt.rotateBtn || !el || !it || it.live || it.photos.length || document.body.classList.contains('exgrid')) return;
+  it.rot = (it.rot || 0) + 90 * dir;
+  el.classList.add('rot-anim');
+  clearTimeout(el.rotTimer);
+  el.rotTimer = setTimeout(() => el.classList.remove('rot-anim'), 260);
+  applyRotation(el, it);
+}
+
 function togglePause() {
   const el = current(); if (!el) return;
   const m = el.media;
@@ -1007,11 +1119,34 @@ async function like(it, force) {
   if (it.live) return liveLike(it);
   const on = force ?? !it.liked;
   if (on === it.liked) return;
-  if (!state.me) return askLogin();
   it.liked = on; it.likes += on ? 1 : -1; refreshSlide(it);
+  if (!state.me) {
+    // La cuenta todavía carga: el corazón ya se ve y el pedido espera en cola (otro toque lo cancela)
+    if (likeQueue.delete(it)) return;
+    likeQueue.set(it, on);
+    clearTimeout(likeQueueTimer);
+    likeQueueTimer = setTimeout(dropLikeQueue, 30000);
+    return askLogin();
+  }
+  commitLike(it, on);
+}
+async function commitLike(it, on) {
   const ok = await act('/api/commit/item/digg/', { aweme_id: it.id, type: on ? 1 : 0 });
   if (!ok) { it.liked = !on; it.likes += on ? -1 : 1; refreshSlide(it); }
   else listChange('liked', it, on);
+}
+const likeQueue = new Map();
+let likeQueueTimer;
+function flushLikeQueue() {
+  clearTimeout(likeQueueTimer);
+  for (const [it, on] of likeQueue) commitLike(it, on);
+  likeQueue.clear();
+}
+// No hay cuenta (o nunca terminó de cargar): los corazones vuelven a como estaban
+function dropLikeQueue() {
+  clearTimeout(likeQueueTimer);
+  for (const [it, on] of likeQueue) { it.liked = !on; it.likes += on ? -1 : 1; refreshSlide(it); }
+  likeQueue.clear();
 }
 
 async function favorite(it) {
@@ -1262,8 +1397,9 @@ async function repost(it) {
 function openHelp() {
   const keys = [
     [t('↑ / ↓, rueda, arrastrar'), t('Video anterior / siguiente')], [t('Espacio, clic'), t('Pausar')], [t('Doble clic, L'), t('Me gusta')],
-    ['C', t('Comentarios')], ['S', t('Compartir')], ['P', t('Perfil del autor')], ['M', t('Silenciar')], ['← / →', t('Retroceder / adelantar 5 s')],
-    ['< / >', t('Velocidad')], ['T', t('Subtítulos')], ['H', t('Pantalla limpia')], ['/', t('Buscar')], ['F', t('Maximizar')],
+    ['C', t('Comentarios')], ['S', t('Compartir')], ['B', t('Favoritos')], ['D', t('Descargar')], ['O', t('Más opciones')], ['P', t('Perfil del autor')], ['I', t('Mensajes')],
+    ['M', t('Silenciar')], ['+ / -', t('Volumen')], ['← / →', t('Retroceder / adelantar 5 s')],
+    ['< / >', t('Velocidad')], ['T', t('Subtítulos')], ['H', t('Pantalla limpia')], ['Shift+P', t('Imagen en imagen')], ...(opt.rotateBtn ? [['R, Shift+R', t('Rotar video')]] : []), ['/', t('Buscar')], ['F', t('Maximizar')],
     [t('Esc, Retroceso'), t('Volver / cerrar')], [t('Clic derecho'), t('Más opciones')], ['?', t('Esta ayuda')],
   ];
   $('#helpList').innerHTML = keys.map(([k, d]) => `<div class="hk"><kbd>${esc(k)}</kbd><span>${esc(d)}</span></div>`).join('');
@@ -1304,7 +1440,7 @@ function anyOtherOpen(id) { return $$('.panel.open').some((p) => p.id !== id); }
 // Cierra solo un panel; si no queda ninguno abierto, hace la limpieza completa
 // Opción «Pausar el video detrás de los paneles»: los paneles que tapan el video (no los comentarios,
 // compartir ni los menús) lo pausan, y al cerrarlos sigue solo si no lo había pausado el usuario
-const COVERING = ['profile', 'search', 'inbox', 'activity', 'chat', 'settings', 'help', 'page'];
+const COVERING = ['login', 'profile','search', 'inbox', 'activity', 'chat', 'settings', 'help', 'page'];
 let coverPaused = null;
 new MutationObserver(() => {
   const ids = opt.pauseUnderComments ? [...COVERING, 'sheet'] : COVERING;
@@ -2826,12 +2962,20 @@ async function fetchComments(id, more = false) {
   if (state.sheetFor === id) renderComments();
 }
 
+// Sticker de un comentario: la primera variante que traiga (la animada viene antes), en baja resolución porque se ve chico
+function stickerUrl(s) {
+  for (const v of Object.values(s || {})) {
+    const u = v && (v.low_resolution_url || v.high_resolution_url);
+    if (u && u.url_list && u.url_list[0]) return u.url_list[0];
+  }
+  return null;
+}
 function cmtHtml(cm, reply, parentCid) {
   const u = cm.user || {};
   const av = (u.avatar_thumb && u.avatar_thumb.url_list && u.avatar_thumb.url_list[0]) || '';
   // Imagen adjunta (se prefiere jpeg, como la web)
   const urls = (cm.image_list && cm.image_list[0] && cm.image_list[0].origin_url && cm.image_list[0].origin_url.url_list) || [];
-  const img = urls.find((x) => /jpe?g/.test(x)) || urls[0];
+  const img = urls.find((x) => /jpe?g/.test(x)) || urls[0] || stickerUrl(cm.cmt_sticker_struct);
   const disliked = state.cmtDislikes.has(cm.cid);
   const it = currentItem();
   const authorAv = it && it.avatar;
@@ -3065,6 +3209,9 @@ function openDescSheet(it) {
 function openComments(it) {
   if (!it) return;
   state.sheetFor = it.id;
+  // Otro video: la lista vuelve al inicio (el mismo video conserva la posición)
+  if (state.sheetLast !== it.id) $('#sheetList').scrollTop = 0;
+  state.sheetLast = it.id;
   // «Buscar: …» en azul arriba de los comentarios, como la app (búsquedas sugeridas del video)
   $('#cmtSearch').hidden = true;
   if (!it.live) sugWordsOf(it).then((w) => {
@@ -3084,6 +3231,38 @@ function openComments(it) {
 // ---------- Ventana y navegación ----------
 $$('.ic[data-ic]').forEach((s) => { s.innerHTML = ICON[s.dataset.ic] || ''; });
 $('#btnSearch').innerHTML = ICON.search;
+$('#loginBack').innerHTML = ICON.back;
+$('#loginForm').addEventListener('click', () => send({ t: 'loginother', method: 'form' }));
+$('#loginSignup').addEventListener('click', () => send({ t: 'loginother', method: 'signup' }));
+// La página oficial se ve dentro de este recuadro: el programa la coloca donde la interfaz le dice
+function sendLoginRect() {
+  if (!$('#login').classList.contains('web')) return;
+  const r = $('#loginFrame').getBoundingClientRect();
+  send({ t: 'loginrect', x: r.x, y: r.y, w: r.width, h: r.height });
+}
+new ResizeObserver(sendLoginRect).observe($('#loginFrame'));
+window.addEventListener('resize', sendLoginRect);
+// Con la página a la vista, la flecha vuelve al código en vez de cerrar
+$('#loginBack').addEventListener('click', () => {
+  if ($('#login').classList.contains('web')) send({ t: 'loginback' });
+  else closePanel('login');
+});
+let loginHintBusy = false, loginHintTimer;
+function loginHint(text, busy) {
+  clearTimeout(loginHintTimer);
+  loginHintBusy = !!busy;
+  $('#loginHint').innerHTML = text ? `${busy ? '<div class="spinner"></div>' : ''}<span>${esc(text)}</span>` : '';
+}
+$$('#login [data-brand]').forEach((b) => b.addEventListener('click', () => {
+  if (loginHintBusy) return;
+  loginHint(t('Abriendo ventana…'), true);
+  loginHintTimer = setTimeout(() => loginHint(t('No se pudo abrir la ventana. Intenta de nuevo.')), 20000);
+  send({ t: 'loginsocial', brand: b.dataset.brand });
+}));
+// Se cerró por cualquier vía (volver, Esc): la página oculta deja de mirar el código
+new MutationObserver(() => { if (!$('#login').classList.contains('open')) send({ t: 'loginstop' }); }).observe($('#login'), { attributes: true, attributeFilter: ['class'] });
+$('#btnRotate').innerHTML = ICON.rotate;
+$('#btnRotate').addEventListener('click', (e) => { e.currentTarget.blur(); rotateVideo(e.shiftKey ? -1 : 1); });
 $('#btnBack').innerHTML = ICON.back;
 $('#chatBack').innerHTML = ICON.back;
 $('#ibClose').innerHTML = ICON.back;
@@ -3114,7 +3293,7 @@ $$('.nav').forEach((n) => n.addEventListener('click', () => {
     case 'logo': break;
     case 'inbox': openInbox(); break;
     case 'me':
-      if (!state.me) { send({ t: 'login' }); break; }
+      if (!state.me) { askLogin(); break; }
       openProfile({ secUid: state.me.secUid, author: state.me.uniqueId, nick: state.me.nickName, authorId: state.me.uid,
         avatar: Array.isArray(state.me.avatarUri) ? state.me.avatarUri[0] : state.me.avatarUri });
       break;
@@ -3220,10 +3399,43 @@ host && host.addEventListener('message', (e) => {
       break;
     }
     case 'api': onApi(m); break;
+    case 'loginopen':
+      $('#loginQr').innerHTML = '<div class="spinner"></div>';
+      $('#login').classList.remove('web');
+      $('#loginNote').textContent = '';
+      loginHint('');
+      $('#loginForm').innerHTML = `${ICON.me}<span>${esc(t('Teléfono, correo o usuario'))}</span>`;
+      $$('#login [data-brand]').forEach((b) => { b.innerHTML = `${ICON['brand' + b.dataset.brand]}<span>${esc(t('Continuar con {0}', b.dataset.brand))}</span>`; });
+      openPanel('login');
+      break;
+    case 'loginqr':
+      // Sin código, la página oficial muestra su propio estado (vencido, escaneado…)
+      if (m.qr) $('#loginQr').innerHTML = `<img alt="" src="${esc(m.qr)}">`;
+      else $('#loginQr').innerHTML = '<div class="spinner"></div>';
+      $('#loginNote').textContent = m.note || '';
+      break;
+    case 'loginweb':
+      $('#login').classList.add('web');
+      sendLoginRect();
+      setTimeout(sendLoginRect, 350); // la pantalla termina de entrar
+      break;
+    case 'loginview':
+      $('#login').classList.remove('web');
+      $('#loginQr').innerHTML = '<div class="spinner"></div>';
+      $('#loginNote').textContent = '';
+      break;
+    case 'loginpopupclosed': loginHint(''); break;
+    case 'loginpopup': loginHint(t('Completa el inicio de sesión en la ventana que se abrió')); break;
+    case 'loginclose': $('#login').classList.remove('open'); closePanel('login'); break;
+    case 'loginwait':
+      toast(t(m.session ? 'Cargando tu sesión…' : 'Inicia sesión para usar esta función'));
+      if (!m.session) dropLikeQueue();
+      break;
     case 'me': {
       const was = !!state.me;
       try { state.me = m.user ? JSON.parse(m.user) : null; } catch { state.me = null; }
       state.meKnown = true;
+      if (state.me) flushLikeQueue(); else if (likeQueue.size) askLogin();
       // La bandeja se carga enseguida (antes al minuto) para el contador y para precargar los chats
       if (state.me && !was) setTimeout(() => { if (state.chats == null && !chatConv) loadInbox(); }, 5000);
       if (m.user && !state.notifySent) { state.notifySent = true; sendNotifyStrings(); }
@@ -3260,6 +3472,8 @@ host && host.addEventListener('message', (e) => {
       teardown();
       feeds.clear(); state.stack = []; state.comments.clear(); state.chats = null;
       setFeed(feedFor('foryou'));
+      // TikTok suele tardar en responder sin datos: mientras tanto, lo que ya hay guardado
+      startFromBuffer(offline.bufferItems || []);
       break;
   }
 });
@@ -3676,7 +3890,7 @@ async function bufferAhead() {
     // Desde el siguiente: la precarga en memoria solo guarda unos segundos y sin conexión se corta
     for (let i = f.idx + 1; i < Math.min(f.items.length, f.idx + 1 + opt.buffer); i++) {
       const it = f.items[i];
-      if (!it.src || it.photos.length || it.ad || offUrl(it)) continue;
+      if (!it.src || it.photos.length || it.ad || it.noBuffer || offUrl(it)) continue;
       const url = await offSave('buffer', it);
       if (url) useOffline(f, i);
       if (state.feed !== f) break;
@@ -3706,11 +3920,18 @@ function startFromBuffer(items) {
   const unseen = items.filter((x) => !seenIds().has(x.id) && offline.buffer.has(x.id));
   log(`búfer al abrir: ${items.length} guardados, ${unseen.length} sin ver, feed ya cargado=${!!(f && f.items.length)}`);
   if (!f || f.items.length || state.feed !== f) return;
-  for (const x of unseen.slice(0, 3)) {
-    const it = { ...x, src: offline.buffer.get(x.id), cover: `https://offline.tokdesk/buffer/${x.id}.jpg`, photos: [], subtitles: [] };
-    f.ids.add(it.id); f.items.push(it);
-  }
-  if (f.items.length) feedChanged(f);
+  const add = (list) => {
+    for (const x of list.slice(0, 3)) {
+      const it = { ...x, src: offline.buffer.get(x.id), cover: `https://offline.tokdesk/buffer/${x.id}.jpg`, photos: [], subtitles: [] };
+      f.ids.add(it.id); f.items.push(it);
+    }
+    if (f.items.length) feedChanged(f);
+  };
+  add(unseen);
+  // Sin nada nuevo guardado: si TikTok tarda (pasa sin cuenta), mejor un video ya visto que la pantalla de carga
+  if (!unseen.length) setTimeout(() => {
+    if (state.feed === f && !f.items.length) add(items.filter((x) => offline.buffer.has(x.id)));
+  }, 3000);
 }
 
 function onOffSaved(m) {
@@ -3729,6 +3950,7 @@ function onOffList(m) {
   for (const id of m.ids) offline[kind].set(id, `https://offline.tokdesk/${kind}/${id}.mp4`);
   offline.size[kind] = m.size;
   if (kind === 'saved') offline.items = m.items || [];
+  else offline.bufferItems = m.items || [];
   if (kind === 'buffer' && !offline.started) { offline.started = true; startFromBuffer(m.items || []); }
   const r = offline.wait.get('list' + kind);
   if (r) { offline.wait.delete('list' + kind); r(); }

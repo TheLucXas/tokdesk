@@ -36,18 +36,19 @@
 | ❤️ | **Interact** | Like, save to Favorites and collections, repost, see who reposted, follow, block or unblock, mark "Not interested", and report videos or comments from a built-in menu. |
 | 🌐 | **Translate** | "See translation" for video descriptions and comments, in your language. |
 | 🧩 | **Related videos** | "Related videos" for any video, and the blue "Search: …" suggestion above comments. |
-| 💬 | **Comments** | Read comments and replies, sort by popular or newest, like, reply, post, translate, and see image comments — in a panel that never covers the whole screen. |
+| 💬 | **Comments** | Read comments and replies, sort by popular or newest, like, reply, post, translate, and see image and sticker comments — in a panel that never covers the whole screen. |
 | ✉️ | **Messages** | Inbox, chats that open instantly from a local cache, bubbles, emojis, the 12 message reactions, replies, older messages, shared videos and TikTok links that open in the app, and sending videos to several friends at once with a message. |
 | 📣 | **Activity** | All activity or by group, as in the app: likes, comments, mentions, followers, and messages from TikTok. |
 | 👤 | **Profiles** | Videos (latest, popular, or oldest first), playlists, followers and following, a "seen just now" marker, reposts, favorites (with collections and saved sounds) and liked tabs; edit your own profile; open hashtags, sounds, and @mentions. |
 | 🎵 | **Sounds** | Sound pages with their videos, add sounds to Favorites, and listen to a preview from search. |
 | 🔎 | **Search** | Top, Videos, Users, Sounds, and LIVE tabs, search history, live suggestions, and "You may like" based on what you watched. |
 | ⬇️ | **Downloads** | MP4 without watermark, best quality, original with watermark, MP3 audio, and cover image — to a folder you choose. |
-| 🎛️ | **Playback** | Photo carousels you swipe with the mouse (with an n/N counter and fast scrubbing on the dots), speed, quality, captions, picture-in-picture, auto-scroll, background play, mute when unfocused, a seek bar with frame preview on hover, local history, and global media keys. |
+| 🎛️ | **Playback** | Photo carousels you swipe with the mouse (with an n/N counter and fast scrubbing on the dots), speed, quality, captions, picture-in-picture, auto-scroll, background play, mute when unfocused, audio normalization so every video plays at a similar loudness, an optional button (and R / Shift+R) to rotate a video filmed sideways, a seek bar with frame preview on hover, local history, and global media keys. |
 | 🎞️ | **1080p and offline** | One-click install of Microsoft's free HEVC extension for 1080p, a disk buffer so videos start instantly, and offline videos (100 MB–2 GB) for when you have no internet. |
 | 🔔 | **Notifications** | Windows notifications for likes, comments, mentions, followers, messages, and new Tokdesk versions, by category — even with the app closed, through a tiny helper (about 6 MB of RAM). |
 | 🎨 | **Make it yours** | Dark, light, or system theme, accent colors, interface zoom, custom CSS themes, hide any element of the video screen (buttons, author, description, music), pause the video behind panels, and fully customizable keyboard shortcuts. |
-| 🪟 | **Desktop integration** | System tray, start with Windows, start minimized, close-to-tray, remember window size, and a maximized window that keeps an auto-hidden taskbar reachable. |
+| 🪟 | **Desktop integration** | System tray, start with Windows, start minimized, close-to-tray, remember window size, a custom name for the Start menu shortcut, and a maximized window that keeps an auto-hidden taskbar reachable. |
+| 🔑 | **Sign in** | Sign in without leaving the app: a QR code on Tokdesk's own screen, TikTok's official form and identity check shown inside it, or Facebook, Google, and Apple in their own window. Signing out removes your account's data from the app. |
 | 🔗 | **Open TikTok links** | Copy a TikTok link anywhere (for example "Copy link address" in your browser) and Tokdesk offers to open it when you open or switch to it, like the mobile app; paste one in the search box to open it directly; internet shortcuts also open with **Send to → Tokdesk**. |
 | 🌍 | **37 languages** | Follows your TikTok account language automatically; falls back to English. |
 | 🔄 | **Auto-updates** | Checks GitHub Releases, installs new versions in one click, reopens the app, and shows what's new. |
@@ -56,14 +57,15 @@
 
 1. Download `Tokdesk.exe` from the [latest release](https://github.com/TheLucXas/tokdesk/releases/latest).
 2. Run it. If the **.NET 8 Desktop Runtime** is missing, Tokdesk offers to download and install it from Microsoft automatically.
-3. Sign in from **Profile** (QR code is the fastest way).
+3. Sign in from **Profile** (the QR code is the fastest way).
 
 Requires Windows 10 or 11 with Microsoft Edge WebView2 (included in Windows 11).
 
 ## ⚙️ How it works
 
 - A hidden instance of the official TikTok website runs with your own session and makes its own requests; Tokdesk renders the data in its own lightweight interface.
-- Tokdesk does not forge request signatures or bypass verifications. If TikTok asks for a verification, you solve it on the official page.
+- Tokdesk does not forge request signatures or bypass verifications. If TikTok asks for a verification, you solve it on the official page, shown inside the app.
+- Your password is never handled by Tokdesk: you type it into TikTok's official form, or sign in with a QR code or another service.
 - Your session, settings, and logs are stored in `%LOCALAPPDATA%\Tokdesk`.
 - With notifications enabled, a small helper (`Tokdesk.exe --notify`) checks your TikTok activity every few minutes with your session cookies, which Tokdesk stores encrypted by Windows (DPAPI) for your user only. Turn it off in **Settings → Notifications**.
 - The HEVC button asks Microsoft's own Store delivery service for the free "HEVC Video Extensions from Device Manufacturer" package, downloads it from Microsoft's servers, and installs it for your user with `Add-AppxPackage` (Windows verifies Microsoft's signature).
@@ -85,12 +87,12 @@ The published `Tokdesk.exe` is a small .NET Framework 4.8 launcher (built into W
 - **Built with** [.NET 8 / WPF](https://github.com/dotnet/wpf) (MIT License) and the [Microsoft Edge WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) (Microsoft license, redistributable). The WebView2 runtime and the .NET runtime are installed from Microsoft, not bundled.
 - **LIVE playback:** [mpegts.js](https://github.com/xqq/mpegts.js) 1.8.0 (Apache License 2.0), bundled in `Tokdesk/web/vendor` with its license (`mpegts.LICENSE.txt`).
 - **Symbol fallback fonts:** [Noto Sans Symbols, Symbols 2 and Math](https://fonts.google.com/noto) by Google (SIL Open Font License 1.1), loaded from Google Fonts only when a character is missing from the Windows fonts. The symbols subset of Noto Sans Symbols 2 is bundled in `Tokdesk/web/fonts` with its license (`OFL.txt`).
-- **Made with AI**: code, the Tokdesk icon, the interface icons (hand-drawn SVG), and the 37 translations were generated with Claude for this project. No third-party icon packs or images are included (the LIVE, emoji, and block icons were also drawn from scratch); the UI uses the Windows system font, plus the Noto symbol fonts above for rare characters.
+- **Made with AI**: code, the Tokdesk icon, the interface icons (hand-drawn SVG), and the 37 translations were generated with Claude for this project. No third-party icon packs or images are included (the LIVE, emoji, and block icons were also drawn from scratch), except the Facebook, Google, and Apple marks on the sign-in buttons; the UI uses the Windows system font, plus the Noto symbol fonts above for rare characters.
 - **Badges** by [shields.io](https://shields.io).
 
 ## ™️ Trademarks
 
-TikTok is a trademark of ByteDance Ltd. WhatsApp and Facebook are trademarks of Meta Platforms, Inc.; Telegram of Telegram FZ-LLC; X of X Corp.; Windows, .NET, and Microsoft Edge of Microsoft Corporation. These names are used only to describe compatibility and share targets; their logos are not used. Tokdesk is not associated with any of these companies.
+TikTok is a trademark of ByteDance Ltd. WhatsApp and Facebook are trademarks of Meta Platforms, Inc.; Google of Google LLC; Apple of Apple Inc.; Telegram of Telegram FZ-LLC; X of X Corp.; Windows, .NET, and Microsoft Edge of Microsoft Corporation. These names are used only to describe compatibility, share targets, and sign-in options. The Facebook, Google, and Apple marks appear only on the sign-in buttons, to identify the service you choose; no other logos are used. Tokdesk is not associated with any of these companies.
 
 ## 📄 License
 

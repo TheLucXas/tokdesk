@@ -56,6 +56,25 @@ sealed class SidePage
     /// Deja la página "visible" pero detrás de la interfaz, para que funcione su carga diferida
     /// (mensajes anteriores) sin mostrarse.
     /// </summary>
+    // Durante el inicio de sesión con QR la página carga todo y se anotan sus pasos
+    public bool LoginMode { get; set; }
+    public event Action<string> LoginQrError;
+
+    // Muestra la página tal como está, sin recargarla, en el lugar que le deja la pantalla de inicio de sesión
+    System.Drawing.Rectangle? _rect;
+    public void RevealIn(System.Drawing.Rectangle r)
+    {
+        var first = !_visible;
+        _rect = r;
+        _visible = true;
+        UpdateBounds();
+        if (!first) return;
+        _wv.IsMuted = false;
+        _ctl.IsVisible = true;
+        ZOrder(true);
+        _ctl.MoveFocus(CoreWebView2MoveFocusReason.Programmatic);
+    }
+
     public async Task SetBackground(bool on)
     {
         await Ensure();
@@ -81,9 +100,12 @@ sealed class SidePage
             _wv.AddWebResourceRequestedFilter("*", ctx);
         _wv.WebResourceRequested += (_, e) =>
         {
-            if (!_visible) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
+            if (!_visible && !LoginMode) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
         };
+        LoginTrace.Attach(_wv, "oculta", () => LoginMode, (code) => LoginQrError?.Invoke(code));
         _wv.NavigationCompleted += (_, e) => _nav?.TrySetResult(e.IsSuccess);
+        // Cada página del inicio de sesión (olvidé mi contraseña, registro…) se recorta igual
+        _wv.NavigationCompleted += async (_, _) => { if (LoginMode && _wv.Source.Contains("tiktok.com")) try { await _wv.ExecuteScriptAsync(Engine.LoginStyleJs); } catch { } };
         // No hace falta esperar a que termine de cargar toda la página: los scripts esperan sus elementos
         _wv.DOMContentLoaded += (_, _) => _nav?.TrySetResult(true);
         // Al cargar una página de TikTok se renueva el token de seguridad: se le pasa al motor
@@ -580,6 +602,12 @@ sealed class SidePage
     // Para el modo de prueba
     public async Task<string> Run(string js) { await Ensure(); return await _wv.ExecuteScriptAsync(js); }
     public Task Open(string url) => Go(url);
+    public async Task Shot(string file)
+    {
+        await Ensure();
+        await using var fs = System.IO.File.Create(file);
+        await _wv.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, fs);
+    }
     public async Task AddInitScript(string js) { await Ensure(); await _wv.AddScriptToExecuteOnDocumentCreatedAsync(js); }
 
     public async Task Show(string url, string autoScript = null)
@@ -599,6 +627,8 @@ sealed class SidePage
     public void Hide()
     {
         if (_ctl == null) return;
+        _rect = null;
+        UpdateBounds();
         _visible = false;
         _wv.IsMuted = true;
         _ctl.IsVisible = _background;
@@ -607,7 +637,7 @@ sealed class SidePage
 
     public void UpdateBounds()
     {
-        if (_ctl != null) _ctl.Bounds = _win.EngineBounds();
+        if (_ctl != null) _ctl.Bounds = _rect ?? _win.EngineBounds();
     }
 
     // Chats y actividad tal como los muestra la página oficial de mensajes

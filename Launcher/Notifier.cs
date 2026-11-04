@@ -54,8 +54,12 @@ static class Notifier
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location),
             Text = "Tokdesk",
             ContextMenuStrip = menu,
-            Visible = true,
+            Visible = !AppOpen(),
         };
+        // Con la app abierta el ícono sobra: la bandeja es de ella y aquí solo aparece para mostrar un aviso
+        var iconTimer = new System.Windows.Forms.Timer { Interval = 2000 };
+        iconTimer.Tick += (_, _) => _icon.Visible = !AppOpen() || DateTime.Now < _balloonUntil;
+        iconTimer.Start();
         _icon.BalloonTipClicked += (_, _) => OpenApp();
         _icon.DoubleClick += (_, _) => OpenApp();
 
@@ -75,6 +79,19 @@ static class Notifier
         _icon.Visible = false;
         _icon.Dispose();
         return 0;
+    }
+
+    static DateTime _balloonUntil;
+
+    static bool AppOpen()
+    {
+        try
+        {
+            if (!Mutex.TryOpenExisting("Tokdesk.SingleInstance", out var m)) return false;
+            m.Dispose();
+            return true;
+        }
+        catch { return false; }
     }
 
     static void OpenApp()
@@ -234,6 +251,8 @@ static class Notifier
     {
         var text = string.Join("\n", news.Take(3));
         if (news.Count > 3) text += "\n" + string.Format(S("andmore", "y {0} más"), news.Count - 3);
+        _balloonUntil = DateTime.Now.AddSeconds(10);
+        _icon.Visible = true;
         _icon.ShowBalloonTip(8000, "Tokdesk", text, ToolTipIcon.None);
     }
 }

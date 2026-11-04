@@ -12,7 +12,8 @@ namespace Tokdesk;
 sealed class Offline
 {
     public const string Host = "offline.tokdesk";
-    public static readonly string Dir = Path.Combine(AppInfo.DataDir, "offline");
+    // TOKDESK_OFFLINEDIR: para pruebas lanzadas desde una app empaquetada, cuyos archivos en AppData el navegador interno no ve
+    public static readonly string Dir = Environment.GetEnvironmentVariable("TOKDESK_OFFLINEDIR") ?? Path.Combine(AppInfo.DataDir, "offline");
     const int BufferKeep = 15;
 
     readonly HttpClient _http;

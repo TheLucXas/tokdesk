@@ -41,7 +41,7 @@ static class AppInfo
     public static string ProfileDir()
     {
         // El modo de pruebas usa su propio perfil: así no se cuelga del navegador interno de la app normal abierta
-        if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") return Path.Combine(DataDir, "PerfilPruebas");
+        if (Environment.GetEnvironmentVariable("TOKDESK_DUMP") == "1") return Environment.GetEnvironmentVariable("TOKDESK_PROFILE") ?? Path.Combine(DataDir, "PerfilPruebas");
         var target = Path.Combine(DataDir, "Perfil");
         var old = Path.Combine(AppContext.BaseDirectory, "Perfil");
         try

@@ -16,6 +16,7 @@
   <header id="top">
     <button id="btnLive" class="topicon" title="LIVE"></button>
     <button id="btnSearch" class="topicon" title="Buscar (/)"></button>
+    <button id="btnRotate" class="topicon" title="Rotar video (Mayús+clic: al revés)" data-i18n-title></button>
     <div class="tabs">
       <button class="tab" data-feed="explore" data-i18n>Explorar</button>
       <button class="tab" data-feed="following" data-i18n>Siguiendo</button>
@@ -186,6 +187,28 @@
   </section>
 
   <!-- Ayuda -->
+  <!-- Inicio de sesión: el QR viene de la página oficial, que carga oculta -->
+  <section id="login" class="panel dark full" aria-hidden="true">
+    <button class="xbtn" id="loginBack"></button>
+    <div id="loginFrame"></div>
+    <div class="login-box">
+      <img class="logo" src="logo.png" alt="">
+      <h2 data-i18n>Iniciar sesión</h2>
+      <div id="loginQr"><div class="spinner"></div></div>
+      <p id="loginNote"></p>
+      <ol>
+        <li data-i18n>Escanea con la cámara de tu celular</li>
+        <li data-i18n>Confirma el inicio de sesión en tu celular</li>
+      </ol>
+      <button id="loginForm" class="login-alt"></button>
+      <button class="login-alt" data-brand="Facebook"></button>
+      <button class="login-alt" data-brand="Google"></button>
+      <button class="login-alt" data-brand="Apple"></button>
+      <p id="loginHint"></p>
+      <button id="loginSignup" class="login-link" data-i18n>Crear una cuenta</button>
+    </div>
+  </section>
+
   <section id="help" class="panel dark" aria-hidden="true">
     <div class="sheet-head"><span data-i18n>Atajos de teclado</span><button class="xbtn" data-close="help">✕</button></div>
     <div id="helpList"></div>

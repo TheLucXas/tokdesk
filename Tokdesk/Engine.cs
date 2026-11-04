@@ -60,18 +60,93 @@ sealed class Engine
         };
 
         _wv.WebResourceResponseReceived += OnResponse;
+        LoginTrace.Attach(_wv, "visible", () => _visible);
         _wv.WebMessageReceived += OnPageMessage;
+        _wv.NewWindowRequested += (_, e) =>
+        {
+            Log.Write("Ventana aparte: " + (Uri.TryCreate(e.Uri, UriKind.Absolute, out var u) ? u.Host : "?"));
+            _win.PostToUi(new { t = "loginpopup" });
+        };
         _wv.NavigationCompleted += async (_, e) =>
         {
             Log.Write($"Motor cargó {Short(_wv.Source)} ok={e.IsSuccess} {e.WebErrorStatus}");
+            if (_wv.Source.Contains("/login")) await _wv.ExecuteScriptAsync(LoginStyleJs);
+            _loginLoaded?.TrySetResult();
             await SendMe();
         };
         await _wv.AddScriptToExecuteOnDocumentCreatedAsync(PageScript);
         _wv.Navigate(Home);
     }
 
+    // Formulario oficial de inicio de sesión dentro de la app: oscuro y sin lo que es propio del sitio web
+    public const string LoginStyleJs = """
+        (()=>{const op=window.open;window.open=function(...a){return window.__pop=op.apply(this,a)};
+        document.documentElement.setAttribute('data-theme','dark');
+        const s=document.createElement('style');
+        s.textContent='[data-e2e="tiktok-logo"],[data-e2e="feedback-entrance"],[data-e2e="back-btn"],[class*="DivFooterContainer"],[class*="DivHeaderContainer"],div:has(> select){display:none!important}html,body{background:#121212!important}[class*="DivBodyContainer"]{margin-top:-50px!important}*{font-family:"Segoe UI",system-ui,sans-serif!important}';
+        document.head.append(s)})()
+        """;
+
+    TaskCompletionSource _loginLoaded;
+
+    // El formulario se carga y se arregla con la página oculta, para no mostrar la web mientras tanto
+    public async Task LoadLoginHidden(string url)
+    {
+        Unpark();
+        _loginLoaded = new();
+        _wv.Navigate(url);
+        await Task.WhenAny(_loginLoaded.Task, Task.Delay(12000));
+        _loginLoaded = null;
+        await Task.Delay(300);
+    }
+
+    // Facebook, Google o Apple: toca el botón oficial en la página oculta y queda solo la ventana del servicio.
+    // Sin marcarlo como gesto del usuario, el navegador bloquearía esa ventana.
+    public async Task<bool> ClickLoginChannel(string brand)
+    {
+        await LoadLoginHidden("https://www.tiktok.com/login");
+        var js = $$"""(()=>{const e=[...document.querySelectorAll('[data-e2e="channel-item"]')].find(x=>x.textContent.includes({{JsonSerializer.Serialize(brand)}}));if(!e)return false;e.click();return true})()""";
+        var args = JsonSerializer.Serialize(new { expression = js, userGesture = true, returnByValue = true });
+        for (var i = 0; i < 16; i++)
+        {
+            var r = await _wv.CallDevToolsProtocolMethodAsync("Runtime.evaluate", args);
+            using var doc = JsonDocument.Parse(r);
+            if (doc.RootElement.GetProperty("result").TryGetProperty("value", out var v) && v.ValueKind == JsonValueKind.True) return true;
+            await Task.Delay(500);
+        }
+        return false;
+    }
+
+    public Task<string> RunForTest(string js) => _wv.ExecuteScriptAsync(js);
+    public string BoundsForTest() => _ctl.Bounds.ToString();
+
+    // Con la pantalla del QR abierta, esta página no debe tocar las cookies que comparte con la del código:
+    // TikTok lo invalida (error 2135) si cambian entre el escaneo y la confirmación
+    bool _parked;
+    TaskCompletionSource _unpark;
+    public bool Parked => _parked;
+    public void Park()
+    {
+        _parked = true;
+        _unpark = new();
+        _wv.Navigate("about:blank");
+    }
+    void Unpark()
+    {
+        _parked = false;
+        _unpark?.TrySetResult();
+    }
+
+    // -1 sin ventana, 0 abierta, 1 ya se cerró
+    public async Task<int> LoginPopupState()
+    {
+        var r = await _wv.ExecuteScriptAsync("window.__pop ? (window.__pop.closed ? 1 : 0) : -1");
+        return int.TryParse(r, out var v) ? v : -1;
+    }
+
     public void Restart()
     {
+        Unpark();
         _feedUrl = null;
         _feedReady = new();
         _feedBodies.Clear();
@@ -138,7 +213,12 @@ sealed class Engine
                 if (!_seenFeedUrls.Add(uri)) return;
                 var body = await ReadBody(e.Response);
                 if (HasItems(body)) PushFeed(body);
-                else Log.Write($"Feed sin videos ({body?.Length ?? 0} bytes)");
+                else
+                {
+                    Log.Write($"Feed sin videos ({body?.Length ?? 0} bytes)");
+                    // Pasa al abrir la web sin datos (tras cerrar sesión): sin esto el feed quedaba esperando
+                    if (_feedBodies.Count == 0) _ = RefreshSession();
+                }
             }
         }
         catch (Exception ex) { Log.Write("Respuesta falló: " + ex.Message); }
@@ -163,7 +243,7 @@ sealed class Engine
 
     public async Task LoadMore()
     {
-        if (_loadingMore) return;
+        if (_loadingMore || _parked) return;
         _loadingMore = true;
         try
         {
@@ -195,6 +275,7 @@ sealed class Engine
     /// <summary>Pedido genérico a la API de la web, hecho desde la propia página.</summary>
     public async Task<(int status, string body)> Api(string method, string path, IEnumerable<(string k, string v)> query, string form = null)
     {
+        if (_parked) await _unpark.Task;
         await Task.WhenAny(_feedReady.Task, Task.Delay(10000));
         var q = query.ToArray();
         // Los directos usan webcast.tiktok.com (la web los pide igual, desde la misma página)
@@ -230,6 +311,8 @@ sealed class Engine
     // Una sola recarga a la vez, y no más de una cada 20 s aunque fallen varios pedidos juntos
     Task RefreshSession()
     {
+        // Durante el inicio de sesión no se recarga: se perdería lo que la persona está escribiendo o el código
+        if (_parked || _visible || _wv.Source.Contains("/login")) return Task.CompletedTask;
         if (_refreshing != null && !_refreshing.IsCompleted) return _refreshing;
         if (DateTime.Now - _lastRefresh < TimeSpan.FromSeconds(20)) return Task.CompletedTask;
         _lastRefresh = DateTime.Now;

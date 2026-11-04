@@ -24,6 +24,7 @@ sealed class AppSettings
     public bool ImageCacheFixed { get; set; }
     public bool StartMenuShortcut { get; set; }
     public bool DesktopShortcut { get; set; }
+    public string ShortcutName { get; set; }
 
     // Notificaciones de Windows (actividad con el notificador liviano; mensajes con la app abierta)
     public bool Notifications { get; set; } = true;
@@ -74,7 +75,30 @@ sealed class AppSettings
     [System.Text.Json.Serialization.JsonExtensionData]
     public Dictionary<string, JsonElement> Extra { get; set; }
 
-    static string StartMenuLnk => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Tokdesk.lnk");
+    string StartMenuLnk => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), CleanShortcutName(ShortcutName) + ".lnk");
+
+    // Nombre válido para un archivo de Windows; vacío o inválido, «Tokdesk»
+    static string CleanShortcutName(string name)
+    {
+        var clean = string.Concat((name ?? "").Where(c => !Path.GetInvalidFileNameChars().Contains(c))).Trim().TrimEnd('.');
+        if (clean.Length > 60) clean = clean[..60].Trim();
+        var reserved = System.Text.RegularExpressions.Regex.IsMatch(clean, @"^(con|prn|aux|nul|com\d|lpt\d)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return clean.Length == 0 || reserved ? "Tokdesk" : clean;
+    }
+
+    /// <summary>Cambia el nombre del acceso del menú Inicio: borra el anterior y crea el nuevo.</summary>
+    public void RenameStartMenuShortcut(string name)
+    {
+        var old = StartMenuLnk;
+        ShortcutName = CleanShortcutName(name);
+        if (!string.Equals(old, StartMenuLnk, StringComparison.Ordinal) && ShortcutsAllowed)
+            try { if (System.IO.File.Exists(old)) System.IO.File.Delete(old); } catch (Exception ex) { Log.Write("Acceso directo falló: " + ex.Message); }
+        ApplyShortcuts();
+    }
+
+    // La build de desarrollo no crea accesos: quedarían apuntando a su .exe en vez del lanzador
+    static bool ShortcutsAllowed => AppInfo.HasLauncher || Environment.GetEnvironmentVariable("TOKDESK_SHORTCUTS") == "1";
+
     static string DesktopLnk => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Tokdesk.lnk");
 
     /// <summary>
@@ -84,8 +108,7 @@ sealed class AppSettings
     /// </summary>
     public bool ApplyShortcuts(bool startup = false)
     {
-        // La build de desarrollo no crea accesos: quedarían apuntando a su .exe en vez del lanzador
-        if (!AppInfo.HasLauncher) return false;
+        if (!ShortcutsAllowed) return false;
         var changed = false;
         if (startup && !StartMenuShortcut && System.IO.File.Exists(StartMenuLnk)) { StartMenuShortcut = true; changed = true; }
         if (startup && !DesktopShortcut && System.IO.File.Exists(DesktopLnk)) { DesktopShortcut = true; changed = true; }

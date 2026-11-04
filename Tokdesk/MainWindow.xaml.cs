@@ -188,6 +188,7 @@ public partial class MainWindow : Window
             case "GlobalMediaKeys": _settings.GlobalMediaKeys = v.GetBoolean(); ApplyMediaKeys(); break;
             case "StartMenuShortcut": _settings.StartMenuShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
             case "DesktopShortcut": _settings.DesktopShortcut = v.GetBoolean(); _settings.ApplyShortcuts(); break;
+            case "ShortcutName": _settings.RenameStartMenuShortcut(v.GetString()); break;
             case "AskDownloadFolder": _settings.AskDownloadFolder = v.GetBoolean(); break;
             case "Notifications": case "NotifyBackground": case "NotifyMessages": case "NotifyLikes":
             case "NotifyUpdates": _settings.NotifyUpdates = v.GetBoolean(); break;
@@ -566,6 +567,7 @@ public partial class MainWindow : Window
                     break;
                 case "logout":
                     await Ui.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.AllProfile);
+                    NotifyService.Forget();
                     PostToUi(new { t = "reset" });
                     _engine.Restart();
                     break;
@@ -686,7 +688,30 @@ public partial class MainWindow : Window
                     PostToUi(new { t = "dm", id = S("id"), ok });
                     break;
                 }
-                case "login": ShowPanel(_engine, "https://www.tiktok.com/login"); WatchLogin(); break;
+                case "login":
+                    // Pedido por una acción (me gusta, perfil…): con cookie de sesión la cuenta solo está cargando, no se abre la web
+                    if (m.TryGetProperty("soft", out _))
+                    {
+                        var session = System.Text.RegularExpressions.Regex.IsMatch(await _engine.CookieHeader() ?? "", @"(?:^|;\s*)sessionid=[^;]+");
+                        PostToUi(new { t = "loginwait", session });
+                        if (session) break;
+                    }
+                    StartQrLogin();
+                    break;
+                case "loginother": LoginOtherMethod(S("method")); break;
+                case "loginback": LoginBackToQr(); break;
+                case "loginrect": PlaceLoginWeb(m); break;
+                case "loginsocial":
+                    // El QR sigue mirando la sesión: cuando el servicio termina, la app entra sola
+                    _engineOnLogin = true;
+                    _popupWatch++;
+                    if (!await _engine.ClickLoginChannel(S("brand"))) { Log.Write("Inicio de sesión: no apareció el botón de " + S("brand")); LoginOtherMethod("list"); }
+                    else WatchLoginPopup();
+                    break;
+                case "loginstop":
+                    if (_qrRun == _qrActive) { _qrRun++; await StopQrPage(); }
+                    if (_engineOnLogin || _engine.Parked) { _engineOnLogin = false; _popupWatch++; _engine.Restart(); }
+                    break;
                 case "verify": ShowPanel(_engine); break;
                 case "log": Log.Write("UI: " + S("m")); break;
                 case "drag": DragWindow(); break;
@@ -781,32 +806,167 @@ public partial class MainWindow : Window
     }
 
     // Al terminar de iniciar sesión (aparece una cookie de sesión nueva) se vuelve sola a la app
-    async void WatchLogin()
+    static string Session(string cookies) =>
+        System.Text.RegularExpressions.Regex.Match(cookies ?? "", @"(?:^|;\s*)sessionid=([^;]*)").Groups[1].Value;
+
+    // Pantalla propia de inicio de sesión: la página oficial del QR carga oculta y su código se copia a la interfaz.
+    // Tokdesk nunca ve contraseñas: los otros métodos usan el formulario oficial (LoginOtherMethod).
+    int _qrRun, _qrActive = -1;
+    const string QrReadJs = """
+        (()=>{const q=document.querySelector('[data-e2e="qr-code"]');const c=q&&q.querySelector('canvas');let d=null;
+        try{d=c&&c.toDataURL()}catch(e){}
+        return JSON.stringify({path:location.pathname,qr:d,note:q?q.innerText.trim().slice(0,120):''})})()
+        """;
+
+    async void StartQrLogin()
     {
-        static string Session(string cookies) =>
-            System.Text.RegularExpressions.Regex.Match(cookies ?? "", @"(?:^|;\s*)sessionid=([^;]*)").Groups[1].Value;
-        var before = Session(await _engine.CookieHeader());
-        // Si ya había sesión (se pidió iniciar sesión antes de que la app la detectara), la web dice
-        // «You're already logged in» y no crea otra: se vuelve a la app enseguida
-        if (before.Length > 0)
+        var run = ++_qrRun;
+        _qrActive = run;
+        _loginWeb = false;
+        PostToUi(new { t = "loginopen" });
+        _engine.Park();
+        // Código invalidado: la página deja de funcionar, así que se pide uno nuevo (como mucho uno cada 10 s)
+        var lastReload = DateTime.MinValue;
+        Action<string> onError = async (code) =>
         {
-            Log.Write("Ya había sesión: se vuelve a la app");
-            await Task.Delay(1200);
-            if (_panel == _engine && LoginBar.Visibility == Visibility.Visible) DoneButton_Click(null, null);
-            return;
-        }
-        while (_panel == _engine && LoginBar.Visibility == Visibility.Visible)
+            if (run != _qrRun) return;
+            // 2135: se confirmó en el celular y TikTok pide verificar la identidad en una ventana de la página
+            if (code == "2135") { Log.Write("Inicio de sesión: TikTok pide verificar la identidad, se muestra su ventana"); await ShowLoginWeb(); return; }
+            if (_loginWeb || DateTime.UtcNow - lastReload < TimeSpan.FromSeconds(10)) return;
+            lastReload = DateTime.UtcNow;
+            Log.Write("Inicio de sesión: TikTok invalidó el código, se pide otro");
+            try { await _side.Run("location.reload()"); } catch { }
+        };
+        _side.LoginQrError += onError;
+        try
         {
-            await Task.Delay(1500);
-            var now = Session(await _engine.CookieHeader());
-            if (now.Length > 0 && now != before && _panel == _engine)
+            var before = Session(await _engine.CookieHeader());
+            // Oculta, Chromium frena sus temporizadores y la página tarda en enterarse de que se confirmó en el celular
+            _side.LoginMode = true;
+            await _side.SetBackground(true);
+            try { await _side.Open(QrUrl); } catch (Exception ex) { Log.Write("Inicio de sesión con QR: " + ex.Message); }
+            var started = DateTime.UtcNow;
+            string lastQr = null, lastNote = null, lastPath = null;
+            // Este ciclo mira la sesión con cualquier método; solo termina al entrar o al cerrar la pantalla
+            while (run == _qrRun)
             {
-                Log.Write("Sesión iniciada: se vuelve a la app");
-                await Task.Delay(1500); // deja que la web termine de guardar la sesión
-                DoneButton_Click(null, null);
-                return;
+                await Task.Delay(1000);
+                if (run != _qrRun) return;
+                var now = Session(await _engine.CookieHeader());
+                if (now.Length > 0 && now != before) { Log.Write("Sesión iniciada: se vuelve a la app"); await FinishQrLogin(run); return; }
+                if (_loginWeb) { started = DateTime.UtcNow; continue; }
+                try
+                {
+                    var raw = await _side.Run(QrReadJs);
+                    using var doc = JsonDocument.Parse(JsonSerializer.Deserialize<string>(raw) ?? "{}");
+                    var path = doc.RootElement.TryGetProperty("path", out var pa) ? pa.GetString() ?? "" : "";
+                    // La web ya no pide iniciar sesión: la cookie que había era válida
+                    if (before.Length > 0 && !path.StartsWith("/login")) { Log.Write("Ya había sesión: se vuelve a la app"); await FinishQrLogin(run); return; }
+                    var qr = doc.RootElement.TryGetProperty("qr", out var q) ? q.GetString() : null;
+                    var note = doc.RootElement.TryGetProperty("note", out var n) ? n.GetString() : "";
+                    if (path != lastPath || note != lastNote) Log.Write($"Inicio de sesión con QR: página {path}, estado «{note}»");
+                    lastPath = path;
+                    if (qr != null) started = DateTime.UtcNow;
+                    if (qr != lastQr || note != lastNote) { lastQr = qr; lastNote = note; PostToUi(new { t = "loginqr", qr, note }); }
+                }
+                catch { continue; } // la página está cambiando
+                // Si el código no aparece (o la web cambió), la lista oficial de métodos sigue sirviendo
+                if (DateTime.UtcNow - started > TimeSpan.FromSeconds(20)) { Log.Write("Inicio de sesión: no apareció el QR, se abre la lista de métodos"); LoginOtherMethod("list"); }
             }
         }
+        catch (Exception ex) { Log.Write("Inicio de sesión: " + ex.Message); }
+        finally { _side.LoginQrError -= onError; }
+    }
+
+    // El aviso de «completa el inicio de sesión» se va si cierran la ventana del servicio sin terminar
+    int _popupWatch;
+    async void WatchLoginPopup()
+    {
+        var watch = ++_popupWatch;
+        try
+        {
+            for (var i = 0; i < 1200 && watch == _popupWatch; i++)
+            {
+                await Task.Delay(1000);
+                if (watch != _popupWatch || !_engineOnLogin) return;
+                if (await _engine.LoginPopupState() == 1) { PostToUi(new { t = "loginpopupclosed" }); return; }
+            }
+        }
+        catch { }
+    }
+
+    const string QrUrl = "https://www.tiktok.com/login/qrcode";
+    bool _loginWeb, _engineOnLogin;
+
+    // Lo que solo puede hacer TikTok (formulario, verificación) se ve recortado dentro de la pantalla propia.
+    // La interfaz avisa qué lugar ocupa (loginrect) y la contraseña se escribe en la página oficial, no pasa por la app.
+    async Task ShowLoginWeb()
+    {
+        if (_loginWeb) return;
+        _loginWeb = true;
+        try { await _side.Run(Engine.LoginStyleJs); } catch { }
+        PostToUi(new { t = "loginweb" });
+    }
+
+    async void LoginOtherMethod(string method)
+    {
+        if (_loginWeb) return;
+        _loginWeb = true;
+        try
+        {
+            await _side.Open(method switch
+            {
+                "form" => "https://www.tiktok.com/login/phone-or-email/email",
+                "signup" => "https://www.tiktok.com/signup",
+                _ => "https://www.tiktok.com/login",
+            });
+            await _side.Run(Engine.LoginStyleJs);
+        }
+        catch (Exception ex) { Log.Write("Inicio de sesión: " + ex.Message); }
+        // Se cerró la pantalla mientras cargaba
+        if (!_loginWeb) return;
+        PostToUi(new { t = "loginweb" });
+    }
+
+    // La flecha de la pantalla: del formulario o la verificación, de nuevo al código
+    async void LoginBackToQr()
+    {
+        if (!_loginWeb) return;
+        _loginWeb = false;
+        _side.Hide();
+        PostToUi(new { t = "loginview" });
+        try { await _side.Run($"location.href='{QrUrl}'"); } catch { }
+    }
+
+    void PlaceLoginWeb(JsonElement m)
+    {
+        if (!_loginWeb) return;
+        double N(string k) => m.GetProperty(k).GetDouble();
+        var p = Ui.TranslatePoint(new Point(0, 0), this);
+        var s = System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX;
+        var z = Ui.ZoomFactor;
+        _side.RevealIn(new System.Drawing.Rectangle((int)((p.X + N("x") * z) * s), (int)((p.Y + N("y") * z) * s), (int)(N("w") * z * s), (int)(N("h") * z * s)));
+    }
+
+    async Task StopQrPage()
+    {
+        _loginWeb = false;
+        _side.Hide();
+        await _side.Open("about:blank");
+        _side.LoginMode = false;
+        await _side.SetBackground(false);
+    }
+
+    async Task FinishQrLogin(int run)
+    {
+        if (run != _qrRun) return;
+        _qrRun++;
+        _engineOnLogin = false;
+        await Task.Delay(1500); // deja que la web termine de guardar la sesión
+        PostToUi(new { t = "loginclose" });
+        await StopQrPage();
+        PostToUi(new { t = "reset" });
+        _engine.Restart();
     }
 
     void DoneButton_Click(object sender, RoutedEventArgs e)
@@ -895,6 +1055,14 @@ public partial class MainWindow : Window
                 file = Path.Combine(DownloadDir(), safe);
             }
 
+            // Videos con los que arranca la app: su dirección es del búfer y solo existe para el navegador interno
+            if (url.StartsWith($"https://{Offline.Host}/"))
+            {
+                File.Copy(Path.Combine(Offline.Dir, new Uri(url).LocalPath.TrimStart('/')), file, true);
+                PostToUi(new { t = "dl", rid, state = "done", file, name = Path.GetFileName(file) });
+                return;
+            }
+
             using var req = new HttpRequestMessage(HttpMethod.Get, url);
             req.Headers.Referrer = new Uri("https://www.tiktok.com/");
             req.Headers.TryAddWithoutValidation("User-Agent", _engine.UserAgent);
@@ -944,6 +1112,10 @@ public partial class MainWindow : Window
                     await Ui.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, fs);
                 }
                 else if (line.StartsWith("http:")) { var r = await FetchText(line[5..]); Log.Write("TEST http " + (r == null ? "null" : r[..Math.Min(r.Length, 1500)])); }
+                else if (line.StartsWith("engine:")) Log.Write("TEST motor " + await _engine.RunForTest(line[7..]));
+                else if (line.StartsWith("qrverify")) await ShowLoginWeb();
+                else if (line.StartsWith("bounds")) Log.Write($"TEST barra={LoginBar.ActualHeight} motor={_engine.BoundsForTest()}");
+                else if (line.StartsWith("sideshot:")) await _side.Shot(Path.Combine(AppContext.BaseDirectory, line[9..].Trim()));
                 else if (line.StartsWith("sideinit:")) { await _side.AddInitScript(line[9..]); Log.Write("TEST sideinit ok"); }
                 else if (line.StartsWith("sidego:")) { await _side.Open(line[7..]); Log.Write("TEST side en " + line[7..]); }
                 else if (line.StartsWith("side:")) Log.Write("TEST " + await _side.Run(line[5..]));

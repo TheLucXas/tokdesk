@@ -70,6 +70,13 @@ static class NotifyService
         return true;
     }
 
+    /// <summary>Al cerrar sesión: el notificador se detiene y se borran las cookies que tenía guardadas.</summary>
+    public static void Forget()
+    {
+        Stop();
+        try { File.Delete(ConfigFile); } catch { }
+    }
+
     public static void Stop()
     {
         try { if (EventWaitHandle.TryOpenExisting("Tokdesk.NotifierExit", out var ev)) using (ev) ev.Set(); } catch { }

@@ -22,6 +22,8 @@ const ACTIONS = [
   { id: 'faster', label: t('Más velocidad'), key: '>', fn: () => stepSpeed(1) },
   { id: 'slower', label: t('Menos velocidad'), key: '<', fn: () => stepSpeed(-1) },
   { id: 'captions', label: t('Subtítulos'), key: 'T', fn: () => setCaptions(!state.cc) },
+  { id: 'rotate', label: t('Rotar video'), key: 'R', fn: () => rotateVideo(1) },
+  { id: 'rotateback', label: t('Rotar video al revés'), key: 'Shift+R', fn: () => rotateVideo(-1) },
   { id: 'clean', label: t('Despejar pantalla'), key: 'H', fn: () => toggleClean() },
   { id: 'search', label: t('Buscar'), key: '/', fn: () => openSearch() },
   { id: 'inbox', label: t('Mensajes'), key: 'I', fn: () => openInbox() },
@@ -89,6 +91,7 @@ function applyLook() {
   document.body.classList.toggle('no-counts', !opt.showCounts);
   document.body.classList.toggle('no-disc', !opt.showDisc);
   for (const k of HIDEABLE) document.body.classList.toggle('hide-' + k[0], !!(opt.hide || {})[k[0]]);
+  document.body.classList.toggle('rot-on', !!opt.rotateBtn);
   document.body.classList.toggle('progress-always', opt.progressAlways);
   document.body.classList.toggle('reduce-motion', opt.reduceMotion);
   // En una hoja propia antes del tema del usuario, para que su CSS pueda sobrescribirlas
@@ -120,7 +123,7 @@ function renderSettings() {
     main: [
       [t('Cuenta'), [
         row({ type: 'link', ic: 'user', label: state.me ? t('Cuenta: @{0}', state.me.uniqueId) : t('Iniciar sesión'), fn: () => (state.me ? send({ t: 'web', url: 'https://www.tiktok.com/setting' }) : send({ t: 'login' })) }),
-        state.me && row({ type: 'link', ic: 'broken', label: t('Cerrar sesión'), danger: true, fn: () => { if (confirm(t('¿Cerrar sesión de TikTok en esta app?'))) send({ t: 'logout' }); } }),
+        state.me && row({ type: 'link', ic: 'broken', label: t('Cerrar sesión'), danger: true, fn: async () => { if (await askConfirm(t('¿Cerrar sesión de TikTok en esta app?'), t('Cerrar sesión'))) { clearAccountData(); send({ t: 'logout' }); } } }),
       ]],
       [t('Apariencia'), [
         row({ type: 'select', label: t('Idioma'), value: opt.lang, options: [['auto', t('Automático (idioma de TikTok)')], ...LANGS], fn: (v) => { opt.lang = v; saveOpt(); applyLang(); if (v !== 'auto') send({ t: 'tiktoklang', code: TIKTOK_LANG[v] || v }); } }),
@@ -142,12 +145,14 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Mostrar contadores (me gusta, comentarios…)'), value: opt.showCounts, fn: (v) => { opt.showCounts = v; } }),
         row({ type: 'toggle', label: t('Mostrar disco de música'), value: opt.showDisc, fn: (v) => { opt.showDisc = v; } }),
         ...HIDEABLE.map(([k, label]) => row({ type: 'toggle', label: t(label), value: !(opt.hide || {})[k], fn: (v) => { opt.hide = { ...(opt.hide || {}), [k]: !v }; } })),
+        row({ type: 'toggle', label: t('Botón para rotar el video'), hint: t('Para videos filmados de costado. Rota solo el video actual'), value: opt.rotateBtn, fn: (v) => { opt.rotateBtn = v; } }),
       ]],
       [t('Reproducción'), [
         row({ type: 'seg', label: t('Velocidad predeterminada'), value: state.speed, options: SPEEDS.map((s) => [s, s + '×']), fn: (v) => setSpeed(v) }),
         row({ type: 'toggle', label: t('Pausar el video detrás de los paneles'), hint: t('Al abrir un perfil, los mensajes, la búsqueda o los ajustes (los comentarios no)'), value: opt.pauseUnder, fn: (v) => { opt.pauseUnder = v; } }),
         row({ type: 'toggle', label: t('Incluir los comentarios'), when: () => opt.pauseUnder, value: opt.pauseUnderComments, fn: (v) => { opt.pauseUnderComments = v; } }),
         row({ type: 'range', label: t('Volumen'), min: 0, max: 100, step: 1, value: Math.round(state.volume * 100), unit: '%', fn: (v) => setVolume(v / 100) }),
+        row({ type: 'toggle', label: t('Normalizar audio'), hint: t('Iguala el volumen entre videos con el dato que informa TikTok. La barra de volumen no cambia'), value: opt.normalize, fn: (v) => { opt.normalize = v; applyNormalize(); } }),
         row({ type: 'toggle', label: t('Empezar silenciado'), value: opt.startMuted, fn: (v) => { opt.startMuted = v; } }),
         row({ type: 'toggle', label: t('Pasar automáticamente'), value: state.auto, fn: (v) => setAuto(v) }),
         row({ type: 'toggle', label: t('Subtítulos'), value: state.cc, fn: (v) => setCaptions(v) }),
@@ -180,6 +185,7 @@ function renderSettings() {
       ]],
       [t('Ventana'), [
         row({ type: 'toggle', label: t('Acceso directo en el menú Inicio'), value: !!N.StartMenuShortcut, fn: (v) => send({ t: 'setsetting', k: 'StartMenuShortcut', v }) }),
+        row({ type: 'text', label: t('Nombre en el menú Inicio'), placeholder: 'Tokdesk', maxlength: 60, value: N.ShortcutName || '', fn: (v) => send({ t: 'setsetting', k: 'ShortcutName', v }) }),
         row({ type: 'toggle', label: t('Acceso directo en el escritorio'), value: !!N.DesktopShortcut, fn: (v) => send({ t: 'setsetting', k: 'DesktopShortcut', v }) }),
         row({ type: 'toggle', label: t('Iniciar con Windows'), value: !!N.StartWithWindows, fn: (v) => send({ t: 'setsetting', k: 'StartWithWindows', v }) }),
         row({ type: 'toggle', label: t('Iniciar minimizado'), value: !!N.StartMinimized, fn: (v) => send({ t: 'setsetting', k: 'StartMinimized', v }) }),
@@ -320,6 +326,13 @@ function buildRow(r) {
       $('select', el).onchange = (e) => r.fn(e.target.value);
       break;
     }
+    case 'text': {
+      el.innerHTML = label + `<input class="sel" type="text" maxlength="${r.maxlength || 100}" placeholder="${esc(r.placeholder || '')}" value="${esc(r.value || '')}">`;
+      const input = $('input', el);
+      input.onchange = () => r.fn(input.value);
+      input.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') input.blur(); };
+      break;
+    }
     case 'info':
       el.classList.add('info');
       el.innerHTML = label;
@@ -402,8 +415,8 @@ function renderThemes(body) {
   };
 }
 
-function resetSettings() {
-  if (!confirm(t('¿Restablecer toda la configuración de la interfaz?'))) return;
+async function resetSettings() {
+  if (!await askConfirm(t('¿Restablecer toda la configuración de la interfaz?'), t('Restablecer configuración'))) return;
   for (const k of ['opt', 'speed', 'volume', 'muted', 'auto', 'cc', 'bgAudio']) pref.set(k, null);
   try { Object.keys(localStorage).filter((k) => k.startsWith('tp.')).forEach((k) => localStorage.removeItem(k)); } catch { }
   location.reload();

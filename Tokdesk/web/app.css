@@ -32,6 +32,40 @@ svg { display: block; width: 100%; height: 100%; }
 #top { height: 76px; align-items: flex-start; }
 #top > .topicon { position: absolute; left: 10px; top: 34px; }
 #top > #btnSearch { left: auto; right: 10px; }
+/* Pantalla de inicio de sesión */
+#login { top: 30px !important; z-index: 49; display: flex; flex-direction: column; overflow-y: auto; }
+#loginBack { position: absolute; left: 10px; top: 8px; width: 28px; height: 28px; }
+.login-box { margin: auto; padding: 20px 24px; width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.login-box .logo { width: 56px; height: 56px; border-radius: 12px; }
+.login-box h2 { font-size: calc(22px * var(--text-scale, 1)); font-weight: 700; }
+#loginQr { width: 200px; height: 200px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#loginQr img { width: 180px; height: 180px; image-rendering: pixelated; }
+#loginNote { min-height: 18px; font-size: calc(13px * var(--text-scale, 1)); color: var(--cyan); }
+.login-box ol { list-style-position: inside; font-size: calc(14px * var(--text-scale, 1)); line-height: 1.7; color: rgba(255,255,255,.8); }
+.login-alt { position: relative; width: 100%; max-width: 345px; min-height: 46px; padding: 8px 40px; border-radius: 8px; background: #252525; font-size: calc(15px * var(--text-scale, 1)); font-weight: 600; }
+.login-alt:hover { background: #303030; }
+.login-alt svg { position: absolute; left: 12px; top: 50%; width: 20px; height: 20px; margin-top: -10px; }
+#loginHint { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: calc(13px * var(--text-scale, 1)); color: var(--cyan); }
+#loginHint .spinner { position: static; margin: 0; }
+#loginHint:empty { display: none; }
+.login-link { font-size: calc(13px * var(--text-scale, 1)); color: var(--red); font-weight: 600; }
+#loginFrame { display: none; flex: 1; min-height: 0; margin-top: 44px; }
+#login.web #loginFrame { display: block; }
+#login.web .login-box { display: none; }
+#confirmDlg { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.55); }
+#confirmDlg .box { width: 100%; max-width: 340px; padding: 20px; border-radius: 10px; background: #252525; color: #fff; }
+#confirmDlg p { font-size: calc(15px * var(--text-scale, 1)); line-height: 1.4; margin-bottom: 18px; }
+#confirmDlg .btns { display: flex; justify-content: flex-end; gap: 8px; }
+#confirmDlg button { padding: 8px 14px; border-radius: 6px; background: rgba(255,255,255,.12); font-weight: 600; }
+#confirmDlg button:hover { background: rgba(255,255,255,.2); }
+#confirmDlg .ok { background: var(--red); }
+#confirmDlg .ok:hover { background: var(--red); filter: brightness(1.12); }
+/* Rotar: junto a la lupa, solo con un video a la vista; sin lupa (body.sub) ocupa su lugar, y si no entra junto a las pestañas sube a la franja de los botones de ventana */
+#top > #btnRotate { display: none; left: auto; right: 48px; z-index: 1; width: 26px; height: 26px; padding: 2px; color: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+body.rot-on.rot-video:not(.exgrid) #top > #btnRotate { display: block; }
+body.sub #top > #btnRotate { right: 10px; }
+@media (max-width: 420px) { #top > #btnRotate, body.sub #top > #btnRotate { top: 2px; right: 168px; width: 24px; height: 24px; } }
+body:has(#login.open, #profile.open, #page.open, #search.open, #inbox.open, #chat.open, #activity.open, #settings.open, #help.open) #top > #btnRotate { display: none; }
 #btnLive { width: auto; padding: 0; }
 .livetv { width: 28px; height: 24px; display: block; color: #fff; }
 #top > #backbar { position: absolute; left: 6px; right: 6px; top: 32px; }
@@ -58,6 +92,11 @@ svg { display: block; width: 100%; height: 100%; }
 .slide .poster, .slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .slide .poster { object-fit: cover; filter: blur(24px) brightness(.45); transform: scale(1.15); }
 .slide video { background: transparent; }
+/* Video rotado: de costado se intercambian ancho y alto para que aproveche la ventana */
+#pager { container-type: size; }
+.slide.rotated video { transform: rotate(var(--rot)); }
+.slide.rot-side video { left: calc((100cqw - 100cqh) / 2); top: calc((100cqh - 100cqw) / 2); right: auto; bottom: auto; width: 100cqh; height: 100cqw; }
+.slide.rot-anim video { transition: transform .22s ease, width .22s ease, height .22s ease, left .22s ease, top .22s ease; }
 .slide .playicon { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px;
   color: rgba(255,255,255,.5); opacity: 0; transform: scale(1.4); transition: opacity .15s, transform .15s;
   pointer-events: none; filter: drop-shadow(0 1px 4px rgba(0,0,0,.35)); z-index: 2; }
