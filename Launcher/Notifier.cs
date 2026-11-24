@@ -54,13 +54,13 @@ static class Notifier
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location),
             Text = "Tokdesk",
             ContextMenuStrip = menu,
-            Visible = !AppOpen(),
+            Visible = false,
         };
-        // Con la app abierta el ícono sobra: la bandeja es de ella y aquí solo aparece para mostrar un aviso
+        // El ícono solo aparece mientras se muestra un aviso: si no, al salir de la app parecía que seguía abierta
         var iconTimer = new System.Windows.Forms.Timer { Interval = 2000 };
-        iconTimer.Tick += (_, _) => _icon.Visible = !AppOpen() || DateTime.Now < _balloonUntil;
+        iconTimer.Tick += (_, _) => _icon.Visible = DateTime.Now < _balloonUntil;
         iconTimer.Start();
-        _icon.BalloonTipClicked += (_, _) => OpenApp();
+        _icon.BalloonTipClicked += (_, _) => OpenApp(_lastLink);
         _icon.DoubleClick += (_, _) => OpenApp();
 
         // La app pide cerrar este proceso (al actualizarse o al desactivar las notificaciones)
@@ -94,10 +94,26 @@ static class Notifier
         catch { return false; }
     }
 
-    static void OpenApp()
+    // Con un enlace (el video o el perfil del aviso) la app lo abre; si ya estaba abierta, la instancia abierta lo recibe
+    static void OpenApp(string link = null)
     {
-        try { Process.Start(new ProcessStartInfo(Assembly.GetExecutingAssembly().Location) { UseShellExecute = false }); } catch { }
+        try { Process.Start(new ProcessStartInfo(Assembly.GetExecutingAssembly().Location, link == null ? "" : "\"" + link + "\"") { UseShellExecute = false }); } catch { }
     }
+
+    // Lo que abre cada aviso: el video si lo tiene (me gusta, comentarios, republicaciones…) o el perfil de quien lo hizo
+    static string LinkOf(int group, Dictionary<string, object> n)
+    {
+        string Video(string id) => id.Length > 0 ? "https://www.tiktok.com/@tiktok/video/" + id : null;
+        string Profile(string user) => user.Length > 0 ? "https://www.tiktok.com/@" + user : null;
+        switch (group)
+        {
+            case 2: return Video(Str(n, "comment", "aweme", "aweme_id")) ?? Profile(Str(n, "comment", "comment", "user", "unique_id"));
+            case 6: return Video(Str(n, "at", "aweme", "aweme_id")) ?? Video(Str(n, "at", "comment", "aweme_id")) ?? Profile(Str(n, "at", "user_info", "unique_id"));
+            case 7: return Profile(Str(n, "follow", "from_user", "unique_id"));
+            default: return Video(Str(n, "template_notice", "extra_data", "nudge_info", "aweme_id")) ?? Profile(Str(n, "template_notice", "notice", "title", "from_users", "0", "unique_id"));
+        }
+    }
+    static string _lastLink;
 
     static string S(string key, string def) => _cfg.TryGetValue("s." + key, out var v) && v.Length > 0 ? v : def;
     static int Int(string key, int def) => _cfg.TryGetValue(key, out var v) && int.TryParse(v, out var n) ? n : def;
@@ -150,6 +166,7 @@ static class Notifier
             var groups = (_cfg.TryGetValue("groups", out var gs) ? gs : "").Split(',')
                 .Select(x => int.TryParse(x, out var n) ? n : 0).Where(n => n > 0).ToArray();
             var news = new List<string>();
+            string link = null;
             foreach (var g in groups)
             {
                 var list = Fetch(g);
@@ -161,12 +178,12 @@ static class Notifier
                     var t = Convert.ToInt64(n.TryGetValue("create_time", out var ct) ? ct : 0);
                     if (t > max) max = t;
                     // La primera vez solo se toma nota de lo que ya había, sin avisar
-                    if (known && t > last) { var text = Describe(g, n); if (text != null) news.Add(text); }
+                    if (known && t > last) { var text = Describe(g, n); if (text != null) { news.Add(text); link ??= LinkOf(g, n); } }
                 }
                 Last[g] = max;
             }
             SaveState();
-            if (news.Count > 0) _ui.BeginInvoke(new Action(() => Show(news)));
+            if (news.Count > 0) _ui.BeginInvoke(new Action(() => { _lastLink = link; Show(news); }));
         }
         catch { }
         finally { Interlocked.Exchange(ref _busy, 0); Trim(); }
@@ -251,7 +268,7 @@ static class Notifier
     {
         var text = string.Join("\n", news.Take(3));
         if (news.Count > 3) text += "\n" + string.Format(S("andmore", "y {0} más"), news.Count - 3);
-        _balloonUntil = DateTime.Now.AddSeconds(10);
+        _balloonUntil = DateTime.Now.AddSeconds(30);
         _icon.Visible = true;
         _icon.ShowBalloonTip(8000, "Tokdesk", text, ToolTipIcon.None);
     }

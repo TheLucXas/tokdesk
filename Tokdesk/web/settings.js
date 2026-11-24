@@ -179,6 +179,7 @@ function renderSettings() {
         row({ type: 'link', ic: 'play', label: t('Ver videos sin conexión'), fn: () => openOffline() }),
       ]],
       [t('Descargas'), [
+        row({ type: 'toggle', label: t('Preguntar el nombre al descargar audio (MP3)'), value: !!opt.askMp3Name, fn: (v) => { opt.askMp3Name = v; } }),
         row({ type: 'toggle', label: t('Preguntar dónde guardar cada archivo'), value: !!N.AskDownloadFolder, fn: (v) => send({ t: 'setsetting', k: 'AskDownloadFolder', v }) }),
         !N.AskDownloadFolder && row({ type: 'link', ic: 'folder', label: t('Carpeta de descargas'), sub: native ? native.downloads : '', fn: () => send({ t: 'pickfolder' }) }),
         row({ type: 'link', ic: 'globe', label: t('Abrir carpeta de descargas'), fn: () => send({ t: 'showfile', file: '' }) }),
@@ -190,7 +191,7 @@ function renderSettings() {
         row({ type: 'toggle', label: t('Iniciar con Windows'), value: !!N.StartWithWindows, fn: (v) => send({ t: 'setsetting', k: 'StartWithWindows', v }) }),
         row({ type: 'toggle', label: t('Iniciar minimizado'), value: !!N.StartMinimized, fn: (v) => send({ t: 'setsetting', k: 'StartMinimized', v }) }),
         row({ type: 'toggle', label: t('Minimizar a la bandeja del sistema'), value: !!N.MinimizeToTray, fn: (v) => send({ t: 'setsetting', k: 'MinimizeToTray', v }) }),
-        row({ type: 'toggle', label: t('El botón cerrar minimiza'), value: !!N.CloseToTray, fn: (v) => send({ t: 'setsetting', k: 'CloseToTray', v }) }),
+        row({ type: 'toggle', label: t('Cerrar deja la app en la bandeja'), hint: t('Sigue en segundo plano; para salir usa Salir en el ícono de la bandeja'), value: !!N.CloseToTray, fn: (v) => send({ t: 'setsetting', k: 'CloseToTray', v }) }),
         row({ type: 'toggle', label: t('Siempre visible'), value: !!N.AlwaysOnTop, fn: (v) => send({ t: 'setsetting', k: 'AlwaysOnTop', v }) }),
         row({ type: 'toggle', label: t('Recordar tamaño y posición'), value: N.RememberWindow !== false, fn: (v) => send({ t: 'setsetting', k: 'RememberWindow', v }) }),
         row({ type: 'toggle', label: t('Teclas multimedia del teclado (global)'), hint: t('Reproducir/pausa, siguiente y anterior aunque la app no tenga el foco'), value: !!N.GlobalMediaKeys, fn: (v) => send({ t: 'setsetting', k: 'GlobalMediaKeys', v }) }),
@@ -437,7 +438,11 @@ function openDownloadMenu(it) {
   openOptions([
     items.filter((x) => x && x.fn),
     [
-      it.musicUrl && { ic: 'music', label: t('Solo audio (MP3)'), fn: dl(it.musicUrl, 'mp3', '_audio') },
+      it.musicUrl && { ic: 'music', label: t('Solo audio (MP3)'), fn: !opt.askMp3Name ? dl(it.musicUrl, 'mp3', '_audio') : async () => {
+        // Se propone el nombre del sonido; lo que no sirve para un archivo lo quita el programa al guardar
+        const name = await askConfirm(t('Nombre del archivo'), t('Descargar'), it.musicTitle || it.music || base + '_audio');
+        if (name) startDownload(it.musicUrl, name.replace(/\.mp3$/i, ''), 'mp3');
+      } },
       it.cover && { ic: 'grid', label: t('Portada (JPG)'), fn: dl(it.cover, 'jpg', '_portada') },
     ].filter(Boolean),
     [{ ic: 'folder', label: t('Abrir carpeta de descargas'), fn: () => send({ t: 'showfile', file: '' }) }],

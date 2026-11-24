@@ -81,7 +81,7 @@ function ago(ts) {
   const s = Date.now() / 1000 - ts;
   if (s < 3600) return Math.max(1, Math.floor(s / 60)) + ' min';
   if (s < 86400) return Math.floor(s / 3600) + ' h';
-  if (s < 86400 * 7) return Math.floor(s / 86400) + ' d';
+  if (s < 86400 * 7) return t('{0} día(s)', Math.floor(s / 86400)); // como la app
   const d = new Date(ts * 1000);
   return d.getDate() + '-' + (d.getMonth() + 1) + (d.getFullYear() !== new Date().getFullYear() ? '-' + d.getFullYear() : '');
 }
@@ -126,17 +126,27 @@ function onApi(msg) {
 
 setTimeout(() => { state.meKnown = true; }, 15000); // por si la sesión nunca llega a informarse
 // Diálogo de confirmación propio (confirm() del navegador mostraría «app.tokdesk dice»)
-function askConfirm(text, okLabel) {
+// Con «value» pide además un texto (por ejemplo un nombre de archivo) y devuelve lo escrito, o null si se cancela
+function askConfirm(text, okLabel, value) {
+  const ask = value !== undefined;
   return new Promise((res) => {
     const d = document.createElement('div');
     d.id = 'confirmDlg';
-    d.innerHTML = `<div class="box"><p>${esc(text)}</p><div class="btns"><button class="no">${esc(t('Cancelar'))}</button><button class="ok">${esc(okLabel)}</button></div></div>`;
-    const done = (v) => { document.removeEventListener('keydown', key, true); d.remove(); res(v); };
-    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(false); } };
+    d.innerHTML = `<div class="box"><p>${esc(text)}</p>${ask ? `<input class="field" maxlength="120" value="${esc(value)}">` : ''}<div class="btns"><button class="no">${esc(t('Cancelar'))}</button><button class="ok">${esc(okLabel)}</button></div></div>`;
+    const input = $('.field', d);
+    const done = (ok) => {
+      document.removeEventListener('keydown', key, true); d.remove();
+      res(ask ? (ok && input.value.trim() ? input.value.trim() : null) : ok);
+    };
+    const key = (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); done(false); }
+      else if (e.key === 'Enter' && ask) { e.preventDefault(); e.stopPropagation(); done(true); }
+      else if (ask) e.stopPropagation(); // los atajos de la app no se disparan mientras se escribe
+    };
     document.addEventListener('keydown', key, true);
     d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('.no')) done(false); else if (e.target.closest('.ok')) done(true); });
     document.body.appendChild(d);
-    $('.ok', d).focus();
+    if (input) { input.focus(); input.select(); } else $('.ok', d).focus();
   });
 }
 
@@ -145,7 +155,7 @@ function clearAccountData() {
   state.me = null; state.notifySent = false; state.chats = null;
   state.cmtDislikes.clear(); avatarStore.clear(); lastUnread = null;
   convCache = {}; clearTimeout(cacheConv.t);
-  for (const [k, v] of [['convCache', {}], ['avatars', {}], ['storySeen', {}], ['shareRecent', []], ['cmtDislikes', []]]) pref.set(k, v);
+  for (const [k, v] of [['convCache', {}], ['avatars', {}], ['storySeen', {}], ['shareRecent', []], ['cmtDislikes', []], ['friendsCache', []]]) pref.set(k, v);
   const badge = $('#inboxBadge');
   badge.textContent = ''; badge.classList.remove('show');
   dropLikeQueue();
@@ -194,9 +204,11 @@ function makeFeed(key, opts) {
 async function loadPaged(f, path, q, cursorKey = 'cursor') {
   if (f.loading || !f.hasMore) return;
   f.loading = true;
-  const r = await api('GET', path, { ...q, [cursorKey]: f.cursor });
+  const r = await api('GET', path, { ...q, [cursorKey]: f.cursor, ...(f.searchId ? { search_id: f.searchId } : {}) });
   f.loading = false;
   const d = r.data;
+  // Sin el id de la búsqueda, la segunda página de resultados llega vacía
+  if (d && path.includes('/api/search/') && !f.searchId) f.searchId = (d.log_pb && d.log_pb.impr_id) || (d.extra && d.extra.logid) || '';
   if (!d) { f.hasMore = false; f.error = true; feedChanged(f); return; }
   const list = d.itemList || d.item_list || (Array.isArray(d.data) ? d.data.map((x) => x.item).filter(Boolean) : []);
   addItems(f, list);
@@ -214,18 +226,43 @@ function feedFor(key) {
     case 'explore': return makeFeed(key, { title: t('Explorar'), load: (f) => loadPaged(f, '/api/explore/item_list/', { categoryType: +arg || 120, count: 16 }) });
     case 'following': return makeFeed(key, { title: t('Siguiendo'), needsLogin: true, load: (f) => loadPaged(f, '/api/following/item_list/', { count: 8, pullType: 1, level: f.level || 1, isResetCounterUsed: true }) });
     case 'friends': return makeFeed(key, { title: t('Amigos'), needsLogin: true, async load(f) {
-      // Amigos pagina con dos cursores (vistos y no vistos) en lugar de uno
+      // Amigos pagina con dos cursores: primero los no vistos y después los ya vistos. TikTok repite el no visto
+      // mientras no figure como visto, así que tras la primera página se pasa a los vistos (unviewedCursor = -1)
       if (f.loading || !f.hasMore) return;
       f.loading = true;
-      const r = await api('GET', '/api/friends/item_list/', { count: 8, pullType: 1, level: f.level || 1, isResetCounterUsed: true,
-        unviewedCursor: f.unviewed || 0, viewedCursor: f.viewed || 0, coverFormat: 2 });
+      // Lo guardado de la vez anterior se ve al instante mientras llega lo nuevo
+      if (!f.items.length && !f.started) {
+        const cached = pref.get('friendsCache', []);
+        if (cached.length) { addItems(f, cached); f.fromCache = true; feedChanged(f); }
+      }
+      const before = f.items.length, fresh = [];
+      for (let page = 0; page < 6 && f.hasMore && f.items.length - before + fresh.length < 6; page++) {
+        const first = !f.started;
+        const r = await api('GET', '/api/friends/item_list/', { count: 9, pullType: first ? 1 : 2, level: 1, isResetCounterUsed: true,
+          isNonPersonalized: false, from_page: 'friend', coverFormat: 2, unviewedCursor: first ? 0 : -1, viewedCursor: f.viewed || 0 });
+        const d = r.data;
+        // Sin videos la respuesta llega sin lista: no es un error si TikTok dice que salió bien
+        const list = d && Array.isArray(d.itemList) ? d.itemList : d && (d.status_code ?? d.statusCode) === 0 ? [] : null;
+        if (!list) { f.hasMore = false; f.error = !f.items.length; break; }
+        d.itemList = list;
+        f.started = true;
+        f.viewed = d.viewedCursor || f.viewed;
+        // Sin no vistos la primera respuesta viene vacía: se sigue con los vistos
+        if (first && !list.length) { f.hasMore = true; continue; }
+        if (f.fromCache) {
+          // Lo nuevo reemplaza a lo guardado mientras no se haya avanzado
+          f.fromCache = false;
+          // (si empieza igual, se deja: así el video que ya se ve no vuelve a empezar)
+          if (f.idx === 0 && f.items[0] && d.itemList[0] && f.items[0].id !== d.itemList[0].id) { f.items.length = 0; f.ids.clear(); }
+          fresh.length = 0;
+        }
+        addItems(f, d.itemList);
+        fresh.push(...d.itemList);
+        f.hasMore = !!d.hasMore && d.itemList.length > 0;
+        feedChanged(f);
+      }
+      if (fresh.length) pref.set('friendsCache', [...fresh, ...pref.get('friendsCache', [])].filter((x, i, a) => a.findIndex((y) => y.id === x.id) === i).slice(0, 20));
       f.loading = false;
-      const d = r.data;
-      if (!d || !Array.isArray(d.itemList)) { f.hasMore = false; f.error = !d || (d.status_code ?? d.statusCode) !== 0; feedChanged(f); return; }
-      addItems(f, d.itemList);
-      f.unviewed = d.unviewedCursor ?? f.unviewed; f.viewed = d.viewedCursor ?? f.viewed;
-      if (d.level != null) f.level = d.level;
-      f.hasMore = !!d.hasMore && d.itemList.length > 0;
       feedChanged(f);
     } });
     case 'user': { const [sec, sort] = arg.split('|'); return makeFeed(key, { title: '', load: (f) => loadPaged(f, '/api/post/item_list/', { secUid: sec, count: 16, coverFormat: 2, post_item_list_request_type: +sort || 0 }) }); }
@@ -590,11 +627,46 @@ function renderExplore() {
   renderCards($('#exGrid'), $('#exMore'), f, (i) => { state.stack.push(f); setFeed(f, i); });
 }
 // Resultados de búsqueda: Tendencias y Videos usan las mismas tarjetas que la app (con fecha)
+// Filtros como los de la app (orden, fecha, vistos). La web los ignora, así que se aplican sobre lo ya cargado
+const SEARCH_FILTER0 = { sort: 'rel', days: 0, seen: 'all' };
+state.searchFilter = { ...SEARCH_FILTER0 };
+function searchView(f) {
+  const sf = state.searchFilter;
+  $('#searchFilter').classList.toggle('on', sf.sort !== 'rel' || !!sf.days || sf.seen !== 'all');
+  if (sf.sort === 'rel' && !sf.days && sf.seen === 'all') return f;
+  const since = sf.days ? Date.now() / 1000 - sf.days * 86400 : 0;
+  let list = f.items.filter((it) => (!since || it.created >= since) && (sf.seen === 'all' || (sf.seen === 'seen') === seenIds().has(it.id)));
+  if (sf.sort === 'likes') list = [...list].sort((a, b) => b.likes - a.likes);
+  else if (sf.sort === 'date') list = [...list].sort((a, b) => b.created - a.created);
+  // Un feed aparte con el resultado: al abrir un video se recorre en ese orden
+  const key = f.key + '|' + sf.sort + sf.days + sf.seen;
+  const v = feeds.get(key) || makeFeed(key, { title: f.title, load() { f.load(f); } });
+  v.items = list; v.ids = new Set(list.map((x) => x.id)); v.hasMore = f.hasMore; v.loading = f.loading;
+  $('#searchGrid').dataset.key = ''; // el orden puede cambiar con cada carga: se rearma
+  return v;
+}
+function openSearchFilters() {
+  const sf = state.searchFilter;
+  const set = (k, v) => { sf[k] = v; const f = state.searchKey && feeds.get(state.searchKey); if (f) renderSearchCards(f); };
+  openOptions([
+    [
+      { ic: 'sort', label: t('Ordenar por'), value: sf.sort, seg: [['rel', t('Relevancia')], ['likes', t('Más me gusta')], ['date', t('Más recientes')]], fn: (v) => set('sort', v) },
+      { ic: 'clock', label: t('Fecha de publicación'), value: sf.days, seg: [[0, t('Todo')], [1, '24 h'], [7, t('Semana')], [30, t('Mes')], [90, t('{0} meses', 3)], [180, t('{0} meses', 6)]], fn: (v) => set('days', v) },
+      { ic: 'views', label: t('Mostrar'), value: sf.seen, seg: [['all', t('Todos')], ['unseen', t('No vistos')], ['seen', t('Vistos')]], fn: (v) => set('seen', v) },
+    ],
+    [{ ic: 'autoscroll', label: t('Restablecer filtros'), fn: () => { state.searchFilter = { ...SEARCH_FILTER0 }; const f = state.searchKey && feeds.get(state.searchKey); if (f) renderSearchCards(f); } }],
+  ], true);
+  $('#optsBody').classList.add('wide-seg');
+}
+$('#searchFilter').innerHTML = ICON.sort;
+$('#searchFilter').addEventListener('click', openSearchFilters);
+
 function renderSearchCards(f) {
-  renderCards($('#searchGrid'), $('#searchMore'), f, (i) => {
+  const v = searchView(f);
+  renderCards($('#searchGrid'), $('#searchMore'), v, (i) => {
     const kw = state.searchKw, key = f.key;
     state.returnTo = { key, fn: () => { openPanel('search'); state.searchKey = key; state.searchKw = kw; } };
-    openSubFeed(f, i);
+    openSubFeed(v, i);
   }, true);
 }
 const colsFor = (grid) => Math.max(2, Math.min(6, Math.floor(grid.clientWidth / 240)));
@@ -1084,6 +1156,25 @@ function go(step) {
 
 function current() { return state.slides.get(state.feed.idx); }
 function currentItem() { return state.feed && state.feed.items[state.feed.idx]; }
+
+// Si el video avanza pero deja de decodificar sonido (pasó al repetirse uno), se recarga en el mismo punto, una vez
+setInterval(() => {
+  const el = state.feed && current();
+  if (!el || el.item.live || el.media.tagName !== 'VIDEO') return;
+  const m = el.media, bytes = m.webkitAudioDecodedByteCount || 0;
+  const playing = !m.paused && !m.muted && m.volume > 0 && !el.sideAudio && m.readyState >= 3;
+  if (bytes > 0) el.hadAudio = true;
+  if (playing && el.hadAudio && bytes === el.lastBytes && m.currentTime !== el.lastTime) el.silentTicks = (el.silentTicks || 0) + 1;
+  else el.silentTicks = 0;
+  el.lastBytes = bytes; el.lastTime = m.currentTime;
+  if (el.silentTicks >= 2 && !el.audioHealed) {
+    el.audioHealed = true;
+    const at = m.currentTime;
+    log(`audio ${el.item.id}: el video sigue pero dejó de sonar (t=${at.toFixed(1)}, duración ${m.duration.toFixed(1)}, ${m.currentSrc.includes('offline.tokdesk') ? 'búfer' : 'red'}, normalizado=${!!m.normNode}); se recarga`);
+    m.addEventListener('loadedmetadata', () => { m.currentTime = at; m.play().catch(() => { }); }, { once: true });
+    m.load();
+  }
+}, 2000);
 
 // Rotar el video actual para los filmados de costado. it.rot se acumula (450° y no 90°) para que siempre gire hacia el mismo lado
 function applyRotation(el, it) {
@@ -1590,6 +1681,7 @@ function hideCtx() { $('#ctx').classList.remove('show'); }
 function openOptions(groups, keep) {
   const body = $('#optsBody');
   body.innerHTML = '';
+  body.classList.remove('wide-seg');
   for (const g of groups) {
     const box = document.createElement('div');
     box.className = 'og';
@@ -1884,7 +1976,7 @@ let lastUnread = null;
 function notifyNewMessages() {
   const now = new Map(state.chats.map((c) => [c.id, c.unread || 0]));
   if (lastUnread) for (const c of state.chats) {
-    if ((c.unread || 0) > (lastUnread.get(c.id) || 0) && !(chatConv && chatConv.id === c.id)) send({ t: 'notify', title: c.name, text: c.last || t('Mensaje nuevo') });
+    if ((c.unread || 0) > (lastUnread.get(c.id) || 0) && !(chatConv && chatConv.id === c.id)) send({ t: 'notify', id: c.id, title: c.name, text: c.last || t('Mensaje nuevo') });
   }
   lastUnread = now;
 }
@@ -2664,6 +2756,25 @@ $('#pfBody').addEventListener('scroll', (e) => {
   if (f && l.scrollTop + l.clientHeight > l.scrollHeight - 400) f.load(f);
 });
 
+function scrollParentOf(el) {
+  for (let e = el.parentElement; e; e = e.parentElement) {
+    const o = getComputedStyle(e).overflowY;
+    if ((o === 'auto' || o === 'scroll') && e.scrollHeight > e.clientHeight) return e;
+  }
+  return null;
+}
+// La lista se vuelve a armar al volver: se espera a que alcance para llegar a la posición guardada
+function restoreScroll(el, top) {
+  if (!el || top <= 0) return;
+  let n = 0;
+  const tick = () => {
+    if (el.scrollHeight - el.clientHeight >= top || n > 40) { el.scrollTop = top; if (Math.abs(el.scrollTop - top) < 2 || n > 40) return; }
+    n++;
+    setTimeout(tick, 150);
+  };
+  tick();
+}
+
 function renderGrid(grid, more, f) {
   const have = grid.children.length;
   if (grid.dataset.key !== f.key || have > f.items.length) { grid.innerHTML = ''; grid.dataset.key = f.key; }
@@ -2674,8 +2785,10 @@ function renderGrid(grid, more, f) {
     t.innerHTML = `<img alt="" loading="lazy" src="${esc(it.cover)}">${it.pinned ? '<span class="pin">Fijado</span>' : ''}
       <span class="views">${ICON.views}${fmt(it.plays)}</span>`;
     t.onclick = () => {
-      if (grid.id === 'pgGrid') { const info = state.pageInfo; state.returnTo = { key: f.key, fn: () => showPage(f, info) }; }
-      else if (grid.id === 'pfGrid') { const p = state.profileFor, k = state.profileKey; state.returnTo = { key: f.key, fn: () => reopenProfile(p, k) }; }
+      // Al volver, la lista sigue donde estaba (perfil, favoritos, sonidos, hashtags…)
+      const sc = scrollParentOf(grid), top = sc ? sc.scrollTop : 0;
+      if (grid.id === 'pgGrid') { const info = state.pageInfo; state.returnTo = { key: f.key, fn: () => { showPage(f, info); restoreScroll(sc, top); } }; }
+      else if (grid.id === 'pfGrid') { const p = state.profileFor, k = state.profileKey; state.returnTo = { key: f.key, fn: () => { reopenProfile(p, k); restoreScroll(sc, top); } }; }
       openSubFeed(f, i);
     };
     grid.appendChild(t);
@@ -2814,6 +2927,7 @@ $('#searchForm').addEventListener('submit', (e) => {
   $('#search').classList.add('searching');
   feeds.delete('search:' + kw); feeds.delete('searchtop:' + kw);
   state.searchKw = kw;
+  state.searchFilter = { ...SEARCH_FILTER0 };
   const tab = $('#searchTabs button.on').dataset.st;
   const f = feedFor((tab === 'videos' ? 'search:' : 'searchtop:') + kw);
   state.searchKey = f.key;
@@ -2830,6 +2944,7 @@ $$('#searchTabs button').forEach((b) => b.addEventListener('click', () => {
   $$('#searchTabs button').forEach((x) => x.classList.toggle('on', x === b));
   const st = b.dataset.st;
   const cards = st === 'top' || st === 'videos';
+  $('#searchFilter').hidden = !cards;
   $('#searchGrid').style.display = cards ? '' : 'none';
   $('#searchMore').style.display = cards ? '' : 'none';
   if (cards && state.searchKw) {
@@ -2954,7 +3069,11 @@ async function fetchComments(id, more = false) {
     c.hasMore = false; c.error = !d || d.status_code !== 0;
   } else {
     c.error = false;
-    c.list.push(...d.comments);
+    // Las páginas pueden repetir comentarios: cada uno se muestra una sola vez
+    const have = new Set(c.list.map((x) => x.cid));
+    c.list.push(...d.comments.filter((x) => !have.has(x.cid)));
+    // Como en la app, los comentarios del creador van arriba de todo (la web los deja donde caen)
+    if (state.sheetFor === id) c.list = [...c.list.filter(isCreatorComment), ...c.list.filter((x) => !isCreatorComment(x))];
     c.cursor = d.cursor || c.cursor + d.comments.length;
     c.hasMore = !!d.has_more;
     c.total = d.total ?? c.total;
@@ -2962,6 +3081,22 @@ async function fetchComments(id, more = false) {
   if (state.sheetFor === id) renderComments();
 }
 
+// La web no manda la respuesta del creador junto al comentario (la app sí). Quien responde suele dar «me gusta»:
+// en esos comentarios con respuestas se piden las respuestas y, si una es del creador, se muestra debajo
+async function loadCreatorReply(cm) {
+  cm.creatorTried = true;
+  const id = state.sheetFor;
+  const res = await api('GET', '/api/comment/list/reply/', { item_id: id, comment_id: cm.cid, count: 50, cursor: 0 });
+  const found = ((res.data && res.data.comments) || []).find(isCreatorComment);
+  if (!found) return;
+  cm.reply_comment = [found];
+  if (state.sheetFor === id) renderComments();
+}
+// TikTok marca el comentario del creador con la etiqueta de tipo 1; por las dudas también se compara el usuario
+function isCreatorComment(cm) {
+  const u = cm.user || {}, it = currentItem();
+  return (cm.label_list || []).some((l) => l.type === 1) || !!(it && ((u.uid && u.uid === it.authorId) || (u.sec_uid && u.sec_uid === it.secUid)));
+}
 // Sticker de un comentario: la primera variante que traiga (la animada viene antes), en baja resolución porque se ve chico
 function stickerUrl(s) {
   for (const v of Object.values(s || {})) {
@@ -2979,12 +3114,14 @@ function cmtHtml(cm, reply, parentCid) {
   const disliked = state.cmtDislikes.has(cm.cid);
   const it = currentItem();
   const authorAv = it && it.avatar;
+  // Como en la app: «nombre · Creador» en los comentarios y respuestas del creador del video
+  const creatorTag = isCreatorComment(cm) ? `<span class="cmt-creator"><i>·</i>${esc(t('Creador'))}</span>` : '';
   // Como en la app: con «no me gusta» se ocultan el texto y la imagen, y queda el pulgar para deshacerlo
   if (disliked && opt.hideDisliked) {
     return `<div class="cmt hidden-cmt ${reply ? 'reply' : ''}" data-cid="${esc(cm.cid)}" data-parent="${esc(parentCid || '')}">
       <img class="cav" alt="" src="${esc(av)}">
       <div class="body">
-        <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span></div>
+        <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span>${creatorTag}</div>
         <div class="sub"><span class="gone">${esc(t('Este comentario ya no se te mostrará'))}</span>
           <span class="right"><span class="dislike on" data-cid="${esc(cm.cid)}" title="${esc(t('Quitar no me gusta'))}">${ICON.thumbdownfill}</span></span></div>
       </div>
@@ -2993,7 +3130,7 @@ function cmtHtml(cm, reply, parentCid) {
   return `<div class="cmt ${reply ? 'reply' : ''}" data-cid="${esc(cm.cid)}" data-parent="${esc(parentCid || '')}">
     <img class="cav" alt="" src="${esc(av)}" data-full="${esc((u.avatar_medium && u.avatar_medium.url_list && u.avatar_medium.url_list[0]) || av)}" title="${esc(t('Ver foto'))}">
     <div class="body">
-      <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span></div>
+      <div class="name"><span class="uname" data-u="${esc(u.unique_id || '')}">${esc(u.nickname || u.unique_id)}</span>${creatorTag}</div>
       <div class="text">${richText(cm.showTr && cm.textTr ? cm.textTr : cm.text)}</div>
       ${img ? `<img class="cimg" alt="" src="${esc(img)}">` : ''}
       <div class="sub"><span>${ago(cm.create_time)}</span>
@@ -3085,6 +3222,9 @@ function findComment(c, cid) {
   return null;
 }
 
+// Flechas en V de «Ver respuestas», como la app
+const CHEV_DOWN = '<svg class="chev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>';
+const CHEV_UP = CHEV_DOWN.replace('M6 9l6 6 6-6', 'M6 15l6-6 6 6');
 function renderComments() {
   const it = currentItem();
   const c = state.comments.get(state.sheetFor);
@@ -3105,14 +3245,18 @@ function renderComments() {
     const r = c.replies.get(cm.cid);
     let html = cmtHtml(cm, false);
     if (r && r.list.length && !r.collapsed) html += `<div class="replies">${r.list.map((x) => cmtHtml(x, true, cm.cid)).join('')}</div>`;
-    const left = (cm.reply_comment_total || 0) - (r ? r.list.length : 0);
+    // Como en la app: si el creador respondió, su respuesta se ve sin abrir las demás
+    if ((!r || r.collapsed) && !cm.reply_comment && !cm.creatorTried && cm.is_author_digged && cm.reply_comment_total > 0) loadCreatorReply(cm);
+    const preview = (!r || r.collapsed) ? (cm.reply_comment || []).find(isCreatorComment) : null;
+    if (preview) html += `<div class="replies preview">${cmtHtml(preview, true, cm.cid)}</div>`;
+    const left = (cm.reply_comment_total || 0) - (r && !r.collapsed ? r.list.length : preview ? 1 : 0);
     if (r && r.collapsed) {
-      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${(cm.reply_comment_total > 1 ? t('Ver {0} respuestas', cm.reply_comment_total) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
+      if (left > 0) html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${(left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + CHEV_DOWN}</button>`;
       return html;
     }
-    if (r && r.list.length) html += `<button class="lessreplies" data-cid="${esc(cm.cid)}">${esc(t('Ocultar respuestas'))} ▴</button>`;
+    if (r && r.list.length) html += `<button class="lessreplies" data-cid="${esc(cm.cid)}">${esc(t('Ocultar respuestas'))}${CHEV_UP}</button>`;
     if (left > 0 && (!r || r.hasMore)) {
-      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${r && r.loading ? t('Cargando…') : r && r.error ? t('No se pudieron cargar las respuestas') + ' · ' + t('Reintentar') : (left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + ' ▾'}</button>`;
+      html += `<button class="morereplies" data-cid="${esc(cm.cid)}">${r && r.loading ? t('Cargando…') : r && r.error ? t('No se pudieron cargar las respuestas') + ' · ' + t('Reintentar') : (left > 1 ? t('Ver {0} respuestas', left) : t('Ver 1 respuesta')) + CHEV_DOWN}</button>`;
     }
     return html;
   }).join('') + (c.hasMore ? '<div class="sheet-msg"><div class="spinner"></div></div>' : '');
@@ -3168,6 +3312,16 @@ function setReply(r) {
   $('#cmtInput').placeholder = r ? t('Responder a {0}…', r.name) : t('Agregar comentario…');
 }
 
+// Como la app: @ y emojis dentro del campo, y el botón de enviar solo aparece al escribir
+const cmtTyping = () => $('#cmtForm').classList.toggle('typing', !!$('#cmtInput').value.trim());
+$('#cmtInput').addEventListener('input', cmtTyping);
+$('#cmtEmoji').innerHTML = ICON.smile;
+$('#cmtEmoji').addEventListener('click', (e) => openEmojis(e.currentTarget, $('#cmtInput')));
+$('#cmtAt').addEventListener('click', () => {
+  const i = $('#cmtInput'), at = i.selectionStart ?? i.value.length;
+  i.value = i.value.slice(0, at) + '@' + i.value.slice(at);
+  i.focus(); i.setSelectionRange(at + 1, at + 1); cmtTyping();
+});
 $('#cmtForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const text = $('#cmtInput').value.trim();
@@ -3181,6 +3335,7 @@ $('#cmtForm').addEventListener('submit', async (e) => {
   $('#cmtSend').disabled = false;
   if (!d) return;
   $('#cmtInput').value = '';
+  cmtTyping();
   const c = state.comments.get(id);
   const cm = d.comment || { cid: String(Date.now()), text, create_time: Date.now() / 1000, digg_count: 0, user: { nickname: state.me.nickName || state.me.uniqueId } };
   if (c) {
@@ -3288,7 +3443,16 @@ $('#top').addEventListener('dblclick', (e) => { if (!e.target.closest('button, i
 $$('.tab').forEach((t) => t.addEventListener('click', () => switchTab(t.dataset.feed)));
 $$('.nav').forEach((n) => n.addEventListener('click', () => {
   switch (n.dataset.nav) {
-    case 'home': switchTab('foryou'); break;
+    case 'home': {
+      // Como en la app: tocar Inicio estando ya en Inicio recarga el feed de la pestaña actual
+      const key = state.feed && state.feed.key;
+      if (n.classList.contains('active') && !state.stack.length && !anyPanelOpen() && /^(foryou|following|explore)/.test(key || '')) {
+        feeds.delete(key);
+        setFeed(feedFor(key));
+        toast(t('Actualizando…'));
+      } else switchTab('foryou');
+      break;
+    }
     case 'friends': switchTab('friends'); break;
     case 'logo': break;
     case 'inbox': openInbox(); break;
@@ -3425,6 +3589,13 @@ host && host.addEventListener('message', (e) => {
       $('#loginNote').textContent = '';
       break;
     case 'loginpopupclosed': loginHint(''); break;
+    // Se tocó el aviso de Windows de un mensaje: se abre ese chat (o la bandeja si ya no está en la lista)
+    case 'openchat': {
+      const c = (state.chats || []).find((x) => x.id === m.id);
+      openInbox();
+      if (c) openChat(c);
+      break;
+    }
     case 'loginpopup': loginHint(t('Completa el inicio de sesión en la ventana que se abrió')); break;
     case 'loginclose': $('#login').classList.remove('open'); closePanel('login'); break;
     case 'loginwait':

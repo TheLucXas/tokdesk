@@ -131,6 +131,11 @@ public partial class MainWindow : Window
         Show();
         if (WindowState == WindowState.Minimized) WindowState = _settings.Maximized ? WindowState.Maximized : WindowState.Normal;
         Activate();
+        // Windows no deja pasar al frente a una app que no tiene el foco: un instante «siempre visible» la trae igual
+        var top = Topmost;
+        Topmost = true;
+        Topmost = top;
+        Focus();
         UpdateTray();
     }
 
@@ -147,9 +152,9 @@ public partial class MainWindow : Window
     {
         if (!_exiting && _settings.CloseToTray)
         {
-            // "Cerrar minimiza": a la bandeja si está activada, si no a la barra de tareas
+            // Cerrar deja la app en la bandeja, sin depender de «Minimizar a la bandeja» (que es solo para el botón minimizar)
             e.Cancel = true;
-            if (_settings.MinimizeToTray) HideToTray(); else WindowState = WindowState.Minimized;
+            HideToTray();
             return;
         }
         SaveWindow();
@@ -238,20 +243,46 @@ public partial class MainWindow : Window
     [StructLayout(LayoutKind.Sequential)] struct RECT { public int Left, Top, Right, Bottom; }
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] struct MONITORINFO { public int Size; public RECT Monitor, Work; public uint Flags; }
     [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+    [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hwnd, out RECT rect);
     [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
     [StructLayout(LayoutKind.Sequential)] struct APPBARDATA { public int Size; public IntPtr Hwnd; public uint CallbackMessage, Edge; public RECT Rc; public IntPtr LParam; }
     [DllImport("shell32.dll")] static extern IntPtr SHAppBarMessage(uint msg, ref APPBARDATA data);
 
     static void FitToWorkArea(IntPtr hwnd, IntPtr lParam)
     {
-        var mon = MonitorFromWindow(hwnd, 2 /* MONITOR_DEFAULTTONEAREST */);
-        var info = new MONITORINFO { Size = Marshal.SizeOf<MONITORINFO>() };
-        if (mon == IntPtr.Zero || !GetMonitorInfo(mon, ref info)) return;
+        if (!MaximizedRect(MonitorFromWindow(hwnd, 2 /* MONITOR_DEFAULTTONEAREST */), out var r, out var mon)) return;
         var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-        mmi.MaxPosition.X = info.Work.Left - info.Monitor.Left;
-        mmi.MaxPosition.Y = info.Work.Top - info.Monitor.Top;
-        mmi.MaxSize.X = info.Work.Right - info.Work.Left;
-        mmi.MaxSize.Y = info.Work.Bottom - info.Work.Top;
+        mmi.MaxPosition.X = r.Left - mon.Left;
+        mmi.MaxPosition.Y = r.Top - mon.Top;
+        mmi.MaxSize.X = r.Right - r.Left;
+        mmi.MaxSize.Y = r.Bottom - r.Top;
+        Marshal.StructureToPtr(mmi, lParam, true);
+    }
+
+    // Windows reescala ese tamaño en monitores más grandes que el principal (en uno 2K con otro escalado, la ventana
+    // quedaba más grande que la pantalla): al maximizar se impone el rectángulo exacto
+    [StructLayout(LayoutKind.Sequential)] struct WINDOWPOS { public IntPtr Hwnd, InsertAfter; public int X, Y, Cx, Cy; public uint Flags; }
+    [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr hwnd);
+    [DllImport("user32.dll")] static extern IntPtr MonitorFromRect(ref RECT rect, uint flags);
+    static void KeepMaximizedInside(IntPtr hwnd, IntPtr lParam)
+    {
+        var wp = Marshal.PtrToStructure<WINDOWPOS>(lParam);
+        if ((wp.Flags & 0x0001 /* SWP_NOSIZE */) != 0 || !IsZoomed(hwnd)) return;
+        // El monitor al que Windows la lleva (al arrastrarla arriba de otro monitor), no en el que estaba
+        var proposed = new RECT { Left = wp.X, Top = wp.Y, Right = wp.X + wp.Cx, Bottom = wp.Y + wp.Cy };
+        if (!MaximizedRect(MonitorFromRect(ref proposed, 2), out var r, out _)) return;
+        wp.X = r.Left; wp.Y = r.Top; wp.Cx = r.Right - r.Left; wp.Cy = r.Bottom - r.Top;
+        wp.Flags &= ~0x0002u; // SWP_NOMOVE
+        Marshal.StructureToPtr(wp, lParam, true);
+    }
+
+    // Área de trabajo del monitor de la ventana, dejando un borde si la barra de tareas se oculta sola
+    static bool MaximizedRect(IntPtr mon, out RECT r, out RECT monitor)
+    {
+        r = default; monitor = default;
+        var info = new MONITORINFO { Size = Marshal.SizeOf<MONITORINFO>() };
+        if (mon == IntPtr.Zero || !GetMonitorInfo(mon, ref info)) return false;
+        r = info.Work; monitor = info.Monitor;
         // Barra de tareas con «ocultar automáticamente»: si la ventana tapa el borde entero, Windows no la vuelve a mostrar
         var edges = new List<uint>();
         for (uint edge = 0; edge < 4; edge++)
@@ -273,18 +304,19 @@ public partial class MainWindow : Window
         {
             switch (edge)
             {
-                case 0: mmi.MaxPosition.X += 2; mmi.MaxSize.X -= 2; break;
-                case 1: mmi.MaxPosition.Y += 2; mmi.MaxSize.Y -= 2; break;
-                case 2: mmi.MaxSize.X -= 2; break;
-                case 3: mmi.MaxSize.Y -= 2; break;
+                case 0: r.Left += 2; break;
+                case 1: r.Top += 2; break;
+                case 2: r.Right -= 2; break;
+                case 3: r.Bottom -= 2; break;
             }
         }
-        Marshal.StructureToPtr(mmi, lParam, true);
+        return true;
     }
 
     IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (msg == 0x0024 /* WM_GETMINMAXINFO */) { FitToWorkArea(hwnd, lParam); return IntPtr.Zero; }
+        if (msg == 0x0046 /* WM_WINDOWPOSCHANGING */) KeepMaximizedInside(hwnd, lParam);
         const int WM_HOTKEY = 0x0312;
         if (msg == WM_HOTKEY)
         {
@@ -630,7 +662,11 @@ public partial class MainWindow : Window
                     await NotifyService.Update(_settings, _engine, _notifyStrings, _notifyLang);
                     break;
                 case "notify":
-                    if (_settings.Notifications && _settings.NotifyMessages && !IsActive) _tray.Notify(S("title"), S("text"));
+                    if (_settings.Notifications && _settings.NotifyMessages && !IsActive)
+                    {
+                        var conv = S("id");
+                        _tray.Notify(S("title"), S("text"), () => { ShowFromTray(); PostToUi(new { t = "openchat", id = conv }); });
+                    }
                     break;
                 case "editopen":
                     PostToUi(new { t = "editstate", s = await _side.OpenEditProfile(S("user")) });
@@ -1113,6 +1149,14 @@ public partial class MainWindow : Window
                 }
                 else if (line.StartsWith("http:")) { var r = await FetchText(line[5..]); Log.Write("TEST http " + (r == null ? "null" : r[..Math.Min(r.Length, 1500)])); }
                 else if (line.StartsWith("engine:")) Log.Write("TEST motor " + await _engine.RunForTest(line[7..]));
+                else if (line.StartsWith("winrect"))
+                {
+                    var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                    GetWindowRect(hwnd, out var wr);
+                    var mi = new MONITORINFO { Size = Marshal.SizeOf<MONITORINFO>() };
+                    GetMonitorInfo(MonitorFromWindow(hwnd, 2), ref mi);
+                    Log.Write($"TEST ventana {wr.Left},{wr.Top},{wr.Right - wr.Left}x{wr.Bottom - wr.Top} monitor {mi.Monitor.Left},{mi.Monitor.Top},{mi.Monitor.Right - mi.Monitor.Left}x{mi.Monitor.Bottom - mi.Monitor.Top} trabajo {mi.Work.Right - mi.Work.Left}x{mi.Work.Bottom - mi.Work.Top} estado={WindowState} visible={IsVisible} dpi={System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX}");
+                }
                 else if (line.StartsWith("qrverify")) await ShowLoginWeb();
                 else if (line.StartsWith("bounds")) Log.Write($"TEST barra={LoginBar.ActualHeight} motor={_engine.BoundsForTest()}");
                 else if (line.StartsWith("sideshot:")) await _side.Shot(Path.Combine(AppContext.BaseDirectory, line[9..].Trim()));

@@ -68,7 +68,11 @@
     <div id="sheetList"></div>
     <form id="cmtForm">
       <img id="cmtMe" alt="">
-      <input id="cmtInput" maxlength="150" placeholder="Agregar comentario…" data-i18n-ph autocomplete="off">
+      <div class="cmt-field">
+        <input id="cmtInput" maxlength="150" placeholder="Agregar comentario…" data-i18n-ph autocomplete="off">
+        <button type="button" id="cmtEmoji" class="cmt-ico"></button>
+        <button type="button" id="cmtAt" class="cmt-ico">@</button>
+      </div>
       <button id="cmtSend" type="submit" title="Publicar">↑</button>
     </form>
   </section>
@@ -141,6 +145,7 @@
       <button data-st="users" data-i18n>Usuarios</button>
       <button data-st="sounds" data-i18n>Sonidos</button>
       <button data-st="live" data-i18n>LIVE</button>
+      <button id="searchFilter" class="st-filter" title="Filtros" data-i18n-title></button>
     </div>
     <div id="searchGrid"></div>
     <div id="searchUsers"></div>

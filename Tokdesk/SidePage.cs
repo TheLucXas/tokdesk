@@ -103,6 +103,7 @@ sealed class SidePage
             if (!_visible && !LoginMode) e.Response = _env.CreateWebResourceResponse(null, 204, "No Content", "Cache-Control: no-store");
         };
         LoginTrace.Attach(_wv, "oculta", () => LoginMode, (code) => LoginQrError?.Invoke(code));
+
         _wv.NavigationCompleted += (_, e) => _nav?.TrySetResult(e.IsSuccess);
         // Cada página del inicio de sesión (olvidé mi contraseña, registro…) se recorta igual
         _wv.NavigationCompleted += async (_, _) => { if (LoginMode && _wv.Source.Contains("tiktok.com")) try { await _wv.ExecuteScriptAsync(Engine.LoginStyleJs); } catch { } };
